@@ -1,128 +1,303 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Home, Users, Settings } from "lucide-react";
-
-const MOCK_PROPERTIES = [
-  { id: "1", name: "City Gateway Hostel", status: "Approved", rooms: 15, available: 3 },
-  { id: "2", name: "New Annex Hostel", status: "Pending", rooms: 10, available: 10 },
-];
-
-const MOCK_BOOKINGS = [
-  { id: "b1", student: "Samuel K.", property: "City Gateway Hostel", roomType: "Single", status: "Pending" },
-  { id: "b2", student: "Martha A.", property: "City Gateway Hostel", roomType: "Double", status: "Approved" },
-];
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, Home, Users, Settings, Loader2 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabase";
+import { Hostel, Booking } from "@/types";
+import { toast } from "sonner";
 
 export default function OwnerDashboard() {
+  const { user } = useAuth();
+  
+  const [properties, setProperties] = useState<Hostel[]>([]);
+  const [bookings, setBookings] = useState<any[]>([]);
+  
+  const [isLoading, setIsLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
+  
+  // Create Form State
+  const [newHostel, setNewHostel] = useState({
+    name: "",
+    university: "",
+    address: "",
+    description: "",
+    price_range: ""
+  });
+
+  useEffect(() => {
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      // Fetch user's properties
+      const { data: hostelsData, error: hostelsError } = await supabase
+        .from("hostels")
+        .select("*")
+        .eq("owner_id", user?.id)
+        .order("created_at", { ascending: false });
+
+      if (hostelsError) throw hostelsError;
+      setProperties(hostelsData || []);
+
+      // Fetch bookings for these properties
+      if (hostelsData && hostelsData.length > 0) {
+        const hostelIds = hostelsData.map(h => h.id);
+        const { data: bookingsData, error: bookingsError } = await supabase
+          .from("bookings")
+          .select(`
+            *,
+            hostels ( name ),
+            users!bookings_student_id_fkey ( first_name, last_name )
+          `)
+          .in("hostel_id", hostelIds)
+          .order("created_at", { ascending: false });
+
+        if (bookingsError) throw bookingsError;
+        setBookings(bookingsData || []);
+      }
+    } catch (error: any) {
+      console.error("Error fetching data:", error);
+      toast.error("Failed to load dashboard data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCreateProperty = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setIsCreating(true);
+      const { error } = await supabase
+        .from("hostels")
+        .insert({
+          ...newHostel,
+          owner_id: user?.id,
+          status: "pending" // Let super admin approve
+        });
+
+      if (error) throw error;
+      
+      toast.success("Property submitted for review");
+      
+      // Reset form
+      setNewHostel({ name: "", university: "", address: "", description: "", price_range: "" });
+      
+      // Refresh data
+      fetchData();
+      
+      // Close dialog hack - click outside or rely on user to close
+      document.dispatchEvent(new MouseEvent('mousedown')); 
+      
+    } catch (error: any) {
+      console.error("Error creating property:", error);
+      toast.error(error.message);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleUpdateBookingStatus = async (bookingId: string, status: "approved" | "rejected") => {
+    try {
+      const { error } = await supabase
+        .from("bookings")
+        .update({ status })
+        .eq("id", bookingId);
+
+      if (error) throw error;
+      
+      toast.success(`Booking ${status}`);
+      fetchData();
+      
+    } catch (error: any) {
+      toast.error("Failed to update booking stauts");
+    }
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="flex justify-between items-center mb-8">
+    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-500">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Owner Dashboard</h1>
           <p className="text-muted-foreground">Manage your properties and booking requests.</p>
         </div>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" /> Add Property
-        </Button>
+        
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="gap-2">
+              <Plus className="h-4 w-4" /> Add Property
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>List New Property</DialogTitle>
+              <DialogDescription>
+                Add a new hostel to the platform. It will be reviewed by an admin before going live.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleCreateProperty} className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Hostel Name</Label>
+                <Input id="name" required value={newHostel.name} onChange={(e) => setNewHostel({...newHostel, name: e.target.value})} placeholder="e.g. City Gateway Hostel" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="university">Nearest University</Label>
+                  <Input id="university" required value={newHostel.university} onChange={(e) => setNewHostel({...newHostel, university: e.target.value})} placeholder="e.g. Makerere" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="price_range">Avg. Price per Semester</Label>
+                  <Input id="price_range" required value={newHostel.price_range} onChange={(e) => setNewHostel({...newHostel, price_range: e.target.value})} placeholder="e.g. 1M - 1.5M UGX" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">Physical Address</Label>
+                <Input id="address" required value={newHostel.address} onChange={(e) => setNewHostel({...newHostel, address: e.target.value})} placeholder="e.g. Kikoni, Makerere" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Brief Description</Label>
+                <Textarea id="description" value={newHostel.description} onChange={(e) => setNewHostel({...newHostel, description: e.target.value})} placeholder="Describe the amenities, culture, safety..." />
+              </div>
+              <DialogFooter>
+                <Button type="submit" disabled={isCreating} className="w-full">
+                  {isCreating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Submit for Review
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Tabs defaultValue="properties" className="space-y-4">
-        <TabsList>
+        <TabsList className="bg-muted/50 p-1">
           <TabsTrigger value="properties" className="gap-2"><Home className="h-4 w-4" /> Properties</TabsTrigger>
           <TabsTrigger value="bookings" className="gap-2"><Users className="h-4 w-4" /> Bookings</TabsTrigger>
           <TabsTrigger value="settings" className="gap-2"><Settings className="h-4 w-4" /> Settings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="properties">
-          <Card>
-            <CardHeader>
-              <CardTitle>My Properties</CardTitle>
-              <CardDescription>View and manage all your hostel listings.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Property Name</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Total Rooms</TableHead>
-                    <TableHead>Available</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {MOCK_PROPERTIES.map((property) => (
-                    <TableRow key={property.id}>
-                      <TableCell className="font-medium">{property.name}</TableCell>
-                      <TableCell>
-                        <Badge variant={property.status === "Approved" ? "default" : "secondary"}>
-                          {property.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{property.rooms}</TableCell>
-                      <TableCell>{property.available}</TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="sm">Edit</Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
+          <Card className="border-primary/10 shadow-md">
+             {isLoading ? (
+               <div className="py-20 flex justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+             ) : (
+             <>
+                <CardHeader>
+                  <CardTitle>My Properties</CardTitle>
+                  <CardDescription>View and manage all your hostel listings.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {properties.length === 0 ? (
+                      <div className="text-center py-12 text-muted-foreground border border-dashed rounded-lg">
+                        You have not listed any properties yet.
+                      </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Property Name</TableHead>
+                          <TableHead>University Info</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {properties.map((property) => (
+                          <TableRow key={property.id}>
+                            <TableCell className="font-medium">{property.name}</TableCell>
+                            <TableCell>{property.university}</TableCell>
+                            <TableCell>
+                              <Badge variant={property.status === "approved" ? "default" : property.status === "pending" ? "secondary" : "destructive"}>
+                                {property.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button variant="ghost" size="sm">Manage Rooms</Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+             </>
+             )}
           </Card>
         </TabsContent>
 
         <TabsContent value="bookings">
-          <Card>
-            <CardHeader>
-              <CardTitle>Booking Requests</CardTitle>
-              <CardDescription>Approve or reject student booking applications.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Student</TableHead>
-                    <TableHead>Property</TableHead>
-                    <TableHead>Room Type</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {MOCK_BOOKINGS.map((booking) => (
-                    <TableRow key={booking.id}>
-                      <TableCell className="font-medium">{booking.student}</TableCell>
-                      <TableCell>{booking.property}</TableCell>
-                      <TableCell>{booking.roomType}</TableCell>
-                      <TableCell>
-                        <Badge variant={booking.status === "Approved" ? "default" : booking.status === "Pending" ? "outline" : "destructive"}>
-                          {booking.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {booking.status === "Pending" && (
-                          <div className="flex justify-end gap-2">
-                            <Button variant="outline" size="sm" className="text-green-600">Approve</Button>
-                            <Button variant="outline" size="sm" className="text-red-600">Reject</Button>
-                          </div>
-                        )}
-                        {booking.status !== "Pending" && (
-                           <Button variant="ghost" size="sm">View Details</Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
+          <Card className="border-primary/10 shadow-md">
+            {isLoading ? (
+               <div className="py-20 flex justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+             ) : (
+              <>
+                <CardHeader>
+                  <CardTitle>Booking Requests</CardTitle>
+                  <CardDescription>Approve or reject student booking applications.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {bookings.length === 0 ? (
+                      <div className="text-center py-12 text-muted-foreground border border-dashed rounded-lg">
+                        No bookings found for your properties.
+                      </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Student</TableHead>
+                          <TableHead>Property</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {bookings.map((booking) => (
+                          <TableRow key={booking.id}>
+                            <TableCell className="font-medium">
+                                {booking.users ? `${booking.users.first_name} ${booking.users.last_name}` : "Unknown Student"}
+                            </TableCell>
+                            <TableCell>{booking.hostels?.name}</TableCell>
+                            <TableCell>
+                              <Badge variant={booking.status === "approved" ? "default" : booking.status === "pending" ? "outline" : "destructive"}>
+                                {booking.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {booking.status === "pending" && (
+                                <div className="flex justify-end gap-2">
+                                  <Button onClick={() => handleUpdateBookingStatus(booking.id, "approved")} variant="outline" size="sm" className="text-green-600 border-green-200 hover:bg-green-50">Approve</Button>
+                                  <Button onClick={() => handleUpdateBookingStatus(booking.id, "rejected")} variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50">Reject</Button>
+                                </div>
+                              )}
+                              {booking.status !== "pending" && (
+                                <Button variant="ghost" size="sm">View Details</Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </>
+            )}
           </Card>
         </TabsContent>
         
         <TabsContent value="settings">
-          <Card>
+          <Card className="border-primary/10 shadow-md">
             <CardHeader>
               <CardTitle>Account Settings</CardTitle>
               <CardDescription>Manage your owner profile and payout settings.</CardDescription>

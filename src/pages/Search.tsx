@@ -1,185 +1,185 @@
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
-import { MapPin, Wifi, Shield, Zap, Droplets } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SearchIcon, MapPin, Wifi, Shield, Zap, Car } from "lucide-react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
+import type { Hostel } from "@/types";
+import { Loader2 } from "lucide-react";
 
-// Temporary dummy data
-const MOCK_HOSTELS = [
-  {
-    id: "1",
-    name: "City Gateway Hostel",
-    distance: "0.5km from Makerere",
-    price: "UGX 500,000",
-    rating: 4.8,
-    reviews: 124,
-    image: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&q=80&w=800",
-    amenities: ["wifi", "security", "water"],
-    featured: true,
-  },
-  {
-    id: "2",
-    name: "Olympic Standard Apartments",
-    distance: "1.2km from MUBS",
-    price: "UGX 800,000",
-    rating: 4.5,
-    reviews: 89,
-    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800",
-    amenities: ["wifi", "security", "power", "water"],
-    featured: false,
-  },
-  {
-    id: "3",
-    name: "Sunrise Student Home",
-    distance: "0.8km from Kyambogo",
-    price: "UGX 450,000",
-    rating: 4.2,
-    reviews: 56,
-    image: "https://images.unsplash.com/photo-1502672260266-1c1ea52309f4?auto=format&fit=crop&q=80&w=800",
-    amenities: ["water", "security"],
-    featured: false,
-  }
+const UNIVERSITIES = ["Makerere University", "Kyambogo University", "KIU", "Mbarara University"];
+const AMENITIES = [
+  { id: "wifi", label: "Free Wi-Fi", icon: Wifi },
+  { id: "security", label: "24/7 Security", icon: Shield },
+  { id: "power", label: "Backup Generator", icon: Zap },
+  { id: "parking", label: "Parking Space", icon: Car },
 ];
 
 export default function Search() {
-  return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Find Hostels</h1>
-          <p className="text-muted-foreground mt-1">Showing 12 hostels near your selected university.</p>
-        </div>
-        
-        {/* Mock Map Toggle for MVP */}
-        <Button variant="outline" className="hidden md:flex gap-2 rounded-full">
-          <MapPin className="h-4 w-4" />
-          Show Map
-        </Button>
-      </div>
+  const [searchTerm, setSearchTerm] = useState("");
+  const [priceRange, setPriceRange] = useState([500000, 2000000]);
+  
+  const [hostels, setHostels] = useState<Hostel[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+  useEffect(() => {
+    fetchApprovedHostels();
+  }, []);
+
+  const fetchApprovedHostels = async () => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('hostels')
+        .select('*')
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setHostels(data || []);
+    } catch (error) {
+      console.error("Error fetching hostels:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const filteredHostels = hostels.filter(hostel => {
+      if (searchTerm && !hostel.name.toLowerCase().includes(searchTerm.toLowerCase()) && 
+         (hostel.university && !hostel.university.toLowerCase().includes(searchTerm.toLowerCase()))) {
+          return false;
+      }
+      return true;
+  });
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in zoom-in-95 duration-500">
+      <div className="flex flex-col lg:flex-row gap-8">
         
         {/* Filters Sidebar */}
-        <aside className="col-span-1 border rounded-xl p-6 bg-card/50 backdrop-blur-sm h-fit sticky top-24">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-semibold text-lg">Filters</h2>
-            <Button variant="ghost" size="sm" className="h-8 text-xs">Reset</Button>
-          </div>
-          
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-sm font-medium mb-3">University</h3>
-              <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                <option>Makerere University</option>
-                <option>Kyambogo University</option>
-                <option>MUBS</option>
-                <option>KIU</option>
-              </select>
-            </div>
-
-            <Separator />
-
-            <div>
-              <h3 className="text-sm font-medium mb-3">Price Range (Per Semester)</h3>
-              <Slider defaultValue={[50]} max={100} step={1} className="mb-2" />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>UGX 300k</span>
-                <span>UGX 2M+</span>
-              </div>
-            </div>
-
-            <Separator />
-
-            <div>
-              <h3 className="text-sm font-medium mb-3">Amenities</h3>
-              <div className="space-y-3">
-                {['Free WiFi', 'Backup Generator', 'Running Water', '24/7 Security'].map((item) => (
-                  <div key={item} className="flex items-center space-x-2">
-                    <Checkbox id={`filter-${item}`} />
-                    <Label htmlFor={`filter-${item}`} className="text-sm font-normal cursor-pointer">{item}</Label>
-                  </div>
-                ))}
-              </div>
-            </div>
+        <div className="w-full lg:w-1/4 space-y-6">
+          <div className="glass p-6 rounded-2xl shadow-sm border border-primary/10">
+            <h3 className="font-semibold text-lg mb-4">Filters</h3>
             
-            <Separator />
-            
-            <div>
-              <h3 className="text-sm font-medium mb-3">Room Type</h3>
-              <div className="space-y-3">
-                {['Single Room', 'Double Room', 'Self Contained'].map((item) => (
-                  <div key={item} className="flex items-center space-x-2">
-                    <Checkbox id={`room-${item}`} />
-                    <Label htmlFor={`room-${item}`} className="text-sm font-normal cursor-pointer">{item}</Label>
-                  </div>
-                ))}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">University / Area</label>
+                <Select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select University" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {UNIVERSITIES.map(uni => (
+                       <SelectItem key={uni} value={uni}>{uni}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
-          </div>
-          
-          <Button className="w-full mt-8">Apply Filters</Button>
-        </aside>
 
-        {/* Results Grid */}
-        <div className="col-span-1 md:col-span-3">
-          <div className="space-y-6">
-            {MOCK_HOSTELS.map((hostel) => (
-              <Card key={hostel.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 border-border/50">
-                <div className="flex flex-col md:flex-row h-full">
-                  <div className="md:w-2/5 h-64 md:h-auto relative">
-                    <img 
-                      src={hostel.image} 
-                      alt={hostel.name}
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                    {hostel.featured && (
-                      <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground">
-                        Featured
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="md:w-3/5 p-6 flex flex-col justify-between">
-                    <div>
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="text-xl font-bold">{hostel.name}</h3>
-                        <div className="flex items-center gap-1 bg-secondary px-2 py-1 rounded-md text-sm font-medium">
-                          <span className="text-yellow-500">★</span> {hostel.rating}
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center text-muted-foreground text-sm mb-4 gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {hostel.distance}
-                      </div>
-
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {hostel.amenities.includes('wifi') && <Badge variant="secondary" className="gap-1"><Wifi className="h-3 w-3"/> WiFi</Badge>}
-                        {hostel.amenities.includes('security') && <Badge variant="secondary" className="gap-1"><Shield className="h-3 w-3"/> Security</Badge>}
-                        {hostel.amenities.includes('power') && <Badge variant="secondary" className="gap-1"><Zap className="h-3 w-3"/> Power</Badge>}
-                        {hostel.amenities.includes('water') && <Badge variant="secondary" className="gap-1"><Droplets className="h-3 w-3"/> Water</Badge>}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Starting from</p>
-                        <p className="text-lg font-bold text-primary">{hostel.price}</p>
-                      </div>
-                      <Link to={`/hostel/${hostel.id}`}>
-                        <Button>View Details</Button>
-                      </Link>
-                    </div>
-                  </div>
+              <div className="space-y-4 pt-4 border-t">
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-medium">Price Range (UGX)</label>
+                  <span className="text-xs text-muted-foreground">{priceRange[0]/1000}k - {priceRange[1]/1000}k</span>
                 </div>
-              </Card>
-            ))}
+                <Slider
+                  defaultValue={[500000, 2000000]}
+                  max={3000000}
+                  min={300000}
+                  step={100000}
+                  onValueChange={setPriceRange}
+                  className="py-4"
+                />
+              </div>
+
+              <div className="space-y-3 pt-4 border-t">
+                <label className="text-sm font-medium">Amenities</label>
+                {AMENITIES.map((amenity) => (
+                  <div key={amenity.id} className="flex items-center space-x-2">
+                    <Checkbox id={amenity.id} />
+                    <label
+                      htmlFor={amenity.id}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
+                    >
+                      <amenity.icon className="h-4 w-4 text-muted-foreground" />
+                      {amenity.label}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <Button className="w-full mt-8 shadow-md">Apply Filters</Button>
           </div>
         </div>
-        
+
+        {/* Results Area */}
+        <div className="w-full lg:w-3/4">
+          <div className="mb-6 flex gap-4">
+            <div className="relative flex-1">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input 
+                placeholder="Search by hostel name or university..." 
+                className="pl-10 h-12 text-lg rounded-full shadow-sm glass"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <Button className="h-12 px-8 rounded-full shadow-md">Search</Button>
+          </div>
+
+          <div className="mb-4">
+            <h2 className="text-2xl font-bold">Available Hostels</h2>
+            <p className="text-muted-foreground">Showing {filteredHostels.length} approved properties</p>
+          </div>
+
+          {isLoading ? (
+            <div className="py-20 flex justify-center items-center flex-col gap-4">
+               <Loader2 className="h-10 w-10 animate-spin text-primary" />
+               <p className="text-muted-foreground">Fetching live availability...</p>
+            </div>
+          ) : filteredHostels.length === 0 ? (
+             <div className="text-center py-20 border border-dashed rounded-xl bg-muted/20">
+                <p className="text-muted-foreground text-lg">No properties match your current filters.</p>
+             </div>
+          ) : (
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {filteredHostels.map((hostel) => (
+                <Link to={`/hostel/${hostel.id}`} key={hostel.id}>
+                    <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer border-primary/5">
+                    <div className="aspect-[4/3] relative overflow-hidden bg-muted">
+                        <img 
+                            src={hostel.images?.[0] || `https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&q=80&w=800`} 
+                            alt={hostel.name}
+                            className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
+                        />
+                        <div className="absolute top-4 right-4 bg-background/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold shadow-sm">
+                        {hostel.price_range || "Contact for price"}
+                        </div>
+                    </div>
+                    <CardContent className="p-5">
+                        <div className="flex justify-between items-start mb-2">
+                            <h3 className="font-bold text-xl group-hover:text-primary transition-colors line-clamp-1">{hostel.name}</h3>
+                        </div>
+                        <div className="flex items-center text-muted-foreground mb-4 text-sm">
+                            <MapPin className="h-4 w-4 mr-1 shrink-0" />
+                            <span className="line-clamp-1">{hostel.address || hostel.university}</span>
+                        </div>
+                        <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
+                           {hostel.amenities?.slice(0, 3).map((amenity, i) => (
+                             <span key={i} className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-md whitespace-nowrap">{amenity}</span>
+                           )) || <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-md">Basic Amenities</span>}
+                        </div>
+                    </CardContent>
+                    </Card>
+                </Link>
+                ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
