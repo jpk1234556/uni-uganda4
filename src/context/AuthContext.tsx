@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 import type { DBUser } from "@/types";
 
@@ -58,7 +59,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .single();
         
       if (!error && data) {
-        setDbUser(data as DBUser);
+        if (data.is_active === false) {
+           toast.error("Your account has been suspended by an administrator.");
+           await supabase.auth.signOut();
+           setUser(null);
+           setDbUser(null);
+        } else {
+           setDbUser(data as DBUser);
+        }
       }
     } catch (error) {
       console.error("Error fetching user profile:", error);

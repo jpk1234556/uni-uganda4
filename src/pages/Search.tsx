@@ -62,7 +62,7 @@ export default function Search() {
         
         {/* Filters Sidebar */}
         <div className="w-full lg:w-1/4 space-y-6">
-          <div className="glass p-6 rounded-2xl shadow-sm border border-primary/10">
+          <div className="bg-white/5 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-white/10">
             <h3 className="font-semibold text-lg mb-4">Filters</h3>
             
             <div className="space-y-4">
@@ -112,7 +112,7 @@ export default function Search() {
               </div>
             </div>
             
-            <Button className="w-full mt-8 shadow-md">Apply Filters</Button>
+            <Button className="w-full mt-8 bg-gradient-primary text-white hover:opacity-90 shadow-md">Apply Filters</Button>
           </div>
         </div>
 
@@ -123,12 +123,12 @@ export default function Search() {
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input 
                 placeholder="Search by hostel name or university..." 
-                className="pl-10 h-12 text-lg rounded-full shadow-sm glass"
+                className="pl-10 h-12 text-lg rounded-full shadow-sm bg-white/5 border-white/10 text-white focus-visible:ring-primary"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <Button className="h-12 px-8 rounded-full shadow-md">Search</Button>
+            <Button className="h-12 px-8 rounded-full shadow-md bg-gradient-primary hover:opacity-90 text-white">Search</Button>
           </div>
 
           <div className="mb-4">
@@ -149,7 +149,7 @@ export default function Search() {
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {filteredHostels.map((hostel) => (
                 <Link to={`/hostel/${hostel.id}`} key={hostel.id}>
-                    <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer border-primary/5">
+                    <Card className="overflow-hidden bg-white/5 hover:bg-white/10 border-white/10 hover:border-primary/50 transition-all duration-300 group cursor-pointer shadow-xl">
                     <div className="aspect-[4/3] relative overflow-hidden bg-muted">
                         <img 
                             src={hostel.images?.[0] || `https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&q=80&w=800`} 
@@ -162,7 +162,7 @@ export default function Search() {
                     </div>
                     <CardContent className="p-5">
                         <div className="flex justify-between items-start mb-2">
-                            <h3 className="font-bold text-xl group-hover:text-primary transition-colors line-clamp-1">{hostel.name}</h3>
+                            <h3 className="font-bold text-xl text-white group-hover:text-primary transition-colors line-clamp-1">{hostel.name}</h3>
                         </div>
                         <div className="flex items-center text-muted-foreground mb-4 text-sm">
                             <MapPin className="h-4 w-4 mr-1 shrink-0" />

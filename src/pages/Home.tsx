@@ -1,52 +1,416 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
+import type { Hostel } from "@/types";
+import { 
+  MapPin, 
+  Search, 
+  Building2, 
+  Users, 
+  Star, 
+  ShieldCheck, 
+  Clock, 
+  Wifi, 
+  Shield, 
+  Droplets,
+  CheckCircle2,
+  Home as HomeIcon,
+  Quote,
+  Loader2
+} from "lucide-react";
 
 export default function Home() {
+  const [topHostels, setTopHostels] = useState<Hostel[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTopHostels();
+  }, []);
+
+  const fetchTopHostels = async () => {
+    try {
+      setIsLoading(true);
+      // Fetch up to 3 approved hostels, ordered by rating descending (if the column exists)
+      // Note: If rating column hasn't been added yet, this might throw, so we catch it
+      const { data, error } = await supabase
+        .from('hostels')
+        .select('*')
+        .eq('status', 'approved')
+        .order('rating', { ascending: false, nullsFirst: false })
+        .limit(3);
+
+      if (error) {
+        // Fallback: If rating column doesn't exist yet, just fetch any 3 approved
+        console.warn("Rating order failed (likely column missing), falling back to standard fetch", error);
+        const fallback = await supabase
+          .from('hostels')
+          .select('*')
+          .eq('status', 'approved')
+          .limit(3);
+        setTopHostels(fallback.data || []);
+      } else {
+        setTopHostels(data || []);
+      }
+    } catch (error) {
+      console.error("Error fetching top hostels:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in zoom-in-95 duration-500">
-      {/* Hero Section */}
-      <div className="relative bg-gradient-to-br from-primary/10 via-background to-secondary/30 border border-primary/10 shadow-xl py-24 md:py-36 rounded-3xl mb-16 text-center px-4 overflow-hidden">
+    <div className="flex flex-col min-h-screen animate-in fade-in duration-500">
+      
+      {/* 1. DARK SECTION: Hero & Stats */}
+      <section className="dark bg-pattern-dark pt-20 pb-24 border-b border-white/5 relative overflow-hidden">
         {/* Glow Effects */}
-        <div className="absolute top-0 -left-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl opacity-60 pointer-events-none" />
-        <div className="absolute bottom-0 -right-20 w-96 h-96 bg-secondary/30 rounded-full blur-3xl opacity-60 pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-primary/5 rounded-full blur-3xl opacity-50 pointer-events-none" />
-        
-        <div className="relative z-10 max-w-4xl mx-auto space-y-6">
-          <Badge className="px-4 py-1 text-sm bg-primary/20 text-primary hover:bg-primary/30 border-none mb-4">
-            Uganda's #1 Student Accommodation Hub
-          </Badge>
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
-            Welcome to <span className="text-primary">UniNest</span>
+        <div className="absolute top-0 -left-20 w-72 h-72 bg-primary/20 rounded-full blur-[100px] opacity-50 pointer-events-none" />
+        <div className="absolute top-40 right-10 w-96 h-96 bg-primary/10 rounded-full blur-[100px] opacity-50 pointer-events-none" />
+
+        <div className="container mx-auto px-4 max-w-5xl text-center relative z-10">
+          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 text-white leading-tight">
+            Find Your Perfect<br/>
+            <span className="text-gradient-primary">Student Hostel</span>
           </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-[600px] mx-auto">
-            The smart, secure hostel allocation platform for university students. Find your perfect space today.
+          
+          <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-12">
+            Discover verified hostels near your university in Uganda. Compare prices, amenities, and book your home away from home.
           </p>
-          <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
-            <select className="p-3 border border-border rounded-full shadow-sm focus:ring-primary focus:border-primary w-full md:w-auto text-lg bg-background">
-              <option>Select University</option>
-              <option>Makerere University</option>
-              <option>Kyambogo University</option>
-              <option>Uganda Christian University</option>
-              <option>Kampala University</option>
-              <option>Gulu University</option>
-              <option>Busitema University</option>
-              <option>Ndejje University</option>
-              <option>Islamic University in Uganda</option>
-              <option>KIU</option>
-              <option>Mbarara University</option>
-            </select>
-            <Link to="/search">
-              <Button size="lg" className="w-full h-12 text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all rounded-full">Search Hostels</Button>
+
+          {/* Floating Search Card */}
+          <div className="max-w-4xl mx-auto bg-white rounded-2xl p-4 md:p-6 shadow-2xl relative z-20 mb-20 text-slate-900 border border-slate-100">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="space-y-1.5 text-left">
+                <label className="text-sm font-semibold text-slate-700 ml-1">Select University</label>
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <select className="w-full h-14 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-primary focus:border-transparent outline-none appearance-none transition-all font-medium">
+                    <option value="" disabled selected>Choose your university</option>
+                    <option value="makerere">Makerere University</option>
+                    <option value="ucu">Uganda Christian University</option>
+                    <option value="kyu">Kyambogo University</option>
+                    <option value="mubs">MUBS</option>
+                    <option value="kiu">KIU</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-1.5 text-left">
+                <label className="text-sm font-semibold text-slate-700 ml-1">Search Hostels</label>
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <Input 
+                    className="w-full h-14 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent outline-none shadow-none font-medium text-base"
+                    placeholder="Search by name, area, or feature..."
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row gap-3">
+              <Link to="/search" className="flex-1">
+                <Button className="w-full h-14 bg-gradient-primary hover:opacity-90 text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-primary/25 transition-all">
+                  <Search className="mr-2 h-5 w-5" /> Find Hostels
+                </Button>
+              </Link>
+              <Link to="/owner/dashboard" className="w-full md:w-auto">
+                <Button variant="outline" className="w-full md:w-auto h-14 px-8 border-slate-200 text-slate-700 bg-white hover:bg-slate-50 font-semibold text-lg rounded-xl transition-all shadow-sm">
+                  <Building2 className="mr-2 h-5 w-5 text-slate-500" /> List Your Hostel
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Trusted By Stats */}
+          <div className="text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-3 tracking-tight">Trusted by Thousands</h2>
+            <p className="text-slate-400">Join the growing community of students and hostel owners using HostelUganda</p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 md:gap-8 max-w-6xl mx-auto">
+            <div className="flex flex-col items-center">
+              <div className="h-12 w-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-3">
+                <Building2 className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-1">150+</h3>
+              <p className="text-xs text-primary font-medium tracking-wide uppercase mb-1">Verified Hostels</p>
+              <p className="text-[10px] text-slate-500">Across all major universities</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="h-12 w-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-3">
+                <Users className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-1">5,000+</h3>
+              <p className="text-xs text-primary font-medium tracking-wide uppercase mb-1">Students Served</p>
+              <p className="text-[10px] text-slate-500">Happy students accommodated</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="h-12 w-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-3">
+                <MapPin className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-1">8</h3>
+              <p className="text-xs text-primary font-medium tracking-wide uppercase mb-1">Universities</p>
+              <p className="text-[10px] text-slate-500">Covered across Uganda</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="h-12 w-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-3">
+                <Star className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-1">4.5</h3>
+              <p className="text-xs text-primary font-medium tracking-wide uppercase mb-1">Average Rating</p>
+              <p className="text-[10px] text-slate-500">From student reviews</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="h-12 w-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-3">
+                <ShieldCheck className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-1">100%</h3>
+              <p className="text-xs text-primary font-medium tracking-wide uppercase mb-1">Verified Listings</p>
+              <p className="text-[10px] text-slate-500">All hostels verified</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="h-12 w-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-3">
+                <Clock className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-1">24hrs</h3>
+              <p className="text-xs text-primary font-medium tracking-wide uppercase mb-1">Response Time</p>
+              <p className="text-[10px] text-slate-500">Quick booking confirmation</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. LIGHT SECTION: Top-Rated Hostels */}
+      <section className="py-20 bg-slate-50 border-b border-slate-200">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="flex justify-between items-end mb-10">
+            <div>
+              <div className="flex items-center gap-2 text-primary font-semibold text-sm tracking-wider uppercase mb-2">
+                <Star className="h-4 w-4 fill-primary" /> Featured
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3 tracking-tight">Top-Rated Hostels</h2>
+              <p className="text-slate-600">Discover the most popular and highly-rated hostels among students</p>
+            </div>
+            <Link to="/search" className="hidden md:flex">
+              <Button variant="outline" className="rounded-full shadow-sm hover:bg-slate-100">View All</Button>
             </Link>
           </div>
-          <div className="flex gap-4 justify-center mt-8">
-            <Link to="/owner/dashboard">
-              <Button size="lg" variant="outline" className="rounded-full hover:scale-105 transition-transform glass">List your Property</Button>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {isLoading ? (
+              <div className="col-span-1 md:col-span-2 lg:col-span-3 flex justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : topHostels.length === 0 ? (
+               <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-20 bg-white rounded-2xl border border-dashed border-slate-200">
+                  <p className="text-slate-500 font-medium">No verified hostels available yet.</p>
+               </div>
+            ) : (
+              topHostels.map((hostel, index) => (
+                <Link to={`/hostel/${hostel.id}`} key={hostel.id} className={`group ${index === 2 ? 'hidden lg:block' : ''}`}>
+                  <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-slate-200 flex flex-col h-full">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+                      <img 
+                        src={hostel.images?.[0] || 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&q=80&w=800'} 
+                        alt={hostel.name} 
+                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500" 
+                      />
+                      <div className="absolute top-4 left-4 flex gap-2">
+                        {index === 0 && <span className="bg-amber-400 text-slate-900 text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">Featured</span>}
+                        <span className="bg-emerald-500 text-white text-xs font-bold px-2.5 py-1 rounded-md shadow-sm flex items-center gap-1"><ShieldCheck className="h-3 w-3" />Verified</span>
+                      </div>
+                      <div className="absolute bottom-4 right-4 bg-slate-900/90 backdrop-blur text-white px-4 py-2 rounded-xl shadow-lg border border-white/10">
+                        <div className="text-xs text-slate-300 font-medium">From</div>
+                        <div className="font-bold text-lg">{hostel.price_range || "Contact"}</div>
+                        <div className="text-[10px] text-slate-400">per semester</div>
+                      </div>
+                    </div>
+                    <div className="p-6 flex flex-col flex-1">
+                      <div className="flex text-xs text-slate-500 font-medium mb-3 items-center">
+                        <MapPin className="h-3.5 w-3.5 mr-1 text-primary shrink-0" /> 
+                        <span className="truncate">{hostel.address || hostel.university || "Uganda"}</span>
+                      </div>
+                      <div className="flex justify-between items-start mb-2 gap-2">
+                        <h3 className="font-bold text-xl text-slate-900 group-hover:text-primary transition-colors line-clamp-1 flex-1">{hostel.name}</h3>
+                        <div className="flex items-center gap-1 bg-amber-50 px-1.5 py-0.5 rounded text-sm shrink-0 mt-0.5">
+                          <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+                          <span className="font-bold text-amber-600">{hostel.rating || "4.x"}</span>
+                          <span className="text-slate-400 text-xs">({hostel.reviews_count || "0"})</span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-slate-600 line-clamp-2 mb-4">{hostel.description || "A verified student hostel located conveniently near the university."}</p>
+                      
+                      <div className="flex gap-4 text-xs text-slate-600 font-medium mb-6 flex-wrap">
+                        {hostel.amenities?.slice(0, 3).map((amenity, i) => (
+                           <span key={i} className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">{amenity}</span>
+                        ))}
+                      </div>
+
+                      <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
+                        <div className="text-sm font-semibold text-emerald-600">
+                          {Math.floor(Math.random() * 20) + 5} rooms <span className="text-slate-500 font-normal">available</span>
+                        </div>
+                        <Button className="bg-primary hover:bg-primary/90 text-white rounded-lg shadow-sm group-hover:shadow-md transition-all">View Details</Button>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))
+            )}
+          </div>
+          
+          <div className="mt-8 text-center md:hidden">
+            <Link to="/search">
+              <Button variant="outline" className="rounded-full shadow-sm">View All Hostels</Button>
             </Link>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* 3. LIGHT SECTION: How It Works */}
+      <section className="py-24 bg-white border-b border-slate-200">
+        <div className="container mx-auto px-4 max-w-6xl text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4 tracking-tight">How It Works</h2>
+          <p className="text-slate-600 max-w-2xl mx-auto mb-16">
+            Finding your perfect student hostel in Uganda is now easier than ever. Follow these simple steps.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
+            {/* Connecting Line (Desktop) */}
+            <div className="hidden md:block absolute top-[60px] left-[10%] right-[10%] h-[2px] bg-slate-100 z-0"></div>
+
+            {/* Step 1 */}
+            <div className="relative z-10 flex flex-col items-center">
+              <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold mb-4 shadow-md">1</div>
+              <div className="w-20 h-20 rounded-full bg-amber-500 mb-6 flex items-center justify-center shadow-lg shadow-amber-500/20">
+                <Search className="h-8 w-8 text-white" />
+              </div>
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 w-full h-full flex flex-col">
+                <h3 className="font-bold text-lg text-slate-900 mb-2">Search & Discover</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">Select your university and browse through verified hostels nearby. Use filters to find hostels that match your budget and preferences.</p>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="relative z-10 flex flex-col items-center">
+              <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold mb-4 shadow-md">2</div>
+              <div className="w-20 h-20 rounded-full bg-primary mb-6 flex items-center justify-center shadow-lg shadow-primary/20">
+                <MapPin className="h-8 w-8 text-white" />
+              </div>
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 w-full h-full flex flex-col">
+                <h3 className="font-bold text-lg text-slate-900 mb-2">Compare & Choose</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">View hostel details, room types, amenities, and prices. Check photos and read reviews from other students to make an informed decision.</p>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="relative z-10 flex flex-col items-center">
+              <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold mb-4 shadow-md">3</div>
+              <div className="w-20 h-20 rounded-full bg-pink-500 mb-6 flex items-center justify-center shadow-lg shadow-pink-500/20">
+                <CheckCircle2 className="h-8 w-8 text-white" />
+              </div>
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 w-full h-full flex flex-col">
+                <h3 className="font-bold text-lg text-slate-900 mb-2">Apply & Book</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">Submit your booking request online. The hostel owner will review and confirm your application. No need to visit in person!</p>
+              </div>
+            </div>
+
+            {/* Step 4 */}
+            <div className="relative z-10 flex flex-col items-center">
+              <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold mb-4 shadow-md">4</div>
+              <div className="w-20 h-20 rounded-full bg-purple-500 mb-6 flex items-center justify-center shadow-lg shadow-purple-500/20">
+                <HomeIcon className="h-8 w-8 text-white" />
+              </div>
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 w-full h-full flex flex-col">
+                <h3 className="font-bold text-lg text-slate-900 mb-2">Move In</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">Once confirmed, pay your deposit and move into your new home. We make the entire process seamless and stress-free.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* 4. LIGHT SECTION: What Students Say */}
+      <section className="py-24 bg-slate-50">
+        <div className="container mx-auto px-4 max-w-6xl text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4 tracking-tight">What Students Say</h2>
+          <p className="text-slate-600 max-w-2xl mx-auto mb-16">
+            Join thousands of satisfied students who found their perfect home through HostelUganda
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+            {/* Review 1 */}
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 relative">
+              <Quote className="absolute top-6 right-6 h-10 w-10 text-slate-100 fill-slate-100" />
+              <div className="flex text-amber-500 mb-4">
+                <Star className="h-4 w-4 fill-amber-500" />
+                <Star className="h-4 w-4 fill-amber-500" />
+                <Star className="h-4 w-4 fill-amber-500" />
+                <Star className="h-4 w-4 fill-amber-500" />
+                <Star className="h-4 w-4 fill-amber-500" />
+              </div>
+              <p className="text-slate-700 leading-relaxed mb-6 font-medium">"HostelUganda made my hostel search incredibly easy. I found a perfect room near Mulago Hospital within my budget. The verification system gave me confidence that I wasn't being scammed."</p>
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-slate-200 overflow-hidden">
+                  <img src="https://i.pravatar.cc/150?img=1" alt="Student" className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm">Nakamya Sarah</h4>
+                  <p className="text-xs text-slate-500">Medical Student, Makerere</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Review 2 */}
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 relative">
+              <Quote className="absolute top-6 right-6 h-10 w-10 text-slate-100 fill-slate-100" />
+              <div className="flex text-amber-500 mb-4">
+                <Star className="h-4 w-4 fill-amber-500" />
+                <Star className="h-4 w-4 fill-amber-500" />
+                <Star className="h-4 w-4 fill-amber-500" />
+                <Star className="h-4 w-4 fill-amber-500" />
+                <Star className="h-4 w-4 fill-amber-500" />
+              </div>
+              <p className="text-slate-700 leading-relaxed mb-6 font-medium">"As a first-year student from Gulu, I was worried about finding accommodation in Kampala. This platform helped me find a great hostel in Banda with all the amenities I needed."</p>
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-slate-200 overflow-hidden">
+                  <img src="https://i.pravatar.cc/150?img=11" alt="Student" className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm">Okello James</h4>
+                  <p className="text-xs text-slate-500">Engineering Student, Kyambogo</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Review 3 */}
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 relative">
+              <Quote className="absolute top-6 right-6 h-10 w-10 text-slate-100 fill-slate-100" />
+              <div className="flex text-amber-500 mb-4">
+                <Star className="h-4 w-4 fill-amber-500" />
+                <Star className="h-4 w-4 fill-amber-500" />
+                <Star className="h-4 w-4 fill-amber-500" />
+                <Star className="h-4 w-4 fill-amber-500" />
+                <Star className="h-4 w-4 fill-amber-500" />
+              </div>
+              <p className="text-slate-700 leading-relaxed mb-6 font-medium">"The booking process was seamless! I applied for a room online and got confirmed within 24 hours. The photos were accurate and the reviews from other students were very helpful."</p>
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-slate-200 overflow-hidden">
+                  <img src="https://i.pravatar.cc/150?img=5" alt="Student" className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm">Aisha Nambi</h4>
+                  <p className="text-xs text-slate-500">Business Student, MUBS</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
   );
 }

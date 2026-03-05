@@ -65,12 +65,12 @@ export default function Auth() {
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
         <div className="absolute inset-0 bg-primary/90" />
         <div className="relative z-20 flex items-center text-lg font-medium">
-          <span className="text-3xl font-extrabold tracking-tight">UniNest</span>
+          <span className="text-3xl font-extrabold tracking-tight">HostelUganda</span>
         </div>
         <div className="relative z-20 mt-auto">
           <blockquote className="space-y-2">
             <p className="text-lg">
-              "UniNest completely changed how I found my accommodation for the semester. No more getting scammed or walking around under the sun for hours looking for hostels."
+              "HostelUganda completely changed how I found my accommodation for the semester. No more getting scammed or walking around under the sun for hours looking for hostels."
             </p>
             <footer className="text-sm">Sofia Davis, Makerere University</footer>
           </blockquote>

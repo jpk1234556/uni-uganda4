@@ -1,4 +1,4 @@
-export type UserRole = "student" | "hostel_owner" | "admin";
+export type UserRole = "student" | "hostel_owner" | "super_admin";
 
 export interface DBUser {
     id: string;
@@ -6,6 +6,7 @@ export interface DBUser {
     first_name: string;
     last_name: string;
     role: UserRole;
+    is_active: boolean;
 }
 
 export interface Hostel {
@@ -19,6 +20,8 @@ export interface Hostel {
     images: string[] | null;
     owner_id: string;
     status: "pending" | "approved" | "rejected";
+    rating?: number;
+    reviews_count?: number;
     created_at: string;
 }
 
@@ -36,6 +39,15 @@ export interface Booking {
     student_id: string;
     hostel_id: string;
     room_type_id: string;
+    phone_number?: string;
+    course?: string;
+    move_in_date?: string;
+    duration?: string;
+    next_of_kin?: string;
+    sponsor?: string;
+    origin?: string;
+    medical_history?: string;
+    special_requests?: string;
     status: "pending" | "approved" | "rejected";
     created_at: string;
 }

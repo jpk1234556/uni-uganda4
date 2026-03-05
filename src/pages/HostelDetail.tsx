@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Star, Shield, Wifi, Zap, Users, Loader2, ArrowLeft } from "lucide-react";
+import { MapPin, Star, Shield, Wifi, Zap, Users, Loader2, ArrowLeft, Map } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { Hostel, RoomType } from "@/types";
 import { useAuth } from "@/context/AuthContext";
@@ -169,6 +169,37 @@ export default function HostelDetail() {
                     </div>
                 ))}
             </div>
+          </div>
+
+          {/* Location / Google Maps */}
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <Map className="h-6 w-6 text-primary" /> Location
+            </h2>
+            <div className="w-full h-[400px] rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-50 relative">
+               {!import.meta.env.VITE_GOOGLE_MAPS_API_KEY && (
+                 <div className="absolute inset-0 flex items-center justify-center bg-slate-100/80 backdrop-blur-sm z-10 p-6 text-center">
+                    <div className="bg-white p-4 rounded-xl shadow-md border border-slate-200">
+                      <MapPin className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+                      <p className="text-sm font-medium text-slate-700">Map unavailable</p>
+                      <p className="text-xs text-slate-500 mt-1">VITE_GOOGLE_MAPS_API_KEY is missing in .env.local</p>
+                    </div>
+                 </div>
+               )}
+               <iframe
+                 width="100%"
+                 height="100%"
+                 style={{ border: 0 }}
+                 loading="lazy"
+                 allowFullScreen
+                 referrerPolicy="no-referrer-when-downgrade"
+                 src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}&q=${encodeURIComponent(hostel.address || `${hostel.name} ${hostel.university} Uganda`)}&zoom=15`}
+               ></iframe>
+            </div>
+            <p className="text-sm text-muted-foreground flex items-start gap-2">
+               <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
+               {hostel.address || `${hostel.name}, Near ${hostel.university}`}
+            </p>
           </div>
 
         </div>

@@ -36,12 +36,12 @@ function App() {
               </ProtectedRoute>
             } />
             <Route path="/owner/dashboard" element={
-              <ProtectedRoute allowedRoles={["hostel_owner", "admin"]}>
+              <ProtectedRoute allowedRoles={["hostel_owner", "super_admin"]}>
                 <OwnerDashboard />
               </ProtectedRoute>
             } />
             <Route path="/admin/dashboard" element={
-              <ProtectedRoute allowedRoles={["admin"]}>
+              <ProtectedRoute allowedRoles={["super_admin"]}>
                 <AdminDashboard />
               </ProtectedRoute>
             } />
