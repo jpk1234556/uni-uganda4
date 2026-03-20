@@ -1,8 +1,309 @@
+import { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { MapPin, Star, Building, CheckCircle, Navigation, Loader2, ArrowLeft, Users } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
+// import type { Hostel } from "@/types";
+
 export default function HostelDetail() {
+  const { id } = useParams();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const [hostel, setHostel] = useState<any | null>(null);
+  const [rooms, setRooms] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Booking State
+  const [selectedRoom, setSelectedRoom] = useState<any | null>(null);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [bookingForm, setBookingForm] = useState({
+    phone_number: "",
+    course: "",
+    move_in_date: "",
+    next_of_kin: "",
+    sponsor: "",
+    origin: "",
+    medical_history: ""
+  });
+
+  useEffect(() => {
+    if (id) fetchHostelData();
+  }, [id]);
+
+  const fetchHostelData = async () => {
+    try {
+      setIsLoading(true);
+      const { data: hostelData, error: hostelError } = await supabase
+        .from('hostels')
+        .select('*, users!hostels_owner_id_fkey(first_name, last_name, email)')
+        .eq('id', id)
+        .single();
+      
+      if (hostelError) throw hostelError;
+      setHostel(hostelData);
+
+      const { data: roomsData } = await supabase
+        .from('room_types')
+        .select('*')
+        .eq('hostel_id', id)
+        .order('price', { ascending: true });
+        
+      setRooms(roomsData || []);
+    } catch (error) {
+      toast.error("Failed to load hostel details");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBookClick = (room: any) => {
+    if (!user) {
+      toast.error("Please login to book a room");
+      navigate("/auth");
+      return;
+    }
+    // Prevent booking own hostel or admin actions, but for MVP let backend handle logic. 
+    setSelectedRoom(room);
+    setIsBookingOpen(true);
+  };
+
+  const handleBookingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !selectedRoom || !hostel) return;
+
+    try {
+      setIsSubmitting(true);
+      const { error } = await supabase.from("bookings").insert({
+        student_id: user.id,
+        hostel_id: hostel.id,
+        room_type_id: selectedRoom.id,
+        phone_number: bookingForm.phone_number,
+        course: bookingForm.course,
+        move_in_date: bookingForm.move_in_date,
+        next_of_kin: bookingForm.next_of_kin,
+        sponsor: bookingForm.sponsor,
+        origin: bookingForm.origin,
+        medical_history: bookingForm.medical_history,
+        status: "pending"
+      });
+
+      if (error) throw error;
+      
+      toast.success("Booking request submitted! Waiting for owner approval.");
+      setIsBookingOpen(false);
+      navigate("/student/dashboard");
+    } catch (error: any) {
+      toast.error(error.message || "Booking failed");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-20 flex justify-center items-center min-h-[60vh]">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!hostel) {
+    return (
+      <div className="container mx-auto px-4 py-20 text-center min-h-[60vh]">
+        <h2 className="text-2xl font-bold">Hostel not found</h2>
+        <Link to="/search">
+          <Button className="mt-4">Back to Search</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  const mainImage = hostel.images && hostel.images.length > 0 ? hostel.images[0] : "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=2000&auto=format&fit=crop";
+
   return (
-    <div className="container mx-auto px-4 py-8 mt-16 text-center">
-      <h1 className="text-3xl font-bold mb-4">Hostel Details</h1>
-      <p className="text-muted-foreground">This page is under construction.</p>
+    <div className="min-h-screen bg-slate-50 pb-20">
+      {/* Hero Image Section */}
+      <div className="w-full h-[40vh] md:h-[50vh] relative bg-slate-200">
+        <img src={mainImage} className="w-full h-full object-cover" alt={hostel.name} />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
+        <div className="absolute top-4 left-4">
+           <Link to="/search">
+             <Button variant="secondary" size="icon" className="rounded-full shadow-md bg-white/90 hover:bg-white backdrop-blur-sm">
+               <ArrowLeft className="h-4 w-4" />
+             </Button>
+           </Link>
+        </div>
+        <div className="absolute bottom-6 left-0 right-0 container mx-auto px-4 text-white">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                {hostel.status === "approved" && (
+                  <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm gap-1">
+                    <CheckCircle className="h-3 w-3" /> Verified
+                  </Badge>
+                )}
+                <Badge variant="outline" className="text-white border-white/50 backdrop-blur-md bg-black/20">
+                  <Star className="h-3 w-3 mr-1 text-amber-400 fill-amber-400" /> 
+                  {(hostel.rating || 0) > 0 ? hostel.rating : "New"}
+                </Badge>
+              </div>
+              <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-2 drop-shadow-md">{hostel.name}</h1>
+              <p className="flex items-center gap-1.5 text-slate-200 text-lg">
+                <MapPin className="h-5 w-5" />
+                {hostel.address}
+              </p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 inline-block">
+               <p className="text-sm text-slate-300 font-medium mb-1 flex items-center gap-1"><Navigation className="h-4 w-4"/> Nearest Campus</p>
+               <p className="text-xl font-bold text-white">{hostel.university || "University Area"}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 mt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Main Info */}
+          <div className="lg:col-span-2 space-y-8">
+            <Card className="border-0 shadow-sm bg-white p-6 rounded-2xl">
+              <h2 className="text-2xl font-bold mb-4 text-slate-900">About this property</h2>
+              <p className="text-slate-600 leading-relaxed whitespace-pre-wrap">
+                {hostel.description || "No description provided yet."}
+              </p>
+            </Card>
+
+            <div className="space-y-4">
+              <h3 className="text-xl font-bold text-slate-900">Available Room Types</h3>
+              {rooms.length === 0 ? (
+                <div className="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-300 text-slate-500">
+                  <Building className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                  <p>The owner has not listed any room types yet.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4">
+                  {rooms.map(room => (
+                    <Card key={room.id} className="overflow-hidden border-slate-200 shadow-sm transition-all hover:shadow-md hover:border-indigo-100 group">
+                      <div className="p-6 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                         <div>
+                           <h4 className="text-lg font-bold text-slate-900 mb-1">{room.name}</h4>
+                           <div className="flex gap-4 text-sm text-slate-500">
+                             <span className="flex items-center gap-1"><Users className="h-4 w-4"/> Capacity: {room.capacity}</span>
+                             <span>Available: <strong className={room.available > 0 ? "text-emerald-600" : "text-rose-500"}>{room.available}</strong></span>
+                           </div>
+                         </div>
+                         <div className="flex flex-col sm:items-end gap-3 w-full sm:w-auto">
+                           <div className="text-2xl font-bold text-indigo-600">
+                             {room.price.toLocaleString('en-UG')} <span className="text-sm font-normal text-slate-500">UGX</span>
+                           </div>
+                           <Button 
+                             onClick={() => handleBookClick(room)}
+                             disabled={room.available === 0}
+                             className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-medium"
+                           >
+                              {room.available > 0 ? "Book Room" : "Full"}
+                           </Button>
+                         </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            <Card className="border-slate-200 shadow-sm sticky top-24">
+              <CardContent className="p-6">
+                <div className="text-center pb-6 border-b border-slate-100 mb-6">
+                   <div className="h-16 w-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl font-bold text-slate-400">
+                     {hostel.users?.first_name ? hostel.users.first_name[0] : "?"}
+                   </div>
+                   <h3 className="font-semibold text-lg text-slate-900">{hostel.users ? `${hostel.users.first_name} ${hostel.users.last_name}` : "Unknown Owner"}</h3>
+                   <p className="text-sm text-slate-500">Hostel Owner</p>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-slate-500 mb-1">General Price Range</p>
+                    <p className="font-medium text-slate-900">{hostel.price_range || "Contact for pricing"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500 mb-1">Amenities</p>
+                    <div className="flex flex-wrap gap-2">
+                       {hostel.amenities && hostel.amenities.length > 0 ? (
+                          hostel.amenities.map((amenity: string, i: number) => (
+                           <Badge key={i} variant="secondary" className="bg-slate-100 hover:bg-slate-200 text-slate-700">{amenity}</Badge>
+                         ))
+                       ) : (
+                         <span className="text-sm text-slate-400">Not specified</span>
+                       )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      {/* Booking Dialog */}
+      <Dialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
+        <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Apply for Room</DialogTitle>
+            <DialogDescription>
+              Submit your details to reserve the <span className="font-bold text-slate-900">{selectedRoom?.name}</span> at {hostel.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleBookingSubmit} className="space-y-4 pt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input id="phone" required placeholder="+256 700 000 000" value={bookingForm.phone_number} onChange={e => setBookingForm({...bookingForm, phone_number: e.target.value})} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="date">Expected Move-in</Label>
+                <Input id="date" type="date" required value={bookingForm.move_in_date} onChange={e => setBookingForm({...bookingForm, move_in_date: e.target.value})} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="course">University Course (Optional)</Label>
+              <Input id="course" placeholder="e.g. BSc Software Engineering" value={bookingForm.course} onChange={e => setBookingForm({...bookingForm, course: e.target.value})} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+               <div className="space-y-2">
+                 <Label htmlFor="kin">Next of Kin</Label>
+                 <Input id="kin" required placeholder="Name & Contact" value={bookingForm.next_of_kin} onChange={e => setBookingForm({...bookingForm, next_of_kin: e.target.value})} />
+               </div>
+               <div className="space-y-2">
+                 <Label htmlFor="sponsor">Sponsor</Label>
+                 <Input id="sponsor" placeholder="Who pays rent?" value={bookingForm.sponsor} onChange={e => setBookingForm({...bookingForm, sponsor: e.target.value})} />
+               </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="med">Any Medical Conditions? (Optional)</Label>
+              <Input id="med" placeholder="Leave blank if none" value={bookingForm.medical_history} onChange={e => setBookingForm({...bookingForm, medical_history: e.target.value})} />
+            </div>
+            <DialogFooter className="mt-6">
+              <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white" disabled={isSubmitting}>
+                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Confirm Application
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
