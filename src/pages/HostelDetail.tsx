@@ -98,6 +98,11 @@ export default function HostelDetail() {
     e.preventDefault();
     if (!user || !selectedRoom || !hostel) return;
 
+    if (selectedRoom.available <= 0) {
+      toast.error("Sorry, this room is currently full.");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       const { error } = await supabase.from("bookings").insert({

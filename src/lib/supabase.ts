@@ -7,10 +7,36 @@ let supabase: any
 
 if (!supabaseUrl || !supabaseAnonKey) {
     console.error('Missing Supabase environment variables. Please check your .env.local file.')
-    // Create a dummy client to prevent app crash
+    // Create a dummy client to prevent app crash by returning graceful errors
+    const createErrorMock = () => Promise.resolve({ data: null, error: new Error('Supabase not configured') });
+    
+    // Create chainable mock that eventually returns an error for any query
+    const createChainableMock = () => {
+        const chain: any = {};
+        const methods = ['select', 'eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'like', 'ilike', 'is', 'in', 'order', 'limit', 'single', 'maybeSingle'];
+        methods.forEach(method => {
+            chain[method] = () => chain; // return self for chaining
+        });
+        // Override the terminal methods to resolve to our error mock
+        chain.then = (resolve: any) => resolve({ data: null, error: new Error('Supabase not configured') });
+        return chain;
+    };
+
     supabase = {
-        from: () => ({ select: () => ({ eq: () => ({ order: () => ({ limit: () => Promise.resolve({ data: [], error: new Error('Supabase not configured') }) }) }) }) }),
-        auth: { getSession: () => Promise.resolve({ data: { session: null } }), onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }) }
+        from: (_table: string) => ({
+            select: createChainableMock,
+            insert: createErrorMock,
+            update: createErrorMock,
+            delete: createErrorMock,
+        }),
+        auth: { 
+            getSession: () => Promise.resolve({ data: { session: null }, error: null }), 
+            onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+            signUp: createErrorMock,
+            signInWithPassword: createErrorMock,
+            signOut: createErrorMock,
+            getUser: createErrorMock,
+        }
     }
 } else {
     supabase = createClient(supabaseUrl, supabaseAnonKey)

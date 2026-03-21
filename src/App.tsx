@@ -15,45 +15,48 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
 import { AuthProvider } from "@/context/AuthContext";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 function App() {
   return (
     <Router>
       <AuthProvider>
-        <div className="min-h-screen flex flex-col bg-background text-foreground animate-in fade-in duration-500">
-        <Navbar />
-        <main className="flex-1">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/roommates" element={<Roommates />} />
-            <Route path="/hostel/:id" element={<HostelDetail />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/verify-email" element={<VerifyEmail />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            
-            {/* Protected Routes */}
-            <Route path="/student/dashboard" element={
-              <ProtectedRoute allowedRoles={["student"]}>
-                <StudentDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/owner/dashboard" element={
-              <ProtectedRoute allowedRoles={["hostel_owner", "super_admin"]}>
-                <OwnerDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/dashboard" element={
-              <ProtectedRoute allowedRoles={["super_admin"]}>
-                <AdminDashboard />
-              </ProtectedRoute>
-            } />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-      <Toaster />
+        <ErrorBoundary>
+          <div className="min-h-screen flex flex-col bg-background text-foreground animate-in fade-in duration-500">
+          <Navbar />
+          <main className="flex-1">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/search" element={<Search />} />
+              <Route path="/roommates" element={<Roommates />} />
+              <Route path="/hostel/:id" element={<HostelDetail />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              
+              {/* Protected Routes */}
+              <Route path="/student/dashboard" element={
+                <ProtectedRoute allowedRoles={["student"]}>
+                  <StudentDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/owner/dashboard" element={
+                <ProtectedRoute allowedRoles={["hostel_owner", "super_admin"]}>
+                  <OwnerDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/dashboard" element={
+                <ProtectedRoute allowedRoles={["super_admin"]}>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              } />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
+        </ErrorBoundary>
+        <Toaster />
       </AuthProvider>
     </Router>
   );

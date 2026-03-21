@@ -22,6 +22,7 @@ const AMENITIES = [
 export default function Search() {
   const [searchTerm, setSearchTerm] = useState("");
   const [priceRange, setPriceRange] = useState([500000, 2000000]);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   
   const [hostels, setHostels] = useState<Hostel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,10 +50,21 @@ export default function Search() {
   };
 
   const filteredHostels = hostels.filter(hostel => {
+      // Name or Location Match
       if (searchTerm && !hostel.name.toLowerCase().includes(searchTerm.toLowerCase()) && 
          (hostel.university && !hostel.university.toLowerCase().includes(searchTerm.toLowerCase()))) {
           return false;
       }
+      
+      // Amenities Match
+      if (selectedAmenities.length > 0) {
+        const hAmenities = (hostel.amenities || []).map((a: string) => a.toLowerCase());
+        const hasAllAmenities = selectedAmenities.every(a => 
+          hAmenities.some((ha: string) => ha.includes(a.toLowerCase()))
+        );
+        if (!hasAllAmenities) return false;
+      }
+      
       return true;
   });
 
@@ -99,7 +111,17 @@ export default function Search() {
                 <label className="text-sm font-medium">Amenities</label>
                 {AMENITIES.map((amenity) => (
                   <div key={amenity.id} className="flex items-center space-x-2">
-                    <Checkbox id={amenity.id} />
+                    <Checkbox 
+                      id={amenity.id} 
+                      checked={selectedAmenities.includes(amenity.label)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedAmenities([...selectedAmenities, amenity.label]);
+                        } else {
+                          setSelectedAmenities(selectedAmenities.filter(a => a !== amenity.label));
+                        }
+                      }}
+                    />
                     <label
                       htmlFor={amenity.id}
                       className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
