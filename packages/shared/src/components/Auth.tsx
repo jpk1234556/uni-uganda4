@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
-export default function Auth() {
+export default function Auth({ appType = 'student' }: { appType?: 'student' | 'owner' | 'admin' }) {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
@@ -22,7 +22,7 @@ export default function Auth() {
     const password = formData.get("password") as string;
     
     // For registration specifically
-    const role = formData.get("role") as string;
+    const role = appType === 'owner' ? 'hostel_owner' : appType === 'admin' ? 'admin' : 'student';
     const firstName = formData.get("first_name") as string;
     const lastName = formData.get("last_name") as string;
 
@@ -65,22 +65,28 @@ export default function Auth() {
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
         <div className="absolute inset-0 bg-primary/90" />
         <div className="relative z-20 flex items-center text-lg font-medium">
-          <span className="text-3xl font-extrabold tracking-tight">HostelUganda</span>
+          <span className="text-3xl font-extrabold tracking-tight">
+            {appType === 'owner' ? "HostelUganda Partners" : appType === 'admin' ? "HostelUganda Admin" : "HostelUganda"}
+          </span>
         </div>
         <div className="relative z-20 mt-auto">
           <blockquote className="space-y-2">
             <p className="text-lg">
-              "HostelUganda completely changed how I found my accommodation for the semester. No more getting scammed or walking around under the sun for hours looking for hostels."
+              {appType === 'owner' 
+                ? "Manage your properties, review bookings, and maximize your revenue with thousands of students looking for accommodation." 
+                : appType === 'admin' 
+                ? "Secure portal for platform administration and system oversight." 
+                : "\"HostelUganda completely changed how I found my accommodation for the semester. No more getting scammed or walking around under the sun for hours looking for hostels.\""}
             </p>
-            <footer className="text-sm">Sofia Davis, Makerere University</footer>
+            {appType === 'student' && <footer className="text-sm">Sofia Davis, Makerere University</footer>}
           </blockquote>
         </div>
       </div>
       <div className="lg:p-8 w-full max-w-md mx-auto">
         <Tabs defaultValue="login" className="w-full" onValueChange={(v: string) => setIsLogin(v === 'login')}>
-          <TabsList className="grid w-full grid-cols-2 mb-8">
+          <TabsList className={`grid w-full mb-8 ${appType === 'admin' ? 'grid-cols-1' : 'grid-cols-2'}`}>
             <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="register">Register</TabsTrigger>
+            {appType !== 'admin' && <TabsTrigger value="register">Register</TabsTrigger>}
           </TabsList>
           
           <TabsContent value="login">
@@ -128,13 +134,8 @@ export default function Auth() {
                       <Input id="last_name" name="last_name" required pattern="[A-Za-z-]+" title="Last name must contain only letters" />
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="role">I am a...</Label>
-                    <select id="role" name="role" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" required>
-                      <option value="student">Student looking for a hostel</option>
-                      <option value="hostel_owner">Hostel Owner listing properties</option>
-                    </select>
-                  </div>
+                  {/* Hidden implicit role */}
+                  <input type="hidden" name="role" value={appType === 'owner' ? 'hostel_owner' : appType === 'admin' ? 'admin' : 'student'} />
                   <div className="space-y-2">
                     <Label htmlFor="register_email">Email</Label>
                     <Input id="register_email" name="email" type="email" placeholder="m@example.com" required />

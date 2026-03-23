@@ -11,14 +11,26 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Home, Users, Settings, Loader2, Building, Image as ImageIcon, Trash2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
-import type { Hostel } from "@/types";
+import type { Hostel, RoomType } from "@/types";
 import { toast } from "sonner";
+
+interface BookingWithRelations {
+  id: string;
+  status: "pending" | "approved" | "rejected";
+  hostels: { name: string } | null;
+  users: { first_name: string; last_name: string } | null;
+}
+
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
+};
 
 export default function OwnerDashboard() {
   const { user } = useAuth();
   
   const [properties, setProperties] = useState<Hostel[]>([]);
-  const [bookings, setBookings] = useState<any[]>([]); 
+  const [bookings, setBookings] = useState<BookingWithRelations[]>([]);
   
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
@@ -35,7 +47,7 @@ export default function OwnerDashboard() {
 
   // Manage Rooms State
   const [selectedHostel, setSelectedHostel] = useState<Hostel | null>(null);
-  const [rooms, setRooms] = useState<any[]>([]);
+  const [rooms, setRooms] = useState<RoomType[]>([]);
   const [isRoomDialogOpen, setIsRoomDialogOpen] = useState(false);
   const [isLoadingRooms, setIsLoadingRooms] = useState(false);
   const [newRoom, setNewRoom] = useState({ name: "", price: "", capacity: "" });
@@ -53,7 +65,7 @@ export default function OwnerDashboard() {
       setProperties(hostelsData || []);
 
       if (hostelsData && hostelsData.length > 0) {
-        const hostelIds = hostelsData.map((h: any) => h.id);
+        const hostelIds = hostelsData.map((h) => h.id);
         const { data: bookingsData, error: bookingsError } = await supabase
           .from("bookings")
           .select(`
@@ -65,7 +77,7 @@ export default function OwnerDashboard() {
           .order("created_at", { ascending: false });
 
         if (bookingsError) throw bookingsError;
-        setBookings(bookingsData || []);
+        setBookings((bookingsData as BookingWithRelations[]) || []);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -134,7 +146,7 @@ export default function OwnerDashboard() {
         .eq("hostel_id", hostelId)
         .order("created_at", { ascending: true });
       if (error) throw error;
-      setRooms(data || []);
+      setRooms((data as RoomType[]) || []);
     } catch (error) {
       toast.error("Failed to load rooms");
     } finally {
@@ -169,8 +181,8 @@ export default function OwnerDashboard() {
       setNewHostel({ name: "", university: "", address: "", description: "", price_range: "", images: "" });
       fetchData();
       document.dispatchEvent(new MouseEvent('mousedown')); 
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, "Failed to create property"));
     } finally {
       setIsCreating(false);
     }
@@ -191,8 +203,8 @@ export default function OwnerDashboard() {
       toast.success("Room type added");
       setNewRoom({ name: "", price: "", capacity: "" });
       fetchRooms(selectedHostel.id);
-    } catch (error: any) {
-      toast.error("Failed to add room: " + error.message);
+    } catch (error: unknown) {
+      toast.error(`Failed to add room: ${getErrorMessage(error, "Unknown error")}`);
     }
   };
 

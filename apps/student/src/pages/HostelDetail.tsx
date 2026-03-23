@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,20 +10,51 @@ import { Textarea } from "@/components/ui/textarea";
 import { MapPin, Star, Building, CheckCircle, Navigation, Loader2, ArrowLeft, Users, MessageSquare } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
+import type { Hostel, RoomType } from "@/types";
 import { toast } from "sonner";
+
+interface HostelWithOwner extends Hostel {
+  users?: {
+    first_name: string;
+    last_name: string;
+    email: string;
+  } | null;
+}
+
+interface ReviewWithUser {
+  id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  users?: {
+    first_name: string;
+    last_name: string;
+  } | null;
+}
+
+interface RoomRealtimePayload {
+  eventType: "INSERT" | "UPDATE" | "DELETE";
+  new: Partial<RoomType> & { id: string };
+  old: { id: string };
+}
+
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
+};
 
 export default function HostelDetail() {
   const { id } = useParams();
   const { user, dbUser } = useAuth();
   const navigate = useNavigate();
 
-  const [hostel, setHostel] = useState<any | null>(null);
-  const [rooms, setRooms] = useState<any[]>([]);
-  const [reviews, setReviews] = useState<any[]>([]);
+  const [hostel, setHostel] = useState<HostelWithOwner | null>(null);
+  const [rooms, setRooms] = useState<RoomType[]>([]);
+  const [reviews, setReviews] = useState<ReviewWithUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Booking State
-  const [selectedRoom, setSelectedRoom] = useState<any | null>(null);
+  const [selectedRoom, setSelectedRoom] = useState<RoomType | null>(null);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingForm, setBookingForm] = useState({
@@ -41,6 +72,47 @@ export default function HostelDetail() {
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
 
+  const fetchHostelData = useCallback(async () => {
+    if (!id) return;
+
+    try {
+      setIsLoading(true);
+      // Fetch Hostel
+      const { data: hostelData, error: hostelError } = await supabase
+        .from('hostels')
+        .select('*, users!hostels_owner_id_fkey(first_name, last_name, email)')
+        .eq('id', id)
+        .single();
+      
+      if (hostelError) throw hostelError;
+      setHostel(hostelData as HostelWithOwner);
+
+      // Fetch Rooms
+      const { data: roomsData } = await supabase
+        .from('room_types')
+        .select('*')
+        .eq('hostel_id', id)
+        .order('price', { ascending: true });
+        
+      setRooms((roomsData as RoomType[]) || []);
+
+      // Fetch Reviews
+      const { data: reviewsData } = await supabase
+        .from('reviews')
+        .select('*, users!reviews_student_id_fkey(first_name, last_name)')
+        .eq('hostel_id', id)
+        .order('created_at', { ascending: false });
+
+      setReviews((reviewsData as ReviewWithUser[]) || []);
+
+    } catch (error) {
+      toast.error("Failed to load hostel details");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [id]);
+
   useEffect(() => {
     if (id) {
       fetchHostelData();
@@ -54,13 +126,13 @@ export default function HostelDetail() {
             table: 'room_types',
             filter: `hostel_id=eq.${id}`
           }, 
-          (payload: any) => {
+          (payload: RoomRealtimePayload) => {
             if (payload.eventType === 'UPDATE') {
               setRooms(currentRooms => 
                 currentRooms.map(room => room.id === payload.new.id ? { ...room, ...payload.new } : room)
               );
             } else if (payload.eventType === 'INSERT') {
-              setRooms(currentRooms => [...currentRooms, payload.new].sort((a: any, b: any) => a.price - b.price));
+              setRooms(currentRooms => [...currentRooms, payload.new as RoomType].sort((a, b) => a.price - b.price));
             } else if (payload.eventType === 'DELETE') {
               setRooms(currentRooms => currentRooms.filter(room => room.id !== payload.old.id));
             }
@@ -89,48 +161,9 @@ export default function HostelDetail() {
         supabase.removeChannel(reviewsSubscription);
       };
     }
-  }, [id]);
+  }, [id, fetchHostelData]);
 
-  const fetchHostelData = async () => {
-    try {
-      setIsLoading(true);
-      // Fetch Hostel
-      const { data: hostelData, error: hostelError } = await supabase
-        .from('hostels')
-        .select('*, users!hostels_owner_id_fkey(first_name, last_name, email)')
-        .eq('id', id)
-        .single();
-      
-      if (hostelError) throw hostelError;
-      setHostel(hostelData);
-
-      // Fetch Rooms
-      const { data: roomsData } = await supabase
-        .from('room_types')
-        .select('*')
-        .eq('hostel_id', id)
-        .order('price', { ascending: true });
-        
-      setRooms(roomsData || []);
-
-      // Fetch Reviews
-      const { data: reviewsData } = await supabase
-        .from('reviews')
-        .select('*, users!reviews_student_id_fkey(first_name, last_name)')
-        .eq('hostel_id', id)
-        .order('created_at', { ascending: false });
-
-      setReviews(reviewsData || []);
-
-    } catch (error) {
-      toast.error("Failed to load hostel details");
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleBookClick = (room: any) => {
+  const handleBookClick = (room: RoomType) => {
     if (!user) {
       toast.error("Please login to book a room");
       navigate("/auth");
@@ -170,8 +203,8 @@ export default function HostelDetail() {
       toast.success("Booking request submitted! Waiting for owner approval.");
       setIsBookingOpen(false);
       navigate("/student/dashboard");
-    } catch (error: any) {
-      toast.error(error.message || "Booking failed");
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, "Booking failed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -196,8 +229,8 @@ export default function HostelDetail() {
       setIsReviewOpen(false);
       setReviewForm({ rating: 5, comment: "" });
       fetchHostelData(); 
-    } catch (error: any) {
-      toast.error(error.message || "Failed to submit review");
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, "Failed to submit review"));
     } finally {
       setIsSubmittingReview(false);
     }
@@ -275,6 +308,26 @@ export default function HostelDetail() {
               <p className="text-slate-600 leading-relaxed whitespace-pre-wrap">
                 {hostel.description || "No description provided yet."}
               </p>
+            </Card>
+
+            {/* Location Map */}
+            <Card className="border-0 shadow-sm bg-white p-6 rounded-2xl overflow-hidden">
+              <h2 className="text-2xl font-bold mb-4 text-slate-900 flex items-center gap-2">
+                <MapPin className="h-6 w-6 text-indigo-600" /> Location
+              </h2>
+              <div className="w-full h-[300px] md:h-[400px] rounded-xl overflow-hidden bg-slate-100 relative shadow-inner">
+                <iframe 
+                  src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d15959.066036746155!2d32.59735055!3d0.2919935!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sug!4v1774273240433!5m2!1sen!2sug" 
+                  width="100%" 
+                  height="100%" 
+                  style={{ border: 0 }} 
+                  allowFullScreen={true} 
+                  loading="lazy" 
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="absolute inset-0"
+                  title="Hostel Location Map"
+                ></iframe>
+              </div>
             </Card>
 
             <div className="space-y-4">

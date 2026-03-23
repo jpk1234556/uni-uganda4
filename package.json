@@ -3,9 +3,15 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "dev:student": "npm run dev -w @uni-nest/student",
+    "dev:owner": "npm run dev -w @uni-nest/owner",
+    "dev:admin": "npm run dev -w @uni-nest/admin",
+    "build:all": "npm run build --workspaces --if-present",
     "lint": "eslint .",
     "preview": "vite preview"
   },
