@@ -11,6 +11,7 @@
     "dev:student": "npm run dev -w @uni-nest/student",
     "dev:owner": "npm run dev -w @uni-nest/owner",
     "dev:admin": "npm run dev -w @uni-nest/admin",
+    "build": "npm run build --workspaces --if-present",
     "build:all": "npm run build --workspaces --if-present",
     "lint": "eslint .",
     "preview": "vite preview"
