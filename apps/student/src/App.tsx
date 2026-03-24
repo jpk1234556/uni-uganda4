@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, BrowserRouter } from "react-router-dom";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
 import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "@/components/layout/Navbar";
@@ -10,8 +10,6 @@ const Search = lazy(() => import("./pages/Search"));
 const HostelDetail = lazy(() => import("./pages/HostelDetail"));
 const StudentDashboard = lazy(() => import("./pages/StudentDashboard"));
 const Auth = lazy(() => import("@/pages/Auth"));
-
-import { BrowserRouter } from "react-router-dom";
 
 export default function App() {
   return (
@@ -29,7 +27,10 @@ export default function App() {
             >
               <Routes>
                 <Route path="/" element={<Home />} />
-                <Route path="/auth" element={<Auth />} />
+                <Route
+                  path="/auth"
+                  element={<Auth appType="student" />}
+                />
                 <Route path="/search" element={<Search />} />
                 <Route path="/hostel/:id" element={<HostelDetail />} />
                 <Route
