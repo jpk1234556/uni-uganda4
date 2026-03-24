@@ -22,7 +22,7 @@ export default function Auth({ appType = 'student' }: { appType?: 'student' | 'o
     const password = formData.get("password") as string;
     
     // For registration specifically
-    const role = appType === 'owner' ? 'hostel_owner' : appType === 'admin' ? 'super_admin' : 'student';
+    const role = appType === 'owner' ? 'hostel_owner' : 'student';
     const firstName = formData.get("first_name") as string;
     const lastName = formData.get("last_name") as string;
 

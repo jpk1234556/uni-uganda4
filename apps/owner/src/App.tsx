@@ -14,7 +14,7 @@ export default function App() {
           <main className="flex-grow bg-slate-50">
             <Routes>
               <Route path="/" element={<Navigate to="/owner/dashboard" replace />} />
-              <Route path="/auth" element={<Auth />} />
+              <Route path="/auth" element={<Auth appType="owner" />} />
               <Route 
                 path="/owner/dashboard" 
                 element={<ProtectedRoute allowedRoles={['hostel_owner']}><OwnerDashboard /></ProtectedRoute>} 

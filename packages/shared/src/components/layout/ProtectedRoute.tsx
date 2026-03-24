@@ -18,6 +18,10 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
     return <Navigate to="/auth" replace />;
   }
 
+  if (allowedRoles && !dbUser) {
+    return <Navigate to="/auth" replace />;
+  }
+
   if (allowedRoles && dbUser && !allowedRoles.includes(dbUser.role)) {
     return <Navigate to="/" replace />;
   }
