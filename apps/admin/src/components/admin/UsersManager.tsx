@@ -151,7 +151,7 @@ export default function UsersManager() {
                             </DropdownMenuItem>
                             
                             <DropdownMenuSeparator className="bg-slate-100" />
-                            <DropdownMenuLabel className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Privilege Escilation</DropdownMenuLabel>
+                            <DropdownMenuLabel className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Privilege Escalation</DropdownMenuLabel>
                             
                             {u.role !== 'student' && (
                               <DropdownMenuItem onClick={() => handleUpdateRole(u.id, 'student')} className="cursor-pointer focus:bg-slate-100">

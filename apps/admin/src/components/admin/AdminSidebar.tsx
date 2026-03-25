@@ -19,6 +19,10 @@ export default function AdminSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const isPathActive = (path: string) => {
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
+  };
+
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: BarChart3, path: "/admin/dashboard" },
     { id: "users", label: "Users", icon: Users, path: "/admin/users" },
@@ -41,7 +45,7 @@ export default function AdminSidebar() {
   };
 
   return (
-    <div className="flex flex-col h-full w-64 shrink-0 bg-slate-900 overflow-y-auto hidden md:flex">
+    <div className="flex flex-col h-full w-64 shrink-0 bg-slate-900 overflow-y-auto">
       <div className="px-6 py-6 mb-4 flex items-center gap-3 border-b border-slate-800">
         <div className="p-2 bg-indigo-500 text-white rounded-lg shadow-[0_0_15px_rgba(99,102,241,0.4)]">
           <ShieldCheck className="h-6 w-6" />
@@ -55,7 +59,7 @@ export default function AdminSidebar() {
       <nav className="flex-1 space-y-1.5 px-4 overflow-y-auto">
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const isActive = location.pathname.includes(item.path);
+          const isActive = isPathActive(item.path);
           
           return (
             <Link
@@ -80,7 +84,7 @@ export default function AdminSidebar() {
           to="/admin/settings"
           className={cn(
             "w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 group",
-            location.pathname.includes("/admin/settings")
+            isPathActive("/admin/settings")
               ? "bg-slate-800 text-white" 
               : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
           )}
