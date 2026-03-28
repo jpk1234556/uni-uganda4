@@ -4,16 +4,41 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Home, ClipboardList, UserCircle, Loader2, GraduationCap, Smartphone, CheckCircle2 } from "lucide-react";
+import { Home, ClipboardList, UserCircle, Loader2, GraduationCap, Smartphone, CheckCircle2, Heart, Trash2, MapPin, Save, User, BookOpen, Phone, HeartPulse, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function StudentDashboard() {
-  const { user } = useAuth();
+  const { user, dbUser } = useAuth();
   const [applications, setApplications] = useState<any[]>([]);
+  const [savedHostels, setSavedHostels] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingSaved, setIsLoadingSaved] = useState(false);
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+
+  // Profile Form State
+  const [profileForm, setProfileForm] = useState({
+    phone_number: "",
+    course: "",
+    next_of_kin: "",
+    medical_history: ""
+  });
+
+  useEffect(() => {
+    if (dbUser) {
+      setProfileForm({
+        phone_number: dbUser.phone_number || "",
+        course: dbUser.course || "",
+        next_of_kin: dbUser.next_of_kin || "",
+        medical_history: dbUser.medical_history || ""
+      });
+    }
+  }, [dbUser]);
 
   // Payment UI State
   const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
@@ -44,11 +69,57 @@ export default function StudentDashboard() {
     }
   }, [user]);
 
+  const fetchSavedHostels = useCallback(async () => {
+    if (!user) return;
+    try {
+      setIsLoadingSaved(true);
+      const { data, error } = await supabase
+        .from("favorites")
+        .select(`
+          id,
+          hostels (
+            id,
+            name,
+            address,
+            university,
+            images,
+            price_range,
+            rating
+          )
+        `)
+        .eq("student_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setSavedHostels(data || []);
+    } catch (error) {
+      console.error("Error fetching saved hostels:", error);
+    } finally {
+      setIsLoadingSaved(false);
+    }
+  }, [user]);
+
   useEffect(() => {
     if (user) {
       fetchApplications();
+      fetchSavedHostels();
     }
-  }, [user, fetchApplications]);
+  }, [user, fetchApplications, fetchSavedHostels]);
+
+  const removeFavorite = async (favoriteId: string) => {
+    try {
+      const { error } = await supabase
+        .from("favorites")
+        .delete()
+        .eq("id", favoriteId);
+      
+      if (error) throw error;
+      setSavedHostels(prev => prev.filter(f => f.id !== favoriteId));
+      toast.success("Removed from saved hostels");
+    } catch (error) {
+      toast.error("Failed to remove favorite");
+    }
+  };
 
   const handleOpenPayment = (app: any) => {
     setSelectedBooking(app);
@@ -83,6 +154,32 @@ export default function StudentDashboard() {
     }
   };
 
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    try {
+      setIsUpdatingProfile(true);
+      const { error } = await supabase
+        .from("users")
+        .update({
+          phone_number: profileForm.phone_number,
+          course: profileForm.course,
+          next_of_kin: profileForm.next_of_kin,
+          medical_history: profileForm.medical_history,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", user.id);
+
+      if (error) throw error;
+      toast.success("Profile updated successfully!");
+    } catch (error: any) {
+      toast.error("Failed to update profile: " + error.message);
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
+
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-slate-50/50 pb-12">
       {/* Header Area */}
@@ -101,15 +198,16 @@ export default function StudentDashboard() {
       <div className="container mx-auto px-4 max-w-5xl">
         <Tabs defaultValue="applications" className="space-y-6">
           <TabsList className="bg-white border border-slate-200 p-1.5 shadow-sm rounded-xl h-auto flex flex-wrap max-w-fit">
-            <TabsTrigger value="applications" className="gap-2 px-6 py-2.5 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 rounded-lg transition-all"><ClipboardList className="h-4 w-4" /> My Applications</TabsTrigger>
+            <TabsTrigger value="applications" className="gap-2 px-6 py-2.5 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 rounded-lg transition-all"><ClipboardList className="h-4 w-4" /> Booking History</TabsTrigger>
+            <TabsTrigger value="saved" className="gap-2 px-6 py-2.5 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 rounded-lg transition-all"><Heart className="h-4 w-4" /> Saved Hostels</TabsTrigger>
             <TabsTrigger value="profile" className="gap-2 px-6 py-2.5 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 rounded-lg transition-all"><UserCircle className="h-4 w-4" /> Profile Details</TabsTrigger>
           </TabsList>
 
           <TabsContent value="applications">
             <Card className="border-blue-100/50 shadow-md bg-white">
             <CardHeader>
-              <CardTitle>Recent Booking Requests</CardTitle>
-              <CardDescription>Keep track of your hostel applications.</CardDescription>
+              <CardTitle>Booking History</CardTitle>
+              <CardDescription>Keep track of your hostel applications and stays.</CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
@@ -158,15 +256,144 @@ export default function StudentDashboard() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="saved">
+          <Card className="border-blue-100/50 shadow-md bg-white">
+            <CardHeader>
+              <CardTitle>Your Saved Hostels</CardTitle>
+              <CardDescription>Hostels you've favorited for quick access.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoadingSaved ? (
+                <div className="py-20 flex justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+              ) : savedHostels.length === 0 ? (
+                <div className="text-center py-10 border border-dashed rounded-lg bg-muted/20">
+                  <Heart className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-20" />
+                  <p className="text-muted-foreground font-medium mb-4">You haven't saved any hostels yet.</p>
+                  <Link to="/search">
+                    <Button variant="outline">Browse Hostels</Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {savedHostels.map((item) => (
+                    <div key={item.id} className="group relative flex flex-col sm:flex-row gap-4 p-4 border rounded-xl hover:shadow-md hover:border-blue-200 transition-all bg-white overflow-hidden">
+                      <div className="w-full sm:w-24 h-24 rounded-lg overflow-hidden bg-slate-100 shrink-0">
+                        <img 
+                          src={item.hostels?.images?.[0] || "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&q=80&w=200"} 
+                          alt={item.hostels?.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-slate-900 truncate">{item.hostels?.name}</h4>
+                        <p className="text-xs text-slate-500 flex items-center gap-1 mb-2">
+                          <MapPin className="h-3 w-3" /> {item.hostels?.university || item.hostels?.address}
+                        </p>
+                        <div className="flex items-center gap-3">
+                          <Link to={`/hostel/${item.hostels?.id}`}>
+                            <Button size="sm" variant="outline" className="h-8 text-xs">View Details</Button>
+                          </Link>
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="h-8 text-xs text-rose-500 hover:text-rose-600 hover:bg-rose-50 gap-1"
+                            onClick={() => removeFavorite(item.id)}
+                          >
+                            <Trash2 className="h-3 w-3" /> Remove
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="profile">
           <Card className="border-blue-100/50 shadow-md bg-white">
             <CardHeader>
-              <CardTitle>Extended Profile</CardTitle>
-              <CardDescription>Your tenant detail information required for bookings.</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5 text-blue-600" />
+                Student Profile
+              </CardTitle>
+              <CardDescription>Your personal and academic information required for hostel bookings.</CardDescription>
             </CardHeader>
             <CardContent>
-               <p className="text-sm text-muted-foreground mb-4">To speed up your hostel applications, please complete your profile details (Next of Kin, Medical History, etc.)</p>
-               <Button variant="outline">Edit Profile</Button>
+              <form onSubmit={handleUpdateProfile} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName" className="text-slate-700 font-medium">First Name</Label>
+                    <Input id="firstName" value={dbUser?.first_name || ""} disabled className="bg-slate-50 border-slate-200" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName" className="text-slate-700 font-medium">Last Name</Label>
+                    <Input id="lastName" value={dbUser?.last_name || ""} disabled className="bg-slate-50 border-slate-200" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-slate-700 font-medium">Email Address</Label>
+                    <Input id="email" value={dbUser?.email || ""} disabled className="bg-slate-50 border-slate-200" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-slate-700 font-medium flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-slate-400" /> Phone Number
+                    </Label>
+                    <Input 
+                      id="phone" 
+                      placeholder="+256 700 000 000" 
+                      value={profileForm.phone_number}
+                      onChange={(e) => setProfileForm(prev => ({ ...prev, phone_number: e.target.value }))}
+                      className="border-slate-200 focus:border-blue-400"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="course" className="text-slate-700 font-medium flex items-center gap-2">
+                      <BookOpen className="h-4 w-4 text-slate-400" /> Course of Study
+                    </Label>
+                    <Input 
+                      id="course" 
+                      placeholder="e.g. Bachelor of Computer Science" 
+                      value={profileForm.course}
+                      onChange={(e) => setProfileForm(prev => ({ ...prev, course: e.target.value }))}
+                      className="border-slate-200 focus:border-blue-400"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="nok" className="text-slate-700 font-medium flex items-center gap-2">
+                      <Users className="h-4 w-4 text-slate-400" /> Next of Kin (Name & Contact)
+                    </Label>
+                    <Input 
+                      id="nok" 
+                      placeholder="e.g. John Smith (Father) - 0700..." 
+                      value={profileForm.next_of_kin}
+                      onChange={(e) => setProfileForm(prev => ({ ...prev, next_of_kin: e.target.value }))}
+                      className="border-slate-200 focus:border-blue-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="medical" className="text-slate-700 font-medium flex items-center gap-2">
+                    <HeartPulse className="h-4 w-4 text-slate-400" /> Medical History / Allergies
+                  </Label>
+                  <Textarea 
+                    id="medical" 
+                    placeholder="Please list any medical conditions or allergies we should be aware of..." 
+                    value={profileForm.medical_history}
+                    onChange={(e) => setProfileForm(prev => ({ ...prev, medical_history: e.target.value }))}
+                    className="min-h-[100px] border-slate-200 focus:border-blue-400"
+                  />
+                  <p className="text-[10px] text-slate-400 italic">This information is kept confidential and shared only with hostel management upon booking.</p>
+                </div>
+
+                <div className="pt-4 flex justify-end">
+                  <Button type="submit" disabled={isUpdatingProfile} className="bg-blue-600 hover:bg-blue-700 text-white min-w-[150px] gap-2 shadow-sm">
+                    {isUpdatingProfile ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    Save Changes
+                  </Button>
+                </div>
+              </form>
             </CardContent>
           </Card>
         </TabsContent>

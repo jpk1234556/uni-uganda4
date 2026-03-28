@@ -15,13 +15,11 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
 import { AuthProvider } from "@/context/AuthContext";
-import ErrorBoundary from "@/components/ErrorBoundary";
 
 function App() {
   return (
     <Router>
       <AuthProvider>
-        <ErrorBoundary>
           <div className="min-h-screen flex flex-col bg-background text-foreground animate-in fade-in duration-500">
           <Navbar />
           <main className="flex-1">
@@ -55,7 +53,6 @@ function App() {
           </main>
           <Footer />
         </div>
-        </ErrorBoundary>
         <Toaster />
       </AuthProvider>
     </Router>

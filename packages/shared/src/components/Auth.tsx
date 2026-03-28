@@ -13,6 +13,9 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { Building2 } from "lucide-react";
+import { motion } from "motion/react";
+import { cn } from "@/lib/utils";
 
 export default function Auth({
   appType = "student",
@@ -71,159 +74,259 @@ export default function Auth({
     }
   };
 
+  const isOwner = appType === "owner";
+
   return (
-    <div className="container relative flex pt-20 flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-      <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
-        <div className="absolute inset-0 bg-primary/90" />
+    <div className={cn(
+      "container relative flex min-h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0",
+      isOwner && "bg-slate-950 text-white"
+    )}>
+      <div className={cn(
+        "relative hidden h-full flex-col p-10 text-white lg:flex",
+        isOwner ? "bg-slate-900 border-r border-white/5" : "bg-muted dark:border-r"
+      )}>
+        <div className={cn(
+          "absolute inset-0",
+          isOwner ? "bg-pattern-dark opacity-50" : "bg-primary/90"
+        )} />
+        {isOwner && (
+          <div className="absolute inset-0 bg-gradient-to-b from-orange-600/20 to-transparent opacity-50" />
+        )}
         <div className="relative z-20 flex items-center text-lg font-medium">
-          <span className="text-3xl font-extrabold tracking-tight">
+          <div className={cn(
+            "p-1.5 rounded-lg flex items-center justify-center mr-3 shadow-lg",
+            isOwner ? "bg-orange-600" : "bg-white/20"
+          )}>
+            <Building2 className="h-6 w-6 text-white" />
+          </div>
+          <span className="text-3xl font-black tracking-tighter uppercase">
             {appType === "owner"
-              ? "HostelUganda Partners"
+              ? "UniNest_Partners"
               : appType === "admin"
-                ? "HostelUganda Admin"
-                : "HostelUganda"}
+                ? "UniNest_Admin"
+                : "UniNest"}
           </span>
         </div>
         <div className="relative z-20 mt-auto">
-          <blockquote className="space-y-2">
-            <p className="text-lg">
+          <motion.blockquote 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-2"
+          >
+            <p className={cn(
+              "text-xl font-medium leading-relaxed",
+              isOwner ? "text-slate-300 italic font-serif" : "text-lg"
+            )}>
               {appType === "owner"
-                ? "Manage your properties, review bookings, and maximize your revenue with thousands of students looking for accommodation."
+                ? "Join the network of elite property owners providing premium student accommodation across Uganda. Scale your operations with our mission-critical management suite."
                 : appType === "admin"
                   ? "Secure portal for platform administration and system oversight."
                   : '"HostelUganda completely changed how I found my accommodation for the semester. No more getting scammed or walking around under the sun for hours looking for hostels."'}
             </p>
             {appType === "student" && (
-              <footer className="text-sm">
+              <footer className="text-sm opacity-70">
                 Sofia Davis, Makerere University
               </footer>
             )}
-          </blockquote>
+            {isOwner && (
+              <footer className="text-xs font-mono uppercase tracking-[0.3em] text-orange-500 mt-4">
+                Verified_Partner_Program
+              </footer>
+            )}
+          </motion.blockquote>
         </div>
       </div>
       <div className="lg:p-8 w-full max-w-md mx-auto">
-        <Tabs
-          defaultValue="login"
-          className="w-full"
-          onValueChange={(v: string) => setIsLogin(v === "login")}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
         >
-          <TabsList
-            className={`grid w-full mb-8 ${appType === "admin" ? "grid-cols-1" : "grid-cols-2"}`}
+          <Tabs
+            defaultValue="login"
+            className="w-full"
+            onValueChange={(v: string) => setIsLogin(v === "login")}
           >
-            <TabsTrigger value="login">Login</TabsTrigger>
-            {appType !== "admin" && (
-              <TabsTrigger value="register">Register</TabsTrigger>
-            )}
-          </TabsList>
+            <TabsList
+              className={cn(
+                "grid w-full mb-8",
+                appType === "admin" ? "grid-cols-1" : "grid-cols-2",
+                isOwner ? "bg-slate-900 p-1 rounded-none border border-white/10" : "bg-slate-100"
+              )}
+            >
+              <TabsTrigger 
+                value="login"
+                className={cn(
+                  isOwner && "rounded-none data-[state=active]:bg-orange-600 data-[state=active]:text-white uppercase text-[10px] font-bold tracking-widest"
+                )}
+              >
+                Login
+              </TabsTrigger>
+              {appType !== "admin" && (
+                <TabsTrigger 
+                  value="register"
+                  className={cn(
+                    isOwner && "rounded-none data-[state=active]:bg-orange-600 data-[state=active]:text-white uppercase text-[10px] font-bold tracking-widest"
+                  )}
+                >
+                  Register
+                </TabsTrigger>
+              )}
+            </TabsList>
 
-          <TabsContent value="login">
-            <Card className="border-0 shadow-none">
-              <CardHeader className="px-0">
-                <CardTitle className="text-2xl font-semibold tracking-tight">
-                  Welcome back
-                </CardTitle>
-                <CardDescription>
-                  Enter your email and password to log in to your account.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="px-0">
-                <form onSubmit={handleAuth} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="m@example.com"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="password">Password</Label>
-                      <Link
-                        to="/forgot-password"
-                        className="text-sm font-medium text-primary hover:underline"
-                      >
-                        Forgot password?
-                      </Link>
+            <TabsContent value="login">
+              <Card className={cn(
+                "border-0 shadow-none bg-transparent",
+                isOwner && "text-white"
+              )}>
+                <CardHeader className="px-0">
+                  <CardTitle className={cn(
+                    "text-2xl font-black tracking-tighter uppercase",
+                    isOwner ? "text-white" : "text-slate-900"
+                  )}>
+                    {isOwner ? "Access_Portal" : "Welcome back"}
+                  </CardTitle>
+                  <CardDescription className={isOwner ? "text-slate-500 uppercase text-[10px] tracking-widest font-mono" : ""}>
+                    {isOwner ? "Secure authentication required for console access." : "Enter your email and password to log in to your account."}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="px-0">
+                  <form onSubmit={handleAuth} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className={isOwner ? "uppercase text-[10px] font-bold tracking-widest text-slate-400" : ""}>Email</Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        placeholder="m@example.com"
+                        required
+                        className={cn(
+                          isOwner && "bg-slate-900 border-white/10 rounded-none focus:ring-orange-500 text-white"
+                        )}
+                      />
                     </div>
-                    <Input
-                      id="password"
-                      name="password"
-                      type="password"
-                      required
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Logging in..." : "Login"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="password" className={isOwner ? "uppercase text-[10px] font-bold tracking-widest text-slate-400" : ""}>Password</Label>
+                        <Link
+                          to="/forgot-password"
+                          className={cn(
+                            "text-sm font-medium hover:underline",
+                            isOwner ? "text-orange-500" : "text-primary"
+                          )}
+                        >
+                          Forgot password?
+                        </Link>
+                      </div>
+                      <Input
+                        id="password"
+                        name="password"
+                        type="password"
+                        required
+                        className={cn(
+                          isOwner && "bg-slate-900 border-white/10 rounded-none focus:ring-orange-500 text-white"
+                        )}
+                      />
+                    </div>
+                    <Button 
+                      type="submit" 
+                      className={cn(
+                        "w-full h-12",
+                        isOwner ? "bg-orange-600 hover:bg-orange-700 rounded-none uppercase font-bold tracking-widest text-xs" : ""
+                      )} 
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (isOwner ? "AUTHENTICATING..." : "Logging in...") : (isOwner ? "INITIALIZE_SESSION" : "Login")}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          <TabsContent value="register">
-            <Card className="border-0 shadow-none">
-              <CardHeader className="px-0">
-                <CardTitle className="text-2xl font-semibold tracking-tight">
-                  Create an account
-                </CardTitle>
-                <CardDescription>
-                  Enter your details below to create your account.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="px-0">
-                <form onSubmit={handleAuth} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="first_name">First name</Label>
-                    <Input
-                      id="first_name"
-                      name="first_name"
-                      required
-                      pattern="[A-Za-z-]+"
-                      title="First name must contain only letters"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="last_name">Last name</Label>
-                    <Input
-                      id="last_name"
-                      name="last_name"
-                      required
-                      pattern="[A-Za-z-]+"
-                      title="Last name must contain only letters"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="register_email">Email</Label>
-                    <Input
-                      id="register_email"
-                      name="email"
-                      type="email"
-                      placeholder="m@example.com"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="register_password">Password</Label>
-                    <Input
-                      id="register_password"
-                      name="password"
-                      type="password"
-                      required
-                      minLength={6}
-                      title="Password must be at least 6 characters long."
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Creating account..." : "Create Account"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="register">
+              <Card className={cn(
+                "border-0 shadow-none bg-transparent",
+                isOwner && "text-white"
+              )}>
+                <CardHeader className="px-0">
+                  <CardTitle className={cn(
+                    "text-2xl font-black tracking-tighter uppercase",
+                    isOwner ? "text-white" : "text-slate-900"
+                  )}>
+                    {isOwner ? "Partner_Onboarding" : "Create an account"}
+                  </CardTitle>
+                  <CardDescription className={isOwner ? "text-slate-500 uppercase text-[10px] tracking-widest font-mono" : ""}>
+                    {isOwner ? "Join the UniNest partner network." : "Enter your details below to create your account."}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="px-0">
+                  <form onSubmit={handleAuth} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="first_name" className={isOwner ? "uppercase text-[10px] font-bold tracking-widest text-slate-400" : ""}>First name</Label>
+                        <Input
+                          id="first_name"
+                          name="first_name"
+                          required
+                          className={cn(
+                            isOwner && "bg-slate-900 border-white/10 rounded-none focus:ring-orange-500 text-white"
+                          )}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="last_name" className={isOwner ? "uppercase text-[10px] font-bold tracking-widest text-slate-400" : ""}>Last name</Label>
+                        <Input
+                          id="last_name"
+                          name="last_name"
+                          required
+                          className={cn(
+                            isOwner && "bg-slate-900 border-white/10 rounded-none focus:ring-orange-500 text-white"
+                          )}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="register_email" className={isOwner ? "uppercase text-[10px] font-bold tracking-widest text-slate-400" : ""}>Email</Label>
+                      <Input
+                        id="register_email"
+                        name="email"
+                        type="email"
+                        placeholder="m@example.com"
+                        required
+                        className={cn(
+                          isOwner && "bg-slate-900 border-white/10 rounded-none focus:ring-orange-500 text-white"
+                        )}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="register_password" className={isOwner ? "uppercase text-[10px] font-bold tracking-widest text-slate-400" : ""}>Password</Label>
+                      <Input
+                        id="register_password"
+                        name="password"
+                        type="password"
+                        required
+                        minLength={6}
+                        className={cn(
+                          isOwner && "bg-slate-900 border-white/10 rounded-none focus:ring-orange-500 text-white"
+                        )}
+                      />
+                    </div>
+                    <Button 
+                      type="submit" 
+                      className={cn(
+                        "w-full h-12",
+                        isOwner ? "bg-orange-600 hover:bg-orange-700 rounded-none uppercase font-bold tracking-widest text-xs" : ""
+                      )} 
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (isOwner ? "REGISTERING..." : "Creating account...") : (isOwner ? "CREATE_PARTNER_ACCOUNT" : "Create Account")}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </motion.div>
       </div>
     </div>
   );

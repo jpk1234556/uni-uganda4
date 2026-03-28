@@ -9,9 +9,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen dark bg-slate-950">
           <Navbar />
-          <main className="flex-grow bg-slate-50">
+          <main className="flex-grow">
             <Routes>
               <Route
                 path="/"

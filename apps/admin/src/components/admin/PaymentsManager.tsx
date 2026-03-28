@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Loader2, Receipt, Search, CreditCard, ArrowUpRight } from "lucide-react";
+import { Loader2, Receipt, Search, ArrowUpRight } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
+import { cn } from "@/lib/utils";
 
 export default function PaymentsManager() {
   const [payments, setPayments] = useState<any[]>([]);
@@ -36,16 +36,6 @@ export default function PaymentsManager() {
     }
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
-  };
-
-  const itemVariants = {
-    hidden: { y: 10, opacity: 0 },
-    visible: { y: 0, opacity: 1 }
-  };
-
   const filteredPayments = payments.filter(p => 
     p.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
     (p.users?.first_name || "").toLowerCase().includes(searchTerm.toLowerCase())
@@ -53,98 +43,98 @@ export default function PaymentsManager() {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }} 
+      initial={{ opacity: 0, y: 10 }} 
       animate={{ opacity: 1, y: 0 }} 
-      transition={{ duration: 0.4 }} 
+      transition={{ duration: 0.3 }} 
       className="space-y-6"
     >
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-3">
-            <CreditCard className="h-8 w-8 text-emerald-500" />
-            Financial Ledger
-          </h2>
-          <p className="text-slate-500 mt-2 text-lg">Track manual and automated mobile money transactions securely.</p>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">Financial_Intelligence</span>
+          </div>
+          <h2 className="text-2xl font-black tracking-tighter text-slate-900 uppercase">Financial_Ledger</h2>
+          <p className="text-slate-500 text-[10px] font-mono mt-1 uppercase tracking-widest">TRANSACTION_AUDIT_AND_REVENUE_TRACKING</p>
         </div>
+        
         <div className="relative w-full md:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
           <Input 
-            placeholder="Search by ID or Student..." 
-            className="pl-10 h-11 bg-white border-slate-200 shadow-sm rounded-xl focus-visible:ring-emerald-500" 
+            placeholder="SEARCH_BY_TXID_OR_SUBJECT..." 
+            className="pl-9 h-10 bg-white border-slate-200 rounded-none text-[10px] font-mono uppercase tracking-widest focus-visible:ring-indigo-500" 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
 
-      <Card className="border-slate-200 shadow-sm bg-white overflow-hidden rounded-xl">
+      <Card className="border-slate-200 rounded-none shadow-sm bg-white overflow-hidden">
         <CardContent className="p-0">
           {isLoading ? (
             <div className="py-24 flex flex-col items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-emerald-400 mb-4" />
-              <span className="text-slate-400 font-medium">Loading secure ledger...</span>
+              <Loader2 className="h-6 w-6 animate-spin text-emerald-400 mb-3" />
+              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">Accessing_Secure_Ledger...</span>
             </div>
           ) : filteredPayments.length === 0 ? (
             <div className="py-24 flex flex-col items-center justify-center text-center">
-              <div className="h-16 w-16 rounded-full bg-emerald-50 flex items-center justify-center mb-4 shadow-inner">
-                <Receipt className="h-8 w-8 text-emerald-400" />
+              <div className="h-12 w-12 rounded-none bg-slate-50 border border-slate-200 flex items-center justify-center mb-4">
+                <Receipt className="h-6 w-6 text-slate-300" />
               </div>
-              <h3 className="text-xl font-medium text-slate-900">No transactions found</h3>
-              <p className="text-slate-500 max-w-sm mt-2">When students complete their bookings via mobile money, their transaction receipts will appear securely here.</p>
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest">Zero_Transactions_Detected</h3>
+              <p className="text-[10px] text-slate-400 uppercase tracking-wider max-w-xs mt-2 font-mono">WAITING_FOR_INBOUND_MOBILE_MONEY_STREAMS</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader className="bg-slate-50 border-b border-slate-100">
-                  <TableRow className="hover:bg-slate-50">
-                    <TableHead className="w-[150px] text-slate-500 font-semibold h-12">Txn ID</TableHead>
-                    <TableHead className="text-slate-500 font-semibold">Origin Account</TableHead>
-                    <TableHead className="text-slate-500 font-semibold">Net Amount</TableHead>
-                    <TableHead className="text-slate-500 font-semibold">State</TableHead>
-                    <TableHead className="text-right text-slate-500 font-semibold pr-6">Timestamp</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <motion.tbody 
-                  variants={containerVariants} 
-                  initial="hidden" 
-                  animate="visible"
-                  className="divide-y divide-slate-100"
-                >
-                  {filteredPayments.map((payment) => (
-                    <motion.tr variants={itemVariants} key={payment.id} className="group hover:bg-slate-50/50 transition-colors">
-                      <TableCell className="py-4">
-                        <div className="flex items-center gap-2">
-                          <ArrowUpRight className="h-4 w-4 text-emerald-500" />
-                          <span className="font-mono text-xs font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded">
-                            {payment.id.split('-')[0].toUpperCase()}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-semibold text-slate-900 group-hover:text-emerald-600 transition-colors">
-                        {payment.users ? `${payment.users.first_name} ${payment.users.last_name}` : "Unknown Origin"}
-                      </TableCell>
-                      <TableCell>
-                        <span className="font-bold text-slate-900 text-lg tracking-tight">
-                          {parseInt(payment.amount).toLocaleString('en-UG')}
+            <Table className="font-mono">
+              <TableHeader className="bg-slate-50/80 border-b border-slate-200">
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-widest h-10">Txn_Identity</TableHead>
+                  <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-widest h-10">Origin_Subject</TableHead>
+                  <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-widest h-10">Net_Amount</TableHead>
+                  <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-widest h-10">System_State</TableHead>
+                  <TableHead className="text-right text-[10px] font-bold text-slate-500 uppercase tracking-widest h-10 pr-6">Timestamp</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredPayments.map((payment) => (
+                  <TableRow key={payment.id} className="hover:bg-slate-50/50 transition-colors border-b border-slate-100 last:border-0">
+                    <TableCell className="py-4">
+                      <div className="flex items-center gap-2">
+                        <ArrowUpRight className="h-3 w-3 text-emerald-500" />
+                        <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 border border-slate-200">
+                          {payment.id.split('-')[0].toUpperCase()}
                         </span>
-                        <span className="text-xs font-medium text-slate-500 ml-1">{payment.currency || 'UGX'}</span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={payment.status === 'completed' ? 'default' : 'secondary'} className={payment.status === 'completed' ? "bg-emerald-100 text-emerald-700 border-0" : "bg-amber-100 text-amber-700 border-0"}>
-                          {payment.status.toUpperCase()}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right pr-6">
-                        <div className="flex flex-col items-end">
-                          <span className="text-sm font-medium text-slate-700">{format(new Date(payment.created_at), "MMM d, yyyy")}</span>
-                          <span className="text-xs text-slate-400">{format(new Date(payment.created_at), "h:mm a")}</span>
-                        </div>
-                      </TableCell>
-                    </motion.tr>
-                  ))}
-                </motion.tbody>
-              </Table>
-            </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-xs font-bold text-slate-900 uppercase tracking-tight">
+                      {payment.users ? `${payment.users.first_name} ${payment.users.last_name}` : "UNKNOWN_ORIGIN"}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-sm font-bold text-slate-900 tracking-tighter">
+                          {parseInt(payment.amount).toLocaleString()}
+                        </span>
+                        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{payment.currency || 'UGX'}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className={cn(
+                        "inline-flex items-center px-2 py-0.5 rounded border text-[9px] font-bold uppercase tracking-widest",
+                        payment.status === 'completed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'
+                      )}>
+                        {payment.status === 'completed' ? 'Verified' : payment.status}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right pr-6">
+                      <div className="flex flex-col items-end">
+                        <span className="text-[10px] font-bold text-slate-700">{format(new Date(payment.created_at), "dd/MM/yyyy")}</span>
+                        <span className="text-[9px] text-slate-400 uppercase tracking-widest">{format(new Date(payment.created_at), "HH:mm:ss")}</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>

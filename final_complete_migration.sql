@@ -51,6 +51,10 @@ CREATE TABLE IF NOT EXISTS "users" (
   "last_name" text NOT NULL,
   "role" text NOT NULL CHECK (role IN ('student', 'hostel_owner', 'super_admin')) DEFAULT 'student',
   "is_active" BOOLEAN DEFAULT true,
+  "phone_number" text,
+  "course" text,
+  "next_of_kin" text,
+  "medical_history" text,
   "created_at" timestamptz NOT NULL DEFAULT now(),
   "updated_at" timestamptz NOT NULL DEFAULT now()
 );

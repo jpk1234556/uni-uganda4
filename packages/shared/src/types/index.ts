@@ -7,6 +7,10 @@ export interface DBUser {
     last_name: string;
     role: UserRole;
     is_active: boolean;
+    phone_number?: string;
+    course?: string;
+    next_of_kin?: string;
+    medical_history?: string;
 }
 
 export interface Hostel {

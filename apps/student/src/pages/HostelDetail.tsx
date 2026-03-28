@@ -15,6 +15,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import {
   MapPin,
   Star,
   Building,
@@ -25,6 +32,7 @@ import {
   Users,
   MessageSquare,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 import type { Hostel, RoomType } from "@/types";
@@ -199,6 +207,10 @@ export default function HostelDetail() {
       navigate("/auth");
       return;
     }
+    if (room.available <= 0) {
+      toast.error("This room is currently full");
+      return;
+    }
     setSelectedRoom(room);
     setIsBookingOpen(true);
   };
@@ -285,21 +297,36 @@ export default function HostelDetail() {
     );
   }
 
-  const mainImage =
+  const images =
     hostel.images && hostel.images.length > 0
-      ? hostel.images[0]
-      : "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=2000&auto=format&fit=crop";
+      ? hostel.images
+      : ["https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=2000&auto=format&fit=crop"];
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
-      {/* Hero Image Section */}
-      <div className="w-full h-[40vh] md:h-[50vh] relative bg-slate-200">
-        <img
-          src={mainImage}
-          className="w-full h-full object-cover"
-          alt={hostel.name}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
+      {/* Hero Image Section with Carousel */}
+      <div className="w-full h-[40vh] md:h-[60vh] relative bg-slate-200 group">
+        <Carousel className="w-full h-full" opts={{ loop: true }}>
+          <CarouselContent className="h-full ml-0">
+            {images.map((image, index) => (
+              <CarouselItem key={index} className="h-full pl-0">
+                <img
+                  src={image}
+                  className="w-full h-full object-cover"
+                  alt={`${hostel.name} - Image ${index + 1}`}
+                />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          {images.length > 1 && (
+            <>
+              <CarouselPrevious className="left-4 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 hover:bg-white border-none shadow-lg h-10 w-10" />
+              <CarouselNext className="right-4 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 hover:bg-white border-none shadow-lg h-10 w-10" />
+            </>
+          )}
+        </Carousel>
+        
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent pointer-events-none" />
         <div className="absolute top-4 left-4">
           <Link to="/search">
             <Button
@@ -446,7 +473,13 @@ export default function HostelDetail() {
                             <Button
                               onClick={() => handleBookClick(room)}
                               disabled={room.available === 0}
-                              className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-sm transition-all"
+                              variant={room.available > 0 ? "default" : "secondary"}
+                              className={cn(
+                                "w-full sm:w-auto font-medium shadow-sm transition-all",
+                                room.available > 0
+                                  ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+                                  : "bg-slate-100 text-slate-400 cursor-not-allowed",
+                              )}
                             >
                               {room.available > 0 ? "Book Room" : "Full"}
                             </Button>
