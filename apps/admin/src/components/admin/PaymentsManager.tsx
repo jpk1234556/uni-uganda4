@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export default function PaymentsManager() {
@@ -141,3 +141,5 @@ export default function PaymentsManager() {
     </motion.div>
   );
 }
+
+

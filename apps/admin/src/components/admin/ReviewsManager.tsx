@@ -6,7 +6,7 @@ import { Loader2, Star, Trash2, Home, AlertTriangle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 
 // Correcting imports for Dialog
 import {
@@ -204,3 +204,5 @@ export default function ReviewsManager() {
     </motion.div>
   );
 }
+
+

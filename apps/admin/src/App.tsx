@@ -10,6 +10,8 @@ import Settings from "./components/admin/Settings";
 import AdminSidebar from "./components/admin/AdminSidebar";
 import AdminLayout from "./components/admin/AdminLayout";
 import Auth from "@/pages/Auth";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
 import { AuthProvider } from "@/context/AuthContext";
 
@@ -18,14 +20,19 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+          <Route
+            path="/"
+            element={<Navigate to="/admin/dashboard" replace />}
+          />
           <Route path="/auth" element={<Auth appType="admin" />} />
-          
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+
           {/* Admin Dashboard with Sidebar Layout */}
-          <Route 
-            path="/admin/*" 
+          <Route
+            path="/admin/*"
             element={
-              <ProtectedRoute allowedRoles={['super_admin']}>
+              <ProtectedRoute allowedRoles={["super_admin"]}>
                 <AdminLayout sidebar={<AdminSidebar />}>
                   <div className="p-4 md:p-8">
                     <Routes>
@@ -37,15 +44,21 @@ export default function App() {
                       <Route path="reviews" element={<ReviewsManager />} />
                       <Route path="reports" element={<ReportsManager />} />
                       <Route path="settings" element={<Settings />} />
-                      <Route path="*" element={<Navigate to="dashboard" replace />} />
+                      <Route
+                        path="*"
+                        element={<Navigate to="dashboard" replace />}
+                      />
                     </Routes>
                   </div>
                 </AdminLayout>
               </ProtectedRoute>
-            } 
+            }
           />
-          
-          <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
+
+          <Route
+            path="*"
+            element={<Navigate to="/admin/dashboard" replace />}
+          />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

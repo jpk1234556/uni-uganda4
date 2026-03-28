@@ -6,7 +6,7 @@ import { Loader2, CheckCircle, XCircle, CreditCard, CalendarDays } from "lucide-
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export default function BookingsManager() {
@@ -163,3 +163,5 @@ export default function BookingsManager() {
     </motion.div>
   );
 }
+
+

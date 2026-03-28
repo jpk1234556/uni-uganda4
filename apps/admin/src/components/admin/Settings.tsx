@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,7 +14,8 @@ import { Save, UserPlus, Shield } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Settings() {
-  const [requireEmailVerification, setRequireEmailVerification] = useState(true);
+  const [requireEmailVerification, setRequireEmailVerification] =
+    useState(true);
   const [autoApproveHostels, setAutoApproveHostels] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -40,7 +47,7 @@ export default function Settings() {
       setIsSaving(true);
       localStorage.setItem(
         "admin-platform-settings",
-        JSON.stringify({ requireEmailVerification, autoApproveHostels })
+        JSON.stringify({ requireEmailVerification, autoApproveHostels }),
       );
       toast.success("Settings saved");
     } catch {
@@ -74,8 +81,12 @@ export default function Settings() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500 max-w-4xl">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight text-slate-900">Platform Settings</h2>
-        <p className="text-muted-foreground mt-2">Manage application configuration and administrative profiles.</p>
+        <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+          Platform Settings
+        </h2>
+        <p className="text-muted-foreground mt-2">
+          Manage application configuration and administrative profiles.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -86,24 +97,30 @@ export default function Settings() {
               <Shield className="h-5 w-5 text-indigo-500" />
               Security Settings
             </CardTitle>
-            <CardDescription>Global authentication and security rules.</CardDescription>
+            <CardDescription>
+              Global authentication and security rules.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
                 <Label className="text-base">Require Email Verification</Label>
-                <p className="text-sm text-slate-500">New users must verify email to book hostels.</p>
+                <p className="text-sm text-slate-500">
+                  New users must verify email to book hostels.
+                </p>
               </div>
               <Switch
                 checked={requireEmailVerification}
                 onCheckedChange={setRequireEmailVerification}
               />
             </div>
-            
+
             <div className="flex items-center justify-between">
               <div>
                 <Label className="text-base">Auto-Approve Hostels</Label>
-                <p className="text-sm text-slate-500">Bypass manual verification for new listings.</p>
+                <p className="text-sm text-slate-500">
+                  Bypass manual verification for new listings.
+                </p>
               </div>
               <Switch
                 checked={autoApproveHostels}
@@ -112,8 +129,13 @@ export default function Settings() {
             </div>
 
             <div className="pt-4">
-              <Button onClick={handleSaveSettings} disabled={isSaving} className="w-full bg-indigo-600 hover:bg-indigo-700">
-                <Save className="h-4 w-4 mr-2" /> {isSaving ? "Saving..." : "Save Settings"}
+              <Button
+                onClick={handleSaveSettings}
+                disabled={isSaving}
+                className="w-full bg-indigo-600 hover:bg-indigo-700"
+              >
+                <Save className="h-4 w-4 mr-2" />{" "}
+                {isSaving ? "Saving..." : "Save Settings"}
               </Button>
             </div>
           </CardContent>
@@ -126,7 +148,9 @@ export default function Settings() {
               <UserPlus className="h-5 w-5 text-indigo-500" />
               Invite New Admin
             </CardTitle>
-            <CardDescription>Grant Super Admin privileges to team members.</CardDescription>
+            <CardDescription>
+              Grant Super Admin privileges to team members.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -138,9 +162,16 @@ export default function Settings() {
               />
             </div>
             <p className="text-xs text-slate-500 bg-slate-50 p-3 rounded-md border">
-              Invited users will receive an email to set up their super admin credentials. They will have full access to users, payouts, and approvals.
+              Invited users will receive an email to set up their super admin
+              credentials. They will have full access to users, payouts, and
+              approvals.
             </p>
-            <Button onClick={handleSendInvite} disabled={isInviting} variant="outline" className="w-full border-indigo-200 text-indigo-700 hover:bg-indigo-50">
+            <Button
+              onClick={handleSendInvite}
+              disabled={isInviting}
+              variant="outline"
+              className="w-full border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+            >
               {isInviting ? "Sending..." : "Send Invite"}
             </Button>
           </CardContent>
