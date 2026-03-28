@@ -8,24 +8,25 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 export default defineConfig({
   plugins: [react()],
   build: {
+    chunkSizeWarningLimit: 800,
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (!id.includes("node_modules")) return;
+          if (!id.includes("node_modules")) return
 
-          // Check more specific 'react' strings first
-          if (id.includes("lucide-react") || id.includes("date-fns")) {
-            return "ui-vendor";
-          }
-
-          if (id.includes("react-router")) {
-            return "router-vendor";
-          }
-
-          // Then check the core react packages
+          if (id.includes("react-router")) return "router-vendor"
+          if (id.includes("@supabase") || id.includes("@supabase/supabase-js")) return "supabase-vendor"
+          if (id.includes("recharts")) return "charts-vendor"
+          if (id.includes("framer-motion") || id.includes("motion")) return "motion-vendor"
+          if (id.includes("@radix-ui")) return "radix-vendor"
+          if (id.includes("lucide-react") || id.includes("date-fns") || id.includes("sonner")) return "ui-vendor"
+          if (id.includes("react-hook-form") || id.includes("zod") || id.includes("@hookform/resolvers")) return "forms-vendor"
+          if (id.includes("embla-carousel-react")) return "carousel-vendor"
           if (id.includes("/node_modules/react/") || id.includes("/node_modules/react-dom/") || id.includes("scheduler")) {
-            return "react-vendor";
+            return "react-vendor"
           }
+
+          return "vendor"
         },
       },
     },
