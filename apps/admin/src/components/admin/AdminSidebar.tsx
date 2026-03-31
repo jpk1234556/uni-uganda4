@@ -24,15 +24,15 @@ export default function AdminSidebar() {
   };
 
   const menuItems = [
-    { id: "dashboard", label: "DASHBOARD", icon: BarChart3, path: "/admin/dashboard" },
-    { id: "users", label: "USER_MANAGEMENT", icon: Users, path: "/admin/users" },
-    { id: "universities", label: "UNIVERSITY_REGISTRY", icon: ShieldCheck, path: "/admin/universities" },
-    { id: "hostels", label: "HOSTEL_INVENTORY", icon: Home, path: "/admin/hostels" },
-    { id: "verification", label: "VERIFICATION_QUEUE", icon: ShieldCheck, path: "/admin/verification" },
-    { id: "bookings", label: "BOOKING_LOGS", icon: Calendar, path: "/admin/bookings" },
-    { id: "payments", label: "FINANCIAL_RECORDS", icon: CreditCard, path: "/admin/payments" },
-    { id: "reviews", label: "USER_FEEDBACK", icon: Star, path: "/admin/reviews" },
-    { id: "reports", label: "SYSTEM_REPORTS", icon: ShieldAlert, path: "/admin/reports" },
+    { id: "dashboard", label: "Dashboard", icon: BarChart3, path: "/admin/dashboard" },
+    { id: "users", label: "User Management", icon: Users, path: "/admin/users" },
+    { id: "universities", label: "University Registry", icon: ShieldCheck, path: "/admin/universities" },
+    { id: "hostels", label: "Hostel Inventory", icon: Home, path: "/admin/hostels" },
+    { id: "verification", label: "Verification Queue", icon: ShieldCheck, path: "/admin/verification" },
+    { id: "bookings", label: "Booking Logs", icon: Calendar, path: "/admin/bookings" },
+    { id: "payments", label: "Financial Records", icon: CreditCard, path: "/admin/payments" },
+    { id: "reviews", label: "User Feedback", icon: Star, path: "/admin/reviews" },
+    { id: "reports", label: "System Reports", icon: ShieldAlert, path: "/admin/reports" },
   ];
 
   const handleLogout = async () => {
@@ -47,26 +47,26 @@ export default function AdminSidebar() {
   };
 
   return (
-    <div className="flex flex-col h-full w-64 shrink-0 bg-[#0B1120] border-r border-slate-800 overflow-y-auto">
-      <div className="px-6 py-8 mb-4 flex flex-col gap-4 border-b border-slate-800/50">
+    <div className="flex flex-col h-full w-64 shrink-0 bg-white border-r border-slate-200 overflow-y-auto">
+      <div className="px-6 py-8 mb-4 flex flex-col gap-4 border-b border-slate-100">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 rounded shadow-[0_0_15px_rgba(99,102,241,0.1)]">
-            <ShieldCheck className="h-5 w-5" />
+          <div className="p-2 bg-primary/10 border border-primary/20 text-primary rounded-xl shadow-sm">
+            <ShieldCheck className="h-6 w-6" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-sm text-white leading-tight tracking-widest uppercase">KAJU_HOUSING_ADMIN</span>
-            <span className="text-[10px] text-slate-500 font-mono tracking-tighter">v2.4.0_STABLE</span>
+            <span className="font-bold text-base text-slate-900 leading-tight tracking-tight">Kaju Housing</span>
+            <span className="text-xs text-slate-500 font-medium tracking-tight">System Admin</span>
           </div>
         </div>
-        <div className="flex items-center gap-2 px-2 py-1 bg-emerald-500/5 border border-emerald-500/20 rounded">
-          <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-[10px] font-mono text-emerald-500/80 uppercase tracking-widest">System_Online</span>
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-full w-fit">
+          <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-[11px] font-bold text-emerald-700 tracking-wide">System Online</span>
         </div>
       </div>
 
-      <nav className="flex-1 space-y-1 px-3 overflow-y-auto">
-        <div className="px-3 mb-2">
-          <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">Core_Modules</span>
+      <nav className="flex-1 space-y-1 px-4 overflow-y-auto">
+        <div className="px-3 mb-3">
+          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Core Modules</span>
         </div>
         {menuItems.map((item) => {
           const Icon = item.icon;
@@ -77,42 +77,41 @@ export default function AdminSidebar() {
               key={item.id}
               to={item.path}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded text-[11px] font-mono transition-all duration-150 group border border-transparent",
+                "w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group border border-transparent",
                 isActive 
-                  ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/30 shadow-[0_0_10px_rgba(99,102,241,0.05)]" 
-                  : "text-slate-500 hover:bg-slate-800/50 hover:text-slate-300 hover:border-slate-700/50"
+                  ? "bg-primary text-white shadow-md relative overflow-hidden" 
+                  : "text-slate-600 hover:bg-slate-50 hover:text-primary"
               )}
             >
-              <Icon className={cn("h-4 w-4 transition-colors", isActive ? "text-indigo-400" : "text-slate-600 group-hover:text-slate-400")} />
-              <span className="tracking-wider">{item.label}</span>
-              {isActive && <div className="ml-auto h-1 w-1 rounded-full bg-indigo-400 shadow-[0_0_5px_rgba(99,102,241,0.5)]" />}
+              <Icon className={cn("h-5 w-5 transition-colors", isActive ? "text-white" : "text-slate-400 group-hover:text-primary")} />
+              <span>{item.label}</span>
             </Link>
           );
         })}
       </nav>
       
-      <div className="px-3 py-6 mt-auto border-t border-slate-800/50 space-y-1">
-        <div className="px-3 mb-2">
-          <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">Maintenance</span>
+      <div className="px-4 py-6 mt-auto border-t border-slate-100 space-y-1 bg-slate-50/50">
+        <div className="px-3 mb-3">
+          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Maintenance</span>
         </div>
         <Link
           to="/admin/settings"
           className={cn(
-            "w-full flex items-center gap-3 px-3 py-2.5 rounded text-[11px] font-mono transition-all duration-150 group border border-transparent",
+            "w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group border",
             isPathActive("/admin/settings")
-              ? "bg-slate-800 text-white border-slate-700" 
-              : "text-slate-500 hover:bg-slate-800/50 hover:text-slate-300 hover:border-slate-700/50"
+              ? "bg-primary text-white border-primary shadow-md" 
+              : "border-transparent text-slate-600 hover:bg-white hover:text-slate-900 hover:border-slate-200 hover:shadow-sm"
           )}
         >
-          <Settings className="h-4 w-4 text-slate-600 group-hover:text-slate-400" />
-          <span className="tracking-wider">SYSTEM_CONFIG</span>
+          <Settings className={cn("h-5 w-5 transition-colors", isPathActive("/admin/settings") ? "text-white" : "text-slate-400 group-hover:text-slate-600")} />
+          <span>System Config</span>
         </Link>
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-start gap-3 px-3 py-2.5 rounded text-[11px] font-mono text-rose-500/70 hover:bg-rose-500/5 hover:text-rose-400 hover:border-rose-500/20 border border-transparent transition-all duration-150 group"
+          className="w-full flex items-center justify-start gap-3 px-3 py-3 rounded-xl text-sm font-semibold text-rose-600 hover:bg-rose-50 hover:text-rose-700 border border-transparent hover:border-rose-100 transition-all duration-200 group"
         >
-          <LogOut className="h-4 w-4" />
-          <span className="tracking-wider">TERMINATE_SESSION</span>
+          <LogOut className="h-5 w-5 text-rose-500 group-hover:text-rose-600" />
+          <span>Sign Out</span>
         </button>
       </div>
     </div>

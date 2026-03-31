@@ -10,20 +10,20 @@ export default function AdminLayout({ sidebar, children }: AdminLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] bg-[#F8FAFC] overflow-hidden relative font-sans">
+    <div className="flex h-[calc(100vh-4rem)] bg-slate-50 overflow-hidden relative font-sans">
       
       {/* Mobile Sidebar Toggle Header */}
-      <div className="md:hidden absolute top-0 left-0 right-0 h-14 bg-[#0B1120] border-b border-slate-800 flex items-center px-4 z-20">
-        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 -ml-2 text-slate-400 hover:bg-slate-800 rounded transition-colors">
-          <Menu className="h-5 w-5" />
+      <div className="md:hidden absolute top-0 left-0 right-0 h-16 bg-white border-b border-slate-200 flex items-center px-4 z-20 shadow-sm">
+        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 -ml-2 text-slate-500 hover:bg-slate-50 hover:text-primary rounded-xl transition-colors">
+          <Menu className="h-6 w-6" />
         </button>
-        <span className="font-mono text-[11px] font-bold text-white ml-3 tracking-[0.2em] uppercase">KAJU_HOUSING_ADMIN</span>
+        <span className="font-semibold text-sm text-slate-900 ml-3 tracking-tight">Kaju Housing Admin</span>
       </div>
 
       {/* Mobile Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 top-14 bg-black/40 backdrop-blur-[2px] z-30 md:hidden animate-in fade-in duration-200" 
+          className="fixed inset-0 top-16 bg-slate-900/20 backdrop-blur-sm z-30 md:hidden animate-in fade-in duration-200" 
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
@@ -33,12 +33,12 @@ export default function AdminLayout({ sidebar, children }: AdminLayoutProps) {
         fixed md:static inset-y-0 left-0 z-40 transform 
         ${isSidebarOpen ? "translate-x-0 pt-0" : "-translate-x-full"}
         md:translate-x-0 transition-transform duration-300 ease-out shadow-2xl md:shadow-none
-        w-64 flex-shrink-0 bg-[#0B1120] text-slate-300 border-r border-slate-800 flex flex-col h-full overflow-y-auto custom-scrollbar top-14 md:top-0
+        w-64 flex-shrink-0 bg-white text-slate-600 border-r border-slate-200 flex flex-col h-full overflow-y-auto custom-scrollbar top-16 md:top-0
       `}>
-        <div className="md:hidden flex justify-between items-center p-4 border-b border-slate-800/50 bg-[#0B1120] sticky top-0 z-10">
-           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Navigation_Menu</span>
-           <button onClick={() => setIsSidebarOpen(false)} className="text-slate-400 hover:text-white bg-slate-800/50 p-1.5 rounded transition-colors">
-             <X className="h-4 w-4" />
+        <div className="md:hidden flex justify-between items-center p-4 border-b border-slate-100 bg-white sticky top-0 z-10">
+           <span className="text-sm font-bold text-slate-900">Navigation Menu</span>
+           <button onClick={() => setIsSidebarOpen(false)} className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-2 rounded-xl transition-colors">
+             <X className="h-5 w-5" />
            </button>
         </div>
         <div onClick={() => { if(window.innerWidth < 768) setIsSidebarOpen(false); }}>

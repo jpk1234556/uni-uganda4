@@ -311,17 +311,17 @@ export default function OwnerDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 font-sans text-slate-200">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
       {/* System Status Bar */}
-      <div className="bg-slate-900/80 border-b border-white/5 py-1 px-4 flex items-center justify-between text-[8px] font-mono text-slate-500 uppercase tracking-[0.2em]">
+      <div className="bg-white border-b border-slate-200 py-2 px-4 flex items-center justify-between text-xs font-medium text-slate-600">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1">
-            <div className="h-1 w-1 rounded-full bg-emerald-500" />
-            <span>Server_Status: Online</span>
+          <div className="flex items-center gap-1.5">
+            <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+            <span>Server Status: Online</span>
           </div>
-          <div className="flex items-center gap-1">
-            <div className="h-1 w-1 rounded-full bg-orange-500" />
-            <span>Database_Sync: Active</span>
+          <div className="flex items-center gap-1.5">
+            <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(249,115,22,0.5)]" />
+            <span>Database Sync: Active</span>
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -343,16 +343,16 @@ export default function OwnerDashboard() {
         >
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse shadow-[0_0_8px_rgba(249,115,22,0.6)]" />
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em]">
-                Owner_Control_Center
+              <div className="h-2.5 w-2.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(249,115,22,0.6)]" />
+              <span className="text-sm font-bold text-primary tracking-wide">
+                Owner Control Center
               </span>
             </div>
-            <h1 className="text-4xl font-black tracking-tighter text-white uppercase">
-              Property_Dashboard
+            <h1 className="text-4xl font-black tracking-tight text-slate-900">
+              Property Dashboard
             </h1>
-            <p className="text-slate-600 text-xs font-mono mt-1 uppercase tracking-widest">
-              MANAGEMENT_SYSTEM_V2.4.0_STABLE
+            <p className="text-slate-500 text-sm mt-1">
+              Manage your hostel listings, bookings, and revenue from one powerful dashboard.
             </p>
           </div>
 
@@ -366,25 +366,25 @@ export default function OwnerDashboard() {
               }
             }}>
               <DialogTrigger asChild>
-                <Button className="h-12 px-6 bg-slate-900 hover:bg-slate-800 text-white rounded-none border-b-4 border-orange-600 active:border-b-0 active:translate-y-1 transition-all font-bold uppercase tracking-widest text-xs flex items-center gap-2">
-                  <Plus className="h-4 w-4" /> Add_New_Property
+                <Button className="h-12 px-6 bg-primary hover:bg-primary/90 text-white rounded-xl shadow-md transition-all font-semibold text-sm flex items-center gap-2">
+                  <Plus className="h-5 w-5" /> Add New Property
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px] rounded-none border-2 border-slate-900 p-0 overflow-hidden">
-                <div className="bg-slate-900 text-white p-6 relative">
+              <DialogContent className="sm:max-w-[600px] rounded-2xl border-0 shadow-2xl p-0 overflow-hidden bg-white">
+                <div className="bg-slate-50 border-b border-slate-100 text-slate-900 p-6 relative">
                   <DialogHeader>
-                    <DialogTitle className="text-xl font-black uppercase tracking-tighter">
+                    <DialogTitle className="text-2xl font-bold tracking-tight">
                       {wizardStep === 1 && "Step 1: University Alliance"}
                       {wizardStep === 2 && "Step 2: Property Details"}
                       {wizardStep === 3 && "Step 3: Room Setup"}
                     </DialogTitle>
-                    <DialogDescription className="text-slate-400 text-[10px] uppercase tracking-widest font-mono">
+                    <DialogDescription className="text-slate-500 text-base">
                       {wizardStep === 1 && "Link this property to a nearby institution."}
                       {wizardStep === 2 && "Enter the physical and visual details."}
                       {wizardStep === 3 && "Configure the available room types."}
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="absolute top-6 right-6 text-xs font-bold text-orange-500 uppercase tracking-widest">
+                  <div className="absolute top-6 right-6 text-sm font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">
                     Step {wizardStep} of 3
                   </div>
                 </div>
@@ -393,8 +393,8 @@ export default function OwnerDashboard() {
                   {wizardStep === 1 && (
                     <form onSubmit={(e) => { e.preventDefault(); setWizardStep(2); }} className="space-y-6">
                       <div className="space-y-2">
-                        <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                          Affiliated_Uni
+                        <Label className="text-sm font-semibold text-slate-700">
+                          Affiliated University
                         </Label>
                         <Input
                           required
@@ -405,17 +405,17 @@ export default function OwnerDashboard() {
                               university: e.target.value,
                             })
                           }
-                          placeholder="E.G. MAKERERE UNIVERSITY"
-                          className="rounded-none border-slate-200 focus:ring-orange-500 uppercase text-xs h-12"
+                          placeholder="e.g. Makerere University"
+                          className="rounded-xl border-slate-200 focus-visible:ring-primary h-12 bg-slate-50"
                         />
-                        <p className="text-[10px] text-slate-400">Which university is this hostel primarily serving?</p>
+                        <p className="text-xs text-slate-500 font-medium">Which university is this hostel primarily serving?</p>
                       </div>
                       <DialogFooter>
                         <Button
                           type="submit"
-                          className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-none font-bold uppercase tracking-widest text-xs"
+                          className="w-full h-12 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold text-base shadow-sm"
                         >
-                          Continue_To_Details
+                          Continue to Details
                         </Button>
                       </DialogFooter>
                     </form>
@@ -425,8 +425,8 @@ export default function OwnerDashboard() {
                     <form onSubmit={handleCreateProperty} className="space-y-6">
                       <div className="grid grid-cols-1 gap-6">
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                            Hostel_Identity
+                          <Label className="text-sm font-semibold text-slate-700">
+                            Hostel Name
                           </Label>
                           <Input
                             required
@@ -434,15 +434,15 @@ export default function OwnerDashboard() {
                             onChange={(e) =>
                               setNewHostel({ ...newHostel, name: e.target.value })
                             }
-                            placeholder="E.G. CITY GATEWAY HOSTEL"
-                            className="rounded-none border-slate-200 focus:ring-orange-500 uppercase text-xs"
+                            placeholder="e.g. City Gateway Hostel"
+                            className="rounded-xl border-slate-200 focus-visible:ring-primary h-12 bg-slate-50"
                           />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                              Price_Metric
+                            <Label className="text-sm font-semibold text-slate-700">
+                              Price Range
                             </Label>
                             <Input
                               required
@@ -453,13 +453,13 @@ export default function OwnerDashboard() {
                                   price_range: e.target.value,
                                 })
                               }
-                              placeholder="E.G. 1M - 1.5M UGX/SEM"
-                              className="rounded-none border-slate-200 focus:ring-orange-500 uppercase text-xs"
+                              placeholder="e.g. 1M - 1.5M UGX/sem"
+                              className="rounded-xl border-slate-200 focus-visible:ring-primary h-12 bg-slate-50"
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                              <ImageIcon className="h-3 w-3" /> Visual_Assets
+                            <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                              <ImageIcon className="h-4 w-4" /> Photos (URLs)
                             </Label>
                             <Input
                               value={newHostel.images}
@@ -467,14 +467,14 @@ export default function OwnerDashboard() {
                                 setNewHostel({ ...newHostel, images: e.target.value })
                               }
                               placeholder="URL1, URL2 (Comma separated)"
-                              className="rounded-none border-slate-200 focus:ring-orange-500 text-xs"
+                              className="rounded-xl border-slate-200 focus-visible:ring-primary h-12 bg-slate-50"
                             />
                           </div>
                         </div>
 
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                            Geographic_Location
+                          <Label className="text-sm font-semibold text-slate-700">
+                            Address & Location
                           </Label>
                           <Input
                             required
@@ -485,14 +485,14 @@ export default function OwnerDashboard() {
                                 address: e.target.value,
                               })
                             }
-                            placeholder="E.G. KIKONI, KAMPALA"
-                            className="rounded-none border-slate-200 focus:ring-orange-500 uppercase text-xs"
+                            placeholder="e.g. Kikoni, Kampala"
+                            className="rounded-xl border-slate-200 focus-visible:ring-primary h-12 bg-slate-50"
                           />
                         </div>
 
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                            Property_Brief
+                          <Label className="text-sm font-semibold text-slate-700">
+                            Description & Amenities
                           </Label>
                           <Textarea
                             value={newHostel.description}
@@ -502,29 +502,29 @@ export default function OwnerDashboard() {
                                 description: e.target.value,
                               })
                             }
-                            placeholder="DESCRIBE PLATFORM AMENITIES, SAFETY, CULTURE..."
-                            className="rounded-none border-slate-200 focus:ring-orange-500 min-h-[80px] uppercase text-xs"
+                            placeholder="Describe your hostel's amenities, security features, and rules..."
+                            className="rounded-xl border-slate-200 focus-visible:ring-primary min-h-[100px] bg-slate-50"
                           />
                         </div>
                       </div>
-                      <DialogFooter className="flex flex-row gap-2">
+                      <DialogFooter className="flex flex-row gap-3">
                         <Button
                           type="button"
                           variant="outline"
                           onClick={() => setWizardStep(1)}
-                          className="w-1/3 h-12 rounded-none font-bold uppercase tracking-widest text-[10px]"
+                          className="w-1/3 h-12 rounded-xl font-bold text-sm shadow-sm"
                         >
-                          Go_Back
+                          Go Back
                         </Button>
                         <Button
                           type="submit"
                           disabled={isCreating}
-                          className="w-2/3 h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-none font-bold uppercase tracking-widest text-[10px]"
+                          className="w-2/3 h-12 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold text-sm shadow-sm"
                         >
                           {isCreating ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            <Loader2 className="h-5 w-5 animate-spin mr-2" />
                           ) : null}
-                          Save_&_Continue
+                          Save & Continue
                         </Button>
                       </DialogFooter>
                     </form>
@@ -534,18 +534,18 @@ export default function OwnerDashboard() {
                     <div className="space-y-6">
                       {rooms.length > 0 && (
                         <div>
-                          <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Added_Rooms</h4>
-                          <div className="max-h-[120px] overflow-y-auto border border-slate-100">
-                            <Table className="font-mono">
+                          <h4 className="text-sm font-semibold text-slate-700 mb-3">Added Rooms</h4>
+                          <div className="max-h-[120px] overflow-y-auto border border-slate-200 rounded-xl bg-white shadow-sm">
+                            <Table>
                               <TableBody>
                                 {rooms.map(room => (
                                   <TableRow key={room.id} className="hover:bg-slate-50/50">
-                                    <TableCell className="text-[10px] py-2 font-bold uppercase text-slate-900">{room.name}</TableCell>
-                                    <TableCell className="text-[10px] py-2 text-slate-500">{room.price.toLocaleString()} UGX</TableCell>
-                                    <TableCell className="text-[10px] py-2 text-slate-500">Cap: {room.capacity}</TableCell>
+                                    <TableCell className="text-xs py-2 font-bold text-slate-900">{room.name}</TableCell>
+                                    <TableCell className="text-xs py-2 text-slate-500">{room.price.toLocaleString()} UGX</TableCell>
+                                    <TableCell className="text-xs py-2 text-slate-500">Cap: {room.capacity}</TableCell>
                                     <TableCell className="text-right py-2">
-                                      <Button onClick={() => handleDeleteRoom(room.id)} variant="ghost" className="h-6 w-6 p-0 text-rose-500 hover:bg-rose-50 rounded">
-                                        <Trash2 className="h-3 w-3" />
+                                      <Button onClick={() => handleDeleteRoom(room.id)} variant="ghost" className="h-6 w-6 p-0 text-rose-500 hover:bg-rose-50 rounded-lg">
+                                        <Trash2 className="h-4 w-4" />
                                       </Button>
                                     </TableCell>
                                   </TableRow>
@@ -556,15 +556,15 @@ export default function OwnerDashboard() {
                         </div>
                       )}
 
-                      <div className="bg-slate-50 p-4 border border-slate-100">
-                        <h4 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest mb-4">Add_Room_Type</h4>
+                      <div className="bg-slate-50 p-5 border border-slate-200 rounded-xl">
+                        <h4 className="text-sm font-semibold text-slate-900 mb-4">Add Room Type</h4>
                         
                         <div className="flex gap-2 mb-4">
                           <Button 
                             type="button" 
                             variant="outline" 
                             size="sm"
-                            className="rounded-none text-[9px] h-7 border-slate-200 uppercase font-bold text-slate-500"
+                            className="rounded-lg text-xs h-8 border-slate-200 font-medium text-slate-600 bg-white shadow-sm"
                             onClick={() => setNewRoom({ ...newRoom, name: "Single Room", capacity: "1" })}
                           >
                             Preset: Single
@@ -573,7 +573,7 @@ export default function OwnerDashboard() {
                             type="button" 
                             variant="outline" 
                             size="sm"
-                            className="rounded-none text-[9px] h-7 border-slate-200 uppercase font-bold text-slate-500"
+                            className="rounded-lg text-xs h-8 border-slate-200 font-medium text-slate-600 bg-white shadow-sm"
                             onClick={() => setNewRoom({ ...newRoom, name: "Double Room", capacity: "2" })}
                           >
                             Preset: Double
@@ -583,34 +583,34 @@ export default function OwnerDashboard() {
                         <form onSubmit={(e) => createdHostelId && handleAddRoom(e, createdHostelId)} className="space-y-4">
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                              <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Type_Label</Label>
-                              <Input required value={newRoom.name} onChange={e => setNewRoom({...newRoom, name: e.target.value})} placeholder="E.G. SINGLE VIP" className="bg-white rounded-none border-slate-200 text-[10px] h-9 uppercase" />
+                              <Label className="text-xs font-semibold text-slate-600">Type Label</Label>
+                              <Input required value={newRoom.name} onChange={e => setNewRoom({...newRoom, name: e.target.value})} placeholder="e.g. Single VIP" className="bg-white rounded-lg border-slate-200 h-10 shadow-sm" />
                             </div>
                             <div className="col-span-1 grid grid-cols-2 gap-2">
                               <div className="space-y-1.5">
-                                <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Capacity</Label>
-                                <Input required type="number" min="1" value={newRoom.capacity} onChange={e => setNewRoom({...newRoom, capacity: e.target.value})} placeholder="1" className="bg-white rounded-none border-slate-200 text-[10px] h-9" />
+                                <Label className="text-xs font-semibold text-slate-600">Capacity</Label>
+                                <Input required type="number" min="1" value={newRoom.capacity} onChange={e => setNewRoom({...newRoom, capacity: e.target.value})} placeholder="1" className="bg-white rounded-lg border-slate-200 h-10 shadow-sm" />
                               </div>
                               <div className="space-y-1.5">
-                                <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Price</Label>
-                                <Input required type="number" min="0" value={newRoom.price} onChange={e => setNewRoom({...newRoom, price: e.target.value})} placeholder="UGX" className="bg-white rounded-none border-slate-200 text-[10px] h-9" />
+                                <Label className="text-xs font-semibold text-slate-600">Price (UGX)</Label>
+                                <Input required type="number" min="0" value={newRoom.price} onChange={e => setNewRoom({...newRoom, price: e.target.value})} placeholder="0" className="bg-white rounded-lg border-slate-200 h-10 shadow-sm" />
                               </div>
                             </div>
                           </div>
                           <div className="flex justify-end">
-                            <Button type="submit" className="bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold uppercase tracking-widest rounded-none h-8 px-4">
-                              <Plus className="h-3 w-3 mr-1" /> Add_Room_Type
+                            <Button type="submit" className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg h-9 px-4 shadow-sm">
+                              <Plus className="h-4 w-4 mr-1" /> Add Room Type
                             </Button>
                           </div>
                         </form>
                       </div>
 
-                      <DialogFooter className="mt-6 border-t border-slate-100 pt-4">
+                      <DialogFooter className="mt-8 border-t border-slate-100 pt-6">
                         <Button
                           onClick={() => setIsWizardOpen(false)}
-                          className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-none font-bold uppercase tracking-widest text-xs"
+                          className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-base shadow-md"
                         >
-                          Finish_Setup
+                          Finish Setup
                         </Button>
                       </DialogFooter>
                     </div>
@@ -628,71 +628,67 @@ export default function OwnerDashboard() {
           transition={{ delay: 0.1 }}
           className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10"
         >
-          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
             {[
               {
-                label: "Active_Properties",
+                label: "Active Properties",
                 value: properties.filter((p) => p.status === "approved").length,
                 icon: Building,
-                color: "text-indigo-500",
+                color: "text-indigo-600",
+                bg: "bg-indigo-100",
               },
               {
-                label: "Pending_Reviews",
+                label: "Pending Reviews",
                 value: properties.filter((p) => p.status === "pending").length,
                 icon: Clock,
-                color: "text-amber-500",
+                color: "text-amber-600",
+                bg: "bg-amber-100",
               },
               {
-                label: "Total_Bookings",
+                label: "Total Bookings",
                 value: bookings.length,
                 icon: Users,
-                color: "text-emerald-500",
+                color: "text-emerald-600",
+                bg: "bg-emerald-100",
               },
               {
-                label: "Pending_Requests",
+                label: "Pending Requests",
                 value: bookings.filter((b) => b.status === "pending").length,
                 icon: ShieldAlert,
-                color: "text-rose-500",
+                color: "text-rose-600",
+                bg: "bg-rose-100",
               },
             ].map((stat, i) => (
               <Card
                 key={i}
-                className="rounded-none border-slate-800 bg-slate-900/50 shadow-sm hover:shadow-md transition-shadow group overflow-hidden relative"
+                className="rounded-2xl border border-slate-200/60 shadow-md bg-white hover:shadow-lg transition-all"
               >
-                <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
-                  <stat.icon className="h-16 w-16 text-white" />
-                </div>
-                <CardHeader className="pb-2">
-                  <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                    {stat.label}
-                  </CardDescription>
-                  <CardTitle className="text-3xl font-black tracking-tighter text-white">
-                    {stat.value}
-                  </CardTitle>
-                </CardHeader>
-                <div
-                  className={cn(
-                    "h-1 w-full mt-2",
-                    stat.color.replace("text-", "bg-"),
-                  )}
-                />
+                <CardContent className="p-6 flex items-center gap-5">
+                  <div className={cn("p-4 rounded-xl", stat.bg)}>
+                    <stat.icon className={cn("h-7 w-7", stat.color)} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-500 mb-1">
+                      {stat.label}
+                    </p>
+                    <p className="text-3xl font-bold text-slate-900">
+                      {stat.value}
+                    </p>
+                  </div>
+                </CardContent>
               </Card>
             ))}
           </div>
-
-          <Card className="rounded-none border-slate-800 bg-slate-900/50 shadow-sm overflow-hidden flex flex-col">
+          <Card className="rounded-2xl border border-slate-200/60 shadow-md bg-white flex flex-col justify-between">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                  Revenue_Growth
+                <CardDescription className="text-sm font-semibold text-slate-500">
+                  Revenue Growth
                 </CardDescription>
-                <TrendingUp className="h-3 w-3 text-emerald-500" />
+                <TrendingUp className="h-5 w-5 text-emerald-500" />
               </div>
-              <CardTitle className="text-2xl font-black tracking-tighter text-white">
-                13.2M{" "}
-                <span className="text-[10px] font-mono text-slate-500">
-                  UGX
-                </span>
+              <CardTitle className="text-3xl font-bold tracking-tight text-slate-900 mt-2">
+                13.2M <span className="text-base text-slate-500 font-medium">UGX</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="flex-grow pt-4">
@@ -734,24 +730,24 @@ export default function OwnerDashboard() {
 
         {/* Main Dashboard Tabs */}
         <Tabs defaultValue="properties" className="space-y-8">
-          <TabsList className="bg-slate-900 p-1 rounded-none border border-white/5 w-full sm:w-auto overflow-x-auto flex-nowrap">
+          <TabsList className="bg-white p-1 rounded-xl shadow-sm border border-slate-200 w-full sm:w-auto overflow-x-auto flex-nowrap">
             <TabsTrigger
               value="properties"
-              className="rounded-none px-8 py-3 text-[10px] font-bold uppercase tracking-widest data-[state=active]:bg-orange-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all text-slate-400"
+              className="rounded-lg px-8 py-3 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm transition-all text-slate-600"
             >
-              <Home className="h-3 w-3 mr-2" /> Inventory
+              <Home className="h-4 w-4 mr-2" /> Inventory
             </TabsTrigger>
             <TabsTrigger
               value="bookings"
-              className="rounded-none px-8 py-3 text-[10px] font-bold uppercase tracking-widest data-[state=active]:bg-orange-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all text-slate-400"
+              className="rounded-lg px-8 py-3 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm transition-all text-slate-600"
             >
-              <Users className="h-3 w-3 mr-2" /> Booking_Logs
+              <Users className="h-4 w-4 mr-2" /> Booking Logs
             </TabsTrigger>
             <TabsTrigger
               value="settings"
-              className="rounded-none px-8 py-3 text-[10px] font-bold uppercase tracking-widest data-[state=active]:bg-orange-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all text-slate-400"
+              className="rounded-lg px-8 py-3 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm transition-all text-slate-600"
             >
-              <Settings className="h-3 w-3 mr-2" /> System_Config
+              <Settings className="h-4 w-4 mr-2" /> System Config
             </TabsTrigger>
           </TabsList>
 
@@ -763,14 +759,14 @@ export default function OwnerDashboard() {
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.2 }}
               >
-                <Card className="rounded-none border-white/5 bg-slate-900/50 shadow-sm overflow-hidden">
-                  <CardHeader className="border-b border-white/5 bg-white/5">
+                <Card className="rounded-2xl border border-slate-200/60 bg-white shadow-md overflow-hidden">
+                  <CardHeader className="border-b border-slate-100 bg-slate-50/50">
                     <div className="flex items-center justify-between">
                       <div>
-                        <CardTitle className="text-xs font-bold uppercase tracking-widest text-white">
-                          Property_Inventory
+                        <CardTitle className="text-lg font-bold text-slate-900">
+                          Property Inventory
                         </CardTitle>
-                        <CardDescription className="text-[10px] uppercase tracking-wider text-slate-500">
+                        <CardDescription className="text-slate-500 font-medium">
                           Manage your listed hostel profiles.
                         </CardDescription>
                       </div>
@@ -779,31 +775,31 @@ export default function OwnerDashboard() {
                   <CardContent className="p-0">
                     {isLoading ? (
                       <div className="py-20 flex flex-col items-center justify-center">
-                        <Loader2 className="h-8 w-8 animate-spin text-orange-500 mb-4" />
-                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-                          Accessing_Database...
+                        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                        <span className="text-sm font-medium text-slate-500">
+                          Fetching Data...
                         </span>
                       </div>
                     ) : properties.length === 0 ? (
                       <div className="py-20 text-center">
-                        <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-                          No_Properties_Registered
+                        <p className="text-sm font-medium text-slate-500">
+                          No Properties Registered
                         </p>
                       </div>
                     ) : (
-                      <Table className="font-mono">
-                        <TableHeader className="bg-white/5">
-                          <TableRow className="hover:bg-transparent border-white/5">
-                            <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest h-12">
-                              Property_Identity
+                      <Table>
+                        <TableHeader className="bg-slate-50">
+                          <TableRow className="hover:bg-transparent border-slate-200">
+                            <TableHead className="text-xs font-semibold text-slate-600 h-12">
+                              Property Name
                             </TableHead>
-                            <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest h-12">
-                              Institution_Affiliation
+                            <TableHead className="text-xs font-semibold text-slate-600 h-12">
+                              Institution Affiliation
                             </TableHead>
-                            <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest h-12">
-                              Status_Code
+                            <TableHead className="text-xs font-semibold text-slate-600 h-12">
+                              System Status
                             </TableHead>
-                            <TableHead className="text-right text-[10px] font-bold text-slate-400 uppercase tracking-widest h-12 pr-8">
+                            <TableHead className="text-right text-xs font-semibold text-slate-600 h-12 pr-8">
                               Actions
                             </TableHead>
                           </TableRow>
@@ -812,31 +808,31 @@ export default function OwnerDashboard() {
                           {properties.map((property) => (
                             <TableRow
                               key={property.id}
-                              className="hover:bg-white/5 transition-colors border-b border-white/5 last:border-0"
+                              className="hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0"
                             >
                               <TableCell className="py-4">
                                 <div className="flex flex-col">
-                                  <span className="text-xs font-bold text-white uppercase tracking-tight">
+                                  <span className="text-sm font-bold text-slate-900">
                                     {property.name}
                                   </span>
-                                  <span className="text-[9px] text-slate-500 uppercase tracking-widest mt-0.5">
+                                  <span className="text-xs text-slate-500 mt-0.5">
                                     {property.address}
                                   </span>
                                 </div>
                               </TableCell>
-                              <TableCell className="text-[10px] text-slate-400 uppercase tracking-tight">
+                              <TableCell className="text-sm font-medium text-slate-600">
                                 {property.university}
                               </TableCell>
                               <TableCell>
                                 <Badge
                                   className={cn(
-                                    "rounded-none text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 border shadow-none",
+                                    "rounded-md text-xs font-semibold px-2.5 py-1 border shadow-sm",
                                     property.status === "approved" &&
-                                      "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+                                      "bg-emerald-50 text-emerald-700 border-emerald-200",
                                     property.status === "pending" &&
-                                      "bg-amber-500/10 text-amber-500 border-amber-500/20",
+                                      "bg-amber-50 text-amber-700 border-amber-200",
                                     property.status === "rejected" &&
-                                      "bg-rose-500/10 text-rose-500 border-rose-500/20",
+                                      "bg-rose-50 text-rose-700 border-rose-200",
                                   )}
                                 >
                                   {property.status}
@@ -846,13 +842,13 @@ export default function OwnerDashboard() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="rounded-none border-white/10 text-[9px] font-bold uppercase tracking-widest hover:bg-orange-600 hover:text-white transition-all text-slate-400"
+                                  className="rounded-lg shadow-sm border-slate-200 text-sm font-semibold hover:bg-primary hover:text-white transition-colors text-slate-700"
                                   onClick={() => {
                                     setSelectedHostel(property);
                                     setIsRoomDialogOpen(true);
                                   }}
                                 >
-                                  Manage_Rooms
+                                  Manage Rooms
                                 </Button>
                               </TableCell>
                             </TableRow>
@@ -872,43 +868,43 @@ export default function OwnerDashboard() {
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.2 }}
               >
-                <Card className="rounded-none border-white/5 bg-slate-900/50 shadow-sm overflow-hidden">
-                  <CardHeader className="border-b border-white/5 bg-white/5">
-                    <CardTitle className="text-xs font-bold uppercase tracking-widest text-white">
-                      Booking_Request_Logs
+                <Card className="rounded-2xl border border-slate-200/60 bg-white shadow-md overflow-hidden">
+                  <CardHeader className="border-b border-slate-100 bg-slate-50/50">
+                    <CardTitle className="text-lg font-bold text-slate-900">
+                      Booking Request Logs
                     </CardTitle>
-                    <CardDescription className="text-[10px] uppercase tracking-wider text-slate-500">
+                    <CardDescription className="text-slate-500 font-medium">
                       Review and process student applications.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-0">
                     {isLoading ? (
                       <div className="py-20 flex flex-col items-center justify-center">
-                        <Loader2 className="h-8 w-8 animate-spin text-orange-500 mb-4" />
-                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-                          Accessing_Database...
+                        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                        <span className="text-sm font-medium text-slate-500">
+                          Fetching Data...
                         </span>
                       </div>
                     ) : bookings.length === 0 ? (
                       <div className="py-20 text-center">
-                        <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-                          No_Booking_Records_Found
+                        <p className="text-sm font-medium text-slate-500">
+                          No Booking Records Found
                         </p>
                       </div>
                     ) : (
-                      <Table className="font-mono">
-                        <TableHeader className="bg-white/5">
-                          <TableRow className="hover:bg-transparent border-white/5">
-                            <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest h-12">
-                              Student_Identity
+                      <Table>
+                        <TableHeader className="bg-slate-50">
+                          <TableRow className="hover:bg-transparent border-slate-200">
+                            <TableHead className="text-xs font-semibold text-slate-600 h-12">
+                              Student Name
                             </TableHead>
-                            <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest h-12">
-                              Target_Property
+                            <TableHead className="text-xs font-semibold text-slate-600 h-12">
+                              Target Property
                             </TableHead>
-                            <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-widest h-12">
+                            <TableHead className="text-xs font-semibold text-slate-600 h-12">
                               Status
                             </TableHead>
-                            <TableHead className="text-right text-[10px] font-bold text-slate-400 uppercase tracking-widest h-12 pr-8">
+                            <TableHead className="text-right text-xs font-semibold text-slate-600 h-12 pr-8">
                               Actions
                             </TableHead>
                           </TableRow>
@@ -917,28 +913,28 @@ export default function OwnerDashboard() {
                           {bookings.map((booking) => (
                             <TableRow
                               key={booking.id}
-                              className="hover:bg-white/5 transition-colors border-b border-white/5 last:border-0"
+                              className="hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0"
                             >
                               <TableCell className="py-4">
-                                <span className="text-xs font-bold text-white uppercase tracking-tight">
+                                <span className="text-sm font-bold text-slate-900">
                                   {booking.users
                                     ? `${booking.users.first_name} ${booking.users.last_name}`
-                                    : "ANONYMOUS_STUDENT"}
+                                    : "Anonymous Student"}
                                 </span>
                               </TableCell>
-                              <TableCell className="text-[10px] text-slate-400 uppercase tracking-tight">
+                              <TableCell className="text-sm font-medium text-slate-600">
                                 {booking.hostels?.name}
                               </TableCell>
                               <TableCell>
                                 <Badge
                                   className={cn(
-                                    "rounded-none text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 border shadow-none",
+                                    "rounded-md text-xs font-semibold px-2.5 py-1 border shadow-sm",
                                     booking.status === "approved" &&
-                                      "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+                                      "bg-emerald-50 text-emerald-700 border-emerald-200",
                                     booking.status === "pending" &&
-                                      "bg-amber-500/10 text-amber-500 border-amber-500/20",
+                                      "bg-amber-50 text-amber-700 border-amber-200",
                                     booking.status === "rejected" &&
-                                      "bg-rose-500/10 text-rose-500 border-rose-500/20",
+                                      "bg-rose-50 text-rose-700 border-rose-200",
                                   )}
                                 >
                                   {booking.status}
@@ -956,7 +952,7 @@ export default function OwnerDashboard() {
                                       }
                                       variant="outline"
                                       size="sm"
-                                      className="rounded-none border-emerald-500/20 text-emerald-500 text-[9px] font-bold uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all"
+                                      className="rounded-lg border-emerald-200 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all text-xs font-semibold"
                                     >
                                       Approve
                                     </Button>
@@ -969,14 +965,14 @@ export default function OwnerDashboard() {
                                       }
                                       variant="outline"
                                       size="sm"
-                                      className="rounded-none border-rose-500/20 text-rose-500 text-[9px] font-bold uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all"
+                                      className="rounded-lg border-rose-200 text-rose-600 hover:bg-rose-600 hover:text-white transition-all text-xs font-semibold"
                                     >
                                       Reject
                                     </Button>
                                   </div>
                                 ) : (
-                                  <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">
-                                    PROCESSED
+                                  <span className="text-xs font-semibold text-slate-500">
+                                    Processed
                                   </span>
                                 )}
                               </TableCell>
@@ -997,24 +993,23 @@ export default function OwnerDashboard() {
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.2 }}
               >
-                <Card className="rounded-none border-white/5 bg-slate-900/50 shadow-sm">
-                  <CardHeader>
-                    <CardTitle className="text-xs font-bold uppercase tracking-widest text-white">
-                      System_Configuration
+                <Card className="rounded-2xl border border-slate-200/60 bg-white shadow-md">
+                  <CardHeader className="border-b border-slate-100 bg-slate-50/50">
+                    <CardTitle className="text-lg font-bold text-slate-900">
+                      System Configuration
                     </CardTitle>
-                    <CardDescription className="text-[10px] uppercase tracking-wider text-slate-500">
+                    <CardDescription className="text-slate-500 font-medium">
                       Manage your owner profile and payout settings.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="p-6 border border-dashed border-white/10 bg-white/5 flex flex-col items-center justify-center text-center">
-                      <Wallet className="h-10 w-10 text-slate-700 mb-4" />
-                      <h4 className="text-xs font-bold uppercase tracking-widest text-white mb-1">
-                        Financial_Integration_Pending
+                  <CardContent className="space-y-6 pt-6">
+                    <div className="p-8 border border-dashed border-slate-200 rounded-xl bg-slate-50 flex flex-col items-center justify-center text-center">
+                      <Wallet className="h-12 w-12 text-slate-400 mb-4" />
+                      <h4 className="text-sm font-bold text-slate-900 mb-1">
+                        Financial Integration Pending
                       </h4>
-                      <p className="text-[10px] text-slate-500 uppercase tracking-widest max-w-xs">
-                        Payout via Mobile Money configuration is currently in
-                        development.
+                      <p className="text-sm text-slate-500 font-medium max-w-xs">
+                        Payout via Mobile Money configuration is currently in development.
                       </p>
                     </div>
                   </CardContent>
@@ -1027,13 +1022,13 @@ export default function OwnerDashboard() {
 
       {/* Manage Rooms Dialog */}
       <Dialog open={isRoomDialogOpen} onOpenChange={setIsRoomDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden p-0 rounded-none border-2 border-slate-900">
-          <div className="bg-slate-900 text-white p-6">
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden p-0 rounded-2xl border-0 shadow-2xl bg-white">
+          <div className="bg-slate-50 border-b border-slate-100 text-slate-900 p-6 relative">
             <DialogHeader>
-              <DialogTitle className="text-xl font-black uppercase tracking-tighter">
-                Room_Inventory_Control
+              <DialogTitle className="text-2xl font-bold tracking-tight">
+                Room Inventory Control
               </DialogTitle>
-              <DialogDescription className="text-slate-400 text-[10px] uppercase tracking-widest font-mono">
+              <DialogDescription className="text-slate-500 text-base font-medium">
                 Managing: {selectedHostel?.name}
               </DialogDescription>
             </DialogHeader>
@@ -1042,37 +1037,37 @@ export default function OwnerDashboard() {
           <div className="p-6 overflow-y-auto max-h-[calc(85vh-120px)]">
             <div className="space-y-8">
               <div>
-                <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-4 flex items-center gap-2">
-                  <LayoutDashboard className="h-3 w-3" /> Active_Room_Types
+                <h4 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                  <LayoutDashboard className="h-4 w-4 text-primary" /> Active Room Types
                 </h4>
                 {isLoadingRooms ? (
                   <div className="py-10 flex flex-col items-center justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-orange-500 mb-2" />
-                    <span className="text-[9px] font-mono text-slate-400 uppercase tracking-widest">
-                      Syncing_Data...
+                    <Loader2 className="h-6 w-6 animate-spin text-primary mb-2" />
+                    <span className="text-xs font-semibold text-slate-500">
+                      Syncing Data...
                     </span>
                   </div>
                 ) : rooms.length === 0 ? (
-                  <div className="p-8 border border-dashed border-slate-200 text-center">
-                    <p className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
-                      No_Room_Data_Available
+                  <div className="p-8 border border-dashed border-slate-200 rounded-xl bg-slate-50 text-center">
+                    <p className="text-sm font-semibold text-slate-500">
+                      No Room Data Available
                     </p>
                   </div>
                 ) : (
-                  <div className="border border-slate-200">
-                    <Table className="font-mono">
+                  <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                    <Table>
                       <TableHeader className="bg-slate-50">
                         <TableRow className="hover:bg-transparent">
-                          <TableHead className="text-[9px] font-bold uppercase tracking-widest h-10">
-                            Room_Type
+                          <TableHead className="text-xs font-semibold text-slate-600 h-10">
+                            Room Type
                           </TableHead>
-                          <TableHead className="text-[9px] font-bold uppercase tracking-widest h-10">
-                            Price_UGX
+                          <TableHead className="text-xs font-semibold text-slate-600 h-10">
+                            Price (UGX)
                           </TableHead>
-                          <TableHead className="text-[9px] font-bold uppercase tracking-widest h-10">
+                          <TableHead className="text-xs font-semibold text-slate-600 h-10">
                             Capacity
                           </TableHead>
-                          <TableHead className="text-right text-[9px] font-bold uppercase tracking-widest h-10 pr-4">
+                          <TableHead className="text-right text-xs font-semibold text-slate-600 h-10 pr-4">
                             Action
                           </TableHead>
                         </TableRow>
@@ -1081,15 +1076,15 @@ export default function OwnerDashboard() {
                         {rooms.map((room) => (
                           <TableRow
                             key={room.id}
-                            className="hover:bg-slate-50/50 border-b border-slate-100 last:border-0"
+                            className="hover:bg-slate-50/50 border-b border-slate-100 last:border-0 transition-colors"
                           >
-                            <TableCell className="text-[11px] font-bold uppercase tracking-tight">
+                            <TableCell className="text-sm font-semibold text-slate-900">
                               {room.name}
                             </TableCell>
-                            <TableCell className="text-[11px]">
+                            <TableCell className="text-sm text-slate-600">
                               {room.price.toLocaleString()}
                             </TableCell>
-                            <TableCell className="text-[11px]">
+                            <TableCell className="text-sm text-slate-600">
                               {room.capacity}
                             </TableCell>
                             <TableCell className="text-right pr-4">
@@ -1097,9 +1092,9 @@ export default function OwnerDashboard() {
                                 onClick={() => handleDeleteRoom(room.id)}
                                 variant="ghost"
                                 size="sm"
-                                className="h-7 w-7 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded"
+                                className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg"
                               >
-                                <Trash2 className="h-3.5 w-3.5" />
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </TableCell>
                           </TableRow>
@@ -1110,17 +1105,17 @@ export default function OwnerDashboard() {
                 )}
               </div>
 
-              <div className="bg-slate-50 p-6 border border-slate-200">
-                <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-900 mb-4 flex items-center gap-2">
-                  <Plus className="h-3 w-3" /> Add_New_Room_Configuration
+              <div className="bg-slate-50 p-6 border border-slate-200 rounded-2xl shadow-sm">
+                <h4 className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                  <Plus className="h-4 w-4 text-primary" /> Add New Room Configuration
                 </h4>
                 <form
                   onSubmit={handleAddRoom}
                   className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end"
                 >
                   <div className="space-y-2 sm:col-span-2">
-                    <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-500">
-                      Room_Identity
+                    <Label className="text-xs font-semibold text-slate-600">
+                      Room Label
                     </Label>
                     <Input
                       required
@@ -1128,13 +1123,13 @@ export default function OwnerDashboard() {
                       onChange={(e) =>
                         setNewRoom({ ...newRoom, name: e.target.value })
                       }
-                      placeholder="E.G. SINGLE SELF-CONTAINED"
-                      className="rounded-none border-slate-200 text-xs uppercase h-10"
+                      placeholder="e.g. Single Self-Contained"
+                      className="rounded-lg border-slate-200 text-sm h-10 bg-white shadow-sm"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-500">
-                      Price_UGX
+                    <Label className="text-xs font-semibold text-slate-600">
+                      Price (UGX)
                     </Label>
                     <Input
                       required
@@ -1145,11 +1140,11 @@ export default function OwnerDashboard() {
                         setNewRoom({ ...newRoom, price: e.target.value })
                       }
                       placeholder="1500000"
-                      className="rounded-none border-slate-200 text-xs h-10"
+                      className="rounded-lg border-slate-200 text-sm h-10 bg-white shadow-sm"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-500">
+                    <Label className="text-xs font-semibold text-slate-600">
                       Capacity
                     </Label>
                     <div className="flex gap-2">
@@ -1162,11 +1157,11 @@ export default function OwnerDashboard() {
                           setNewRoom({ ...newRoom, capacity: e.target.value })
                         }
                         placeholder="1"
-                        className="rounded-none border-slate-200 text-xs h-10"
+                        className="rounded-lg border-slate-200 text-sm h-10 bg-white shadow-sm"
                       />
                       <Button
                         type="submit"
-                        className="shrink-0 bg-slate-900 hover:bg-slate-800 text-white rounded-none h-10 w-10 p-0"
+                        className="shrink-0 bg-primary hover:bg-primary/90 text-white rounded-lg h-10 w-10 p-0 shadow-sm transition-transform hover:scale-105"
                       >
                         <Plus className="h-4 w-4" />
                       </Button>

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Building2 } from "lucide-react";
+import { Building2, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
@@ -77,77 +77,51 @@ export default function Auth({
   const isOwner = appType === "owner";
 
   return (
-    <div
-      className={cn(
-        "container relative flex min-h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0",
-        isOwner && "bg-slate-950 text-white",
-      )}
-    >
-      <div
-        className={cn(
-          "relative hidden h-full flex-col p-10 text-white lg:flex",
-          isOwner
-            ? "bg-slate-900 border-r border-white/5"
-            : "bg-muted dark:border-r",
-        )}
-      >
-        <div
-          className={cn(
-            "absolute inset-0",
-            isOwner ? "bg-pattern-dark opacity-50" : "bg-primary/90",
-          )}
-        />
-        {isOwner && (
-          <div className="absolute inset-0 bg-gradient-to-b from-orange-600/20 to-transparent opacity-50" />
-        )}
+    <div className="container relative flex min-h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0 bg-slate-50">
+      <div className="relative hidden h-full flex-col p-10 text-white lg:flex bg-primary overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-orange-500 opacity-90" />
+        <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:32px]" />
+        
         <div className="relative z-20 flex items-center text-lg font-medium">
-          <div
-            className={cn(
-              "p-1.5 rounded-lg flex items-center justify-center mr-3 shadow-lg",
-              isOwner ? "bg-orange-600" : "bg-white/20",
-            )}
-          >
-            <Building2 className="h-6 w-6 text-white" />
+          <div className="p-2 rounded-xl flex items-center justify-center mr-3 shadow-lg bg-white/20 backdrop-blur-md">
+            <Building2 className="h-7 w-7 text-white" />
           </div>
-          <span className="text-3xl font-black tracking-tighter text-white">
-            {appType === "owner"
-              ? "KAJU_HOUSING_PARTNERS"
+          <span className="text-3xl font-black tracking-tight text-white drop-shadow-sm">
+            {isOwner
+              ? "KAJU_HOUSING Partners"
               : appType === "admin"
-                ? "KAJU_HOUSING_ADMIN"
+                ? "KAJU_HOUSING Admin"
                 : "KAJU_HOUSING"}
           </span>
         </div>
+        
         <div className="relative z-20 mt-auto">
           <motion.blockquote
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-2"
+            className="space-y-6"
           >
-            <p
-              className={cn(
-                "text-xl font-medium leading-relaxed",
-                isOwner ? "text-slate-300 italic font-serif" : "text-lg",
-              )}
-            >
-              {appType === "owner"
-                ? "Join the network of elite property owners providing premium student accommodation across Uganda. Scale your operations with our mission-critical management suite."
+            <p className="text-2xl font-medium leading-relaxed drop-shadow-sm text-white/90">
+              {isOwner
+                ? "Join the network of elite property owners providing premium student accommodation across Uganda. Scale your operations with our modern management suite."
                 : appType === "admin"
                   ? "Secure portal for platform administration and system oversight."
                   : '"KAJU HOUSING completely changed how I found my accommodation for the semester. No more getting scammed or walking around under the sun for hours looking for hostels."'}
             </p>
             {appType === "student" && (
-              <footer className="text-sm opacity-70">
+              <footer className="text-primary-foreground/80 font-medium">
                 Sofia Davis, Makerere University
               </footer>
             )}
             {isOwner && (
-              <footer className="text-xs font-mono uppercase tracking-[0.3em] text-orange-500 mt-4">
-                Verified_Partner_Program
+              <footer className="text-primary-foreground/80 font-medium">
+                Verified Partner Program
               </footer>
             )}
           </motion.blockquote>
         </div>
       </div>
+      
       <div className="lg:p-8 w-full max-w-md mx-auto">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -159,109 +133,46 @@ export default function Auth({
             className="w-full"
             onValueChange={(v: string) => setIsLogin(v === "login")}
           >
-            <TabsList
-              className={cn(
-                "grid w-full mb-8",
-                appType === "admin" ? "grid-cols-1" : "grid-cols-2",
-                isOwner
-                  ? "bg-slate-900 p-1 rounded-none border border-white/10"
-                  : "bg-slate-100",
-              )}
-            >
-              <TabsTrigger
-                value="login"
-                className={cn(
-                  isOwner &&
-                    "rounded-none data-[state=active]:bg-orange-600 data-[state=active]:text-white uppercase text-[10px] font-bold tracking-widest",
-                )}
-              >
+            <TabsList className={cn("grid w-full mb-8 rounded-xl bg-slate-100/80 p-1 backdrop-blur-sm", appType === "admin" ? "grid-cols-1" : "grid-cols-2")}>
+              <TabsTrigger value="login" className="rounded-lg data-[state=active]:shadow-sm">
                 Login
               </TabsTrigger>
               {appType !== "admin" && (
-                <TabsTrigger
-                  value="register"
-                  className={cn(
-                    isOwner &&
-                      "rounded-none data-[state=active]:bg-orange-600 data-[state=active]:text-white uppercase text-[10px] font-bold tracking-widest",
-                  )}
-                >
+                <TabsTrigger value="register" className="rounded-lg data-[state=active]:shadow-sm">
                   Register
                 </TabsTrigger>
               )}
             </TabsList>
 
             <TabsContent value="login">
-              <Card
-                className={cn(
-                  "border-0 shadow-none bg-transparent",
-                  isOwner && "text-white",
-                )}
-              >
-                <CardHeader className="px-0">
-                  <CardTitle
-                    className={cn(
-                      "text-2xl font-black tracking-tighter uppercase",
-                      isOwner ? "text-white" : "text-slate-900",
-                    )}
-                  >
-                    {isOwner ? "Access_Portal" : "Welcome back"}
+              <Card className="border border-slate-200/60 shadow-xl shadow-slate-200/40 bg-white/80 backdrop-blur-xl rounded-2xl">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">
+                    {isOwner ? "Access Portal" : "Welcome back"}
                   </CardTitle>
-                  <CardDescription
-                    className={
-                      isOwner
-                        ? "text-slate-500 uppercase text-[10px] tracking-widest font-mono"
-                        : ""
-                    }
-                  >
+                  <CardDescription className="text-slate-500">
                     {isOwner
                       ? "Secure authentication required for console access."
                       : "Enter your email and password to log in to your account."}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="px-0">
-                  <form onSubmit={handleAuth} className="space-y-4">
+                <CardContent>
+                  <form onSubmit={handleAuth} className="space-y-5">
                     <div className="space-y-2">
-                      <Label
-                        htmlFor="email"
-                        className={
-                          isOwner
-                            ? "uppercase text-[10px] font-bold tracking-widest text-slate-400"
-                            : ""
-                        }
-                      >
-                        Email
-                      </Label>
+                      <Label htmlFor="email" className="text-slate-700 font-semibold">Email</Label>
                       <Input
                         id="email"
                         name="email"
                         type="email"
                         placeholder="m@example.com"
                         required
-                        className={cn(
-                          isOwner &&
-                            "bg-slate-900 border-white/10 rounded-none focus:ring-orange-500 text-white",
-                        )}
+                        className="bg-slate-50 h-12 rounded-xl focus-visible:ring-primary/20"
                       />
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label
-                          htmlFor="password"
-                          className={
-                            isOwner
-                              ? "uppercase text-[10px] font-bold tracking-widest text-slate-400"
-                              : ""
-                          }
-                        >
-                          Password
-                        </Label>
-                        <Link
-                          to="/forgot-password"
-                          className={cn(
-                            "text-sm font-medium hover:underline",
-                            isOwner ? "text-orange-500" : "text-primary",
-                          )}
-                        >
+                        <Label htmlFor="password" className="text-slate-700 font-semibold">Password</Label>
+                        <Link to="/forgot-password" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
                           Forgot password?
                         </Link>
                       </div>
@@ -270,29 +181,11 @@ export default function Auth({
                         name="password"
                         type="password"
                         required
-                        className={cn(
-                          isOwner &&
-                            "bg-slate-900 border-white/10 rounded-none focus:ring-orange-500 text-white",
-                        )}
+                        className="bg-slate-50 h-12 rounded-xl focus-visible:ring-primary/20"
                       />
                     </div>
-                    <Button
-                      type="submit"
-                      className={cn(
-                        "w-full h-12",
-                        isOwner
-                          ? "bg-orange-600 hover:bg-orange-700 rounded-none uppercase font-bold tracking-widest text-xs"
-                          : "",
-                      )}
-                      disabled={isLoading}
-                    >
-                      {isLoading
-                        ? isOwner
-                          ? "AUTHENTICATING..."
-                          : "Logging in..."
-                        : isOwner
-                          ? "INITIALIZE_SESSION"
-                          : "Login"}
+                    <Button type="submit" className="w-full h-12 rounded-xl text-base font-semibold shadow-md active:scale-[0.98] transition-all" disabled={isLoading}>
+                      {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Login"}
                     </Button>
                   </form>
                 </CardContent>
@@ -300,142 +193,63 @@ export default function Auth({
             </TabsContent>
 
             <TabsContent value="register">
-              <Card
-                className={cn(
-                  "border-0 shadow-none bg-transparent",
-                  isOwner && "text-white",
-                )}
-              >
-                <CardHeader className="px-0">
-                  <CardTitle
-                    className={cn(
-                      "text-2xl font-black tracking-tighter uppercase",
-                      isOwner ? "text-white" : "text-slate-900",
-                    )}
-                  >
-                    {isOwner ? "Partner_Onboarding" : "Create an account"}
+              <Card className="border border-slate-200/60 shadow-xl shadow-slate-200/40 bg-white/80 backdrop-blur-xl rounded-2xl">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">
+                    {isOwner ? "Partner Onboarding" : "Create an account"}
                   </CardTitle>
-                  <CardDescription
-                    className={
-                      isOwner
-                        ? "text-slate-500 uppercase text-[10px] tracking-widest font-mono"
-                        : ""
-                    }
-                  >
+                  <CardDescription className="text-slate-500">
                     {isOwner
-                      ? "Join the Kaju Housing partner network."
+                      ? "Join the KAJU HOUSING partner network."
                       : "Enter your details below to create your account."}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="px-0">
-                  <form onSubmit={handleAuth} className="space-y-4">
+                <CardContent>
+                  <form onSubmit={handleAuth} className="space-y-5">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label
-                          htmlFor="first_name"
-                          className={
-                            isOwner
-                              ? "uppercase text-[10px] font-bold tracking-widest text-slate-400"
-                              : ""
-                          }
-                        >
-                          First name
-                        </Label>
+                        <Label htmlFor="first_name" className="text-slate-700 font-semibold">First name</Label>
                         <Input
                           id="first_name"
                           name="first_name"
                           required
-                          className={cn(
-                            isOwner &&
-                              "bg-slate-900 border-white/10 rounded-none focus:ring-orange-500 text-white",
-                          )}
+                          className="bg-slate-50 h-12 rounded-xl focus-visible:ring-primary/20"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label
-                          htmlFor="last_name"
-                          className={
-                            isOwner
-                              ? "uppercase text-[10px] font-bold tracking-widest text-slate-400"
-                              : ""
-                          }
-                        >
-                          Last name
-                        </Label>
+                        <Label htmlFor="last_name" className="text-slate-700 font-semibold">Last name</Label>
                         <Input
                           id="last_name"
                           name="last_name"
                           required
-                          className={cn(
-                            isOwner &&
-                              "bg-slate-900 border-white/10 rounded-none focus:ring-orange-500 text-white",
-                          )}
+                          className="bg-slate-50 h-12 rounded-xl focus-visible:ring-primary/20"
                         />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label
-                        htmlFor="register_email"
-                        className={
-                          isOwner
-                            ? "uppercase text-[10px] font-bold tracking-widest text-slate-400"
-                            : ""
-                        }
-                      >
-                        Email
-                      </Label>
+                      <Label htmlFor="register_email" className="text-slate-700 font-semibold">Email</Label>
                       <Input
                         id="register_email"
                         name="email"
                         type="email"
                         placeholder="m@example.com"
                         required
-                        className={cn(
-                          isOwner &&
-                            "bg-slate-900 border-white/10 rounded-none focus:ring-orange-500 text-white",
-                        )}
+                        className="bg-slate-50 h-12 rounded-xl focus-visible:ring-primary/20"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label
-                        htmlFor="register_password"
-                        className={
-                          isOwner
-                            ? "uppercase text-[10px] font-bold tracking-widest text-slate-400"
-                            : ""
-                        }
-                      >
-                        Password
-                      </Label>
+                      <Label htmlFor="register_password" className="text-slate-700 font-semibold">Password</Label>
                       <Input
                         id="register_password"
                         name="password"
                         type="password"
                         required
                         minLength={6}
-                        className={cn(
-                          isOwner &&
-                            "bg-slate-900 border-white/10 rounded-none focus:ring-orange-500 text-white",
-                        )}
+                        className="bg-slate-50 h-12 rounded-xl focus-visible:ring-primary/20"
                       />
                     </div>
-                    <Button
-                      type="submit"
-                      className={cn(
-                        "w-full h-12",
-                        isOwner
-                          ? "bg-orange-600 hover:bg-orange-700 rounded-none uppercase font-bold tracking-widest text-xs"
-                          : "",
-                      )}
-                      disabled={isLoading}
-                    >
-                      {isLoading
-                        ? isOwner
-                          ? "REGISTERING..."
-                          : "Creating account..."
-                        : isOwner
-                          ? "CREATE_PARTNER_ACCOUNT"
-                          : "Create Account"}
+                    <Button type="submit" className="w-full h-12 rounded-xl text-base font-semibold shadow-md active:scale-[0.98] transition-all" disabled={isLoading}>
+                      {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isOwner ? "Create Partner Account" : "Create Account")}
                     </Button>
                   </form>
                 </CardContent>

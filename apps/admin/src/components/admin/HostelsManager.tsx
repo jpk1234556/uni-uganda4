@@ -249,22 +249,22 @@ export default function HostelsManager() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]" />
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">Inventory_Control</span>
+            <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(249,115,22,0.6)]" />
+            <span className="text-sm font-bold text-slate-500 tracking-wide">Inventory Control</span>
           </div>
-          <h2 className="text-2xl font-black tracking-tighter text-slate-900 uppercase">Hostel_Management</h2>
-          <p className="text-slate-500 text-[10px] font-mono mt-1 uppercase tracking-widest">PROPERTY_REGISTRY_AND_INVENTORY_SYSTEM</p>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900">Hostel Management</h2>
+          <p className="text-slate-500 text-sm mt-1">Property registry and inventory system</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Filter_By_Uni:</span>
+            <span className="text-sm font-semibold text-slate-500">Filter By Uni:</span>
             <select 
               value={selectedUniversity} 
               onChange={(e) => setSelectedUniversity(e.target.value)}
-              className="h-9 px-3 bg-white border border-slate-200 text-[10px] uppercase focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
+              className="h-10 px-3 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 shadow-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
             >
-              <option value="all">ALL_UNIVERSITIES</option>
+              <option value="all">All Universities</option>
               {universities.map(uni => (
                 <option key={uni} value={uni}>{uni}</option>
               ))}
@@ -280,24 +280,24 @@ export default function HostelsManager() {
               }
             }}>
           <DialogTrigger asChild>
-            <Button className="gap-2 bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-none shadow-sm transition-all h-10 px-6">
-              <Plus className="h-4 w-4" /> Register_New_Property
+            <Button className="gap-2 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-xl transition-all h-10 px-6 shadow-sm">
+              <Plus className="h-4 w-4" /> Register New Property
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] rounded-none border-slate-200 font-mono">
-            <DialogHeader className="border-b border-slate-100 pb-4 relative">
-              <DialogTitle className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
-                <Building2 className="h-4 w-4 text-indigo-500"/>
-                {wizardStep === 1 && "Step 1: Admin Owner & Uni"}
+          <DialogContent className="sm:max-w-[600px] rounded-2xl border-0 shadow-2xl bg-white">
+            <DialogHeader className="border-b border-slate-100 pb-4 bg-slate-50 -mx-6 px-6 -mt-6 pt-6 rounded-t-2xl relative">
+              <DialogTitle className="flex items-center gap-2 text-xl font-bold text-slate-900 tracking-tight">
+                <Building2 className="h-5 w-5 text-primary"/>
+                {wizardStep === 1 && "Step 1: Assign Owner & University"}
                 {wizardStep === 2 && "Step 2: Property Details"}
                 {wizardStep === 3 && "Step 3: Room Inventory"}
               </DialogTitle>
-              <DialogDescription className="text-[10px] uppercase tracking-wider text-slate-400">
-                {wizardStep === 1 && "Assign an owner and link a university."}
-                {wizardStep === 2 && "Configure the hostel profile details."}
-                {wizardStep === 3 && "Create internal room types and capacities."}
+              <DialogDescription className="text-sm text-slate-500 font-medium">
+                {wizardStep === 1 && "Assign an owner and link a university to this property."}
+                {wizardStep === 2 && "Configure the hostel's profile and marketing details."}
+                {wizardStep === 3 && "Create internal room types and their capacities."}
               </DialogDescription>
-              <div className="absolute top-0 right-4 text-xs font-bold text-indigo-500 uppercase tracking-widest">
+              <div className="absolute top-6 right-6 text-xs font-bold bg-primary/10 text-primary px-3 py-1 rounded-full">
                 Step {wizardStep} of 3
               </div>
             </DialogHeader>
@@ -306,40 +306,40 @@ export default function HostelsManager() {
               {wizardStep === 1 && (
                 <form onSubmit={(e) => { e.preventDefault(); setWizardStep(2); }} className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="owner" className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Assign_Owner</Label>
+                    <Label htmlFor="owner" className="text-sm font-semibold text-slate-700">Assign Owner</Label>
                     <select 
                       id="owner" 
                       value={newHostel.owner_id} 
                       onChange={(e) => setNewHostel({...newHostel, owner_id: e.target.value})}
-                      className="w-full h-10 px-3 bg-white border border-slate-200 text-xs uppercase focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
+                      className="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 shadow-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
                     >
-                      <option value="">DEFAULT TO ME (ADMIN)</option>
+                      <option value="">Default to Me (Admin)</option>
                       {owners.map(owner => (
                         <option key={owner.id} value={owner.id}>
                           {owner.first_name} {owner.last_name} ({owner.email})
                         </option>
                       ))}
                     </select>
-                    <p className="text-[9px] text-slate-400">If no owner is selected, the platform super-admin assumes control.</p>
+                    <p className="text-xs text-slate-500 font-medium">If no owner is selected, the platform super-admin assumes control.</p>
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="university" className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Nearest_University</Label>
+                    <Label htmlFor="university" className="text-sm font-semibold text-slate-700">Nearest University</Label>
                     <div className="relative">
                       <Input 
                         id="university" 
                         required 
                         value={newHostel.university} 
                         onChange={(e) => setNewHostel({...newHostel, university: e.target.value})} 
-                        placeholder="E.G. MAKERERE" 
-                        className="rounded-none border-slate-200 text-xs uppercase pr-8 h-10" 
+                        placeholder="e.g. Makerere University" 
+                        className="rounded-xl border-slate-200 text-sm bg-white shadow-sm pr-8 h-11" 
                       />
                       {universities.length > 0 && (
                         <select 
                           className="absolute right-0 top-0 h-full w-8 opacity-0 cursor-pointer"
                           onChange={(e) => setNewHostel({...newHostel, university: e.target.value})}
                         >
-                          <option value="">SELECT_EXISTING</option>
+                          <option value="">Select Existing</option>
                           {universities.map(uni => (
                             <option key={uni} value={uni}>{uni}</option>
                           ))}
@@ -349,8 +349,8 @@ export default function HostelsManager() {
                   </div>
                   
                   <DialogFooter className="sticky bottom-0 bg-white pt-4 border-t border-slate-100">
-                    <Button type="submit" className="w-full bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-none h-10">
-                      Continue_To_Details
+                    <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-xl h-11 shadow-sm transition-transform hover:scale-[1.02]">
+                      Continue to Details
                     </Button>
                   </DialogFooter>
                 </form>
@@ -359,40 +359,40 @@ export default function HostelsManager() {
               {wizardStep === 2 && (
                 <form onSubmit={handleCreateProperty} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Hostel_Name</Label>
-                    <Input id="name" required value={newHostel.name} onChange={(e) => setNewHostel({...newHostel, name: e.target.value})} placeholder="CITY_GATEWAY_HOSTEL" className="rounded-none border-slate-200 text-xs uppercase" />
+                    <Label htmlFor="name" className="text-sm font-semibold text-slate-700">Hostel Name</Label>
+                    <Input id="name" required value={newHostel.name} onChange={(e) => setNewHostel({...newHostel, name: e.target.value})} placeholder="e.g. City Gateway Hostel" className="rounded-xl border-slate-200 text-sm h-11 bg-white shadow-sm" />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="price_range" className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Avg_Price_Range</Label>
-                      <Input id="price_range" required value={newHostel.price_range} onChange={(e) => setNewHostel({...newHostel, price_range: e.target.value})} placeholder="1M_-_1.5M_UGX" className="rounded-none border-slate-200 text-xs uppercase" />
+                      <Label htmlFor="price_range" className="text-sm font-semibold text-slate-700">Estimated Price Range (UGX)</Label>
+                      <Input id="price_range" required value={newHostel.price_range} onChange={(e) => setNewHostel({...newHostel, price_range: e.target.value})} placeholder="1M - 1.5M" className="rounded-xl border-slate-200 text-sm h-11 bg-white shadow-sm" />
                     </div>
                     <div className="space-y-2">
-                       <Label htmlFor="images" className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                         <ImageIcon className="h-3 w-3"/> Media_Assets_URLs
+                       <Label htmlFor="images" className="flex items-center gap-1 text-sm font-semibold text-slate-700">
+                         <ImageIcon className="h-4 w-4 text-primary"/> Media Image URLs
                        </Label>
-                       <Input id="images" value={newHostel.images} onChange={(e) => setNewHostel({...newHostel, images: e.target.value})} placeholder="URL1,URL2" className="rounded-none border-slate-200 text-xs" />
+                       <Input id="images" value={newHostel.images} onChange={(e) => setNewHostel({...newHostel, images: e.target.value})} placeholder="https://..., https://..." className="rounded-xl border-slate-200 text-sm h-11 bg-white shadow-sm" />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="address" className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Physical_Address</Label>
-                    <Input id="address" required value={newHostel.address} onChange={(e) => setNewHostel({...newHostel, address: e.target.value})} placeholder="KIKONI_MAKERERE" className="rounded-none border-slate-200 text-xs uppercase" />
+                    <Label htmlFor="address" className="text-sm font-semibold text-slate-700">Physical Address</Label>
+                    <Input id="address" required value={newHostel.address} onChange={(e) => setNewHostel({...newHostel, address: e.target.value})} placeholder="e.g. Kikoni, Makerere" className="rounded-xl border-slate-200 text-sm h-11 bg-white shadow-sm" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="amenities" className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Amenities_List</Label>
-                    <Input id="amenities" value={newHostel.amenities} onChange={(e) => setNewHostel({...newHostel, amenities: e.target.value})} placeholder="WIFI,SECURITY,POWER" className="rounded-none border-slate-200 text-xs uppercase" />
+                    <Label htmlFor="amenities" className="text-sm font-semibold text-slate-700">Amenities (Comma separated)</Label>
+                    <Input id="amenities" value={newHostel.amenities} onChange={(e) => setNewHostel({...newHostel, amenities: e.target.value})} placeholder="WiFi, Security, Power" className="rounded-xl border-slate-200 text-sm h-11 bg-white shadow-sm" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="description" className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Property_Brief</Label>
-                    <Textarea id="description" value={newHostel.description} onChange={(e) => setNewHostel({...newHostel, description: e.target.value})} placeholder="DESCRIBE_AMENITIES..." className="rounded-none border-slate-200 text-xs uppercase h-24" />
+                    <Label htmlFor="description" className="text-sm font-semibold text-slate-700">Property Description</Label>
+                    <Textarea id="description" value={newHostel.description} onChange={(e) => setNewHostel({...newHostel, description: e.target.value})} placeholder="Describe the hostel, its vibes, and rules..." className="rounded-xl border-slate-200 text-sm h-28 bg-white shadow-sm custom-scrollbar" />
                   </div>
-                  <DialogFooter className="flex flex-row gap-2 sticky bottom-0 bg-white pt-4 border-t border-slate-100 mt-4">
-                    <Button type="button" variant="outline" onClick={() => setWizardStep(1)} className="w-1/3 text-slate-900 border-slate-200 text-[10px] font-bold uppercase tracking-[0.2em] rounded-none h-10">
-                      Go_Back
+                  <DialogFooter className="flex flex-row gap-3 sticky bottom-0 bg-white pt-4 border-t border-slate-100 mt-6">
+                    <Button type="button" variant="outline" onClick={() => setWizardStep(1)} className="w-1/3 text-slate-700 border-slate-200 text-sm font-bold rounded-xl h-11 hover:bg-slate-50">
+                      Go Back
                     </Button>
-                    <Button type="submit" disabled={isCreating} className="w-2/3 bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-none h-10">
-                      {isCreating ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : null}
-                      Commit_To_Registry
+                    <Button type="submit" disabled={isCreating} className="w-2/3 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-xl h-11 shadow-sm transition-transform hover:scale-[1.02]">
+                      {isCreating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                      Commit to Registry
                     </Button>
                   </DialogFooter>
                 </form>
@@ -401,19 +401,19 @@ export default function HostelsManager() {
               {wizardStep === 3 && (
                 <div className="space-y-6">
                   {rooms.length > 0 && (
-                    <div>
-                      <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Deployed_Inventories</h4>
-                      <div className="max-h-[120px] overflow-y-auto border border-slate-100">
-                        <Table className="font-mono">
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-semibold text-slate-700">Deployed Inventories</h4>
+                      <div className="max-h-[120px] overflow-y-auto border border-slate-200 rounded-xl bg-slate-50 shadow-sm">
+                        <Table>
                           <TableBody>
                             {rooms.map(room => (
-                              <TableRow key={room.id} className="hover:bg-slate-50/50 h-8">
-                                <TableCell className="text-[9px] py-1 font-bold uppercase text-slate-900">{room.name}</TableCell>
-                                <TableCell className="text-[9px] py-1 text-slate-500">{room.price.toLocaleString()} UGX</TableCell>
-                                <TableCell className="text-[9px] py-1 text-slate-500">Cap:{room.capacity}</TableCell>
-                                <TableCell className="text-right py-1">
-                                  <Button onClick={() => handleDeleteRoom(room.id)} variant="ghost" className="h-5 w-5 p-0 text-rose-500 hover:bg-rose-50 rounded">
-                                    <Trash2 className="h-3 w-3" />
+                              <TableRow key={room.id} className="hover:bg-slate-100 border-slate-200">
+                                <TableCell className="text-xs font-semibold text-slate-900">{room.name}</TableCell>
+                                <TableCell className="text-xs text-slate-600">{room.price.toLocaleString()} UGX</TableCell>
+                                <TableCell className="text-xs text-slate-600">Cap:{room.capacity}</TableCell>
+                                <TableCell className="text-right">
+                                  <Button onClick={() => handleDeleteRoom(room.id)} variant="ghost" className="h-7 w-7 p-0 text-rose-500 hover:bg-rose-100 rounded-lg">
+                                    <Trash2 className="h-4 w-4" />
                                   </Button>
                                 </TableCell>
                               </TableRow>
@@ -424,44 +424,44 @@ export default function HostelsManager() {
                     </div>
                   )}
 
-                  <div className="bg-slate-50 p-4 border border-slate-200">
-                    <h4 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest mb-3">Add_Room_Type</h4>
-                    <div className="flex gap-2 mb-3">
-                      <Button type="button" variant="outline" size="sm" onClick={() => setNewRoom({ ...newRoom, name: "Single Room", capacity: "1" })} className="rounded-none text-[9px] h-6 border-slate-300 uppercase font-bold text-slate-600">
+                  <div className="bg-slate-50 p-5 border border-slate-200 rounded-xl shadow-sm">
+                    <h4 className="text-sm font-bold text-slate-900 mb-4">Add Room Type</h4>
+                    <div className="flex gap-2 mb-4">
+                      <Button type="button" variant="outline" size="sm" onClick={() => setNewRoom({ ...newRoom, name: "Single Room", capacity: "1" })} className="rounded-lg text-xs font-semibold h-8 border-slate-300 text-slate-700 hover:bg-white hover:text-primary">
                         Preset: Single
                       </Button>
-                      <Button type="button" variant="outline" size="sm" onClick={() => setNewRoom({ ...newRoom, name: "Double Room", capacity: "2" })} className="rounded-none text-[9px] h-6 border-slate-300 uppercase font-bold text-slate-600">
+                      <Button type="button" variant="outline" size="sm" onClick={() => setNewRoom({ ...newRoom, name: "Double Room", capacity: "2" })} className="rounded-lg text-xs font-semibold h-8 border-slate-300 text-slate-700 hover:bg-white hover:text-primary">
                         Preset: Double
                       </Button>
                     </div>
-                    <form onSubmit={(e) => createdHostelId && handleAddRoom(e, createdHostelId)} className="space-y-3">
-                      <div className="grid grid-cols-2 gap-3">
+                    <form onSubmit={(e) => createdHostelId && handleAddRoom(e, createdHostelId)} className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1">
-                          <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Type_Label</Label>
-                          <Input required value={newRoom.name} onChange={e => setNewRoom({...newRoom, name: e.target.value})} placeholder="E.G. SINGLE VIP" className="bg-white rounded-none border-slate-300 text-[9px] h-8 uppercase" />
+                          <Label className="text-xs font-semibold text-slate-700">Type Label</Label>
+                          <Input required value={newRoom.name} onChange={e => setNewRoom({...newRoom, name: e.target.value})} placeholder="e.g. Single VIP" className="bg-white rounded-lg border-slate-200 text-sm h-10 shadow-sm" />
                         </div>
-                        <div className="col-span-1 grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1">
-                            <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Capacity</Label>
-                            <Input required type="number" min="1" value={newRoom.capacity} onChange={e => setNewRoom({...newRoom, capacity: e.target.value})} placeholder="1" className="bg-white rounded-none border-slate-300 text-[9px] h-8" />
+                            <Label className="text-xs font-semibold text-slate-700">Capacity</Label>
+                            <Input required type="number" min="1" value={newRoom.capacity} onChange={e => setNewRoom({...newRoom, capacity: e.target.value})} placeholder="1" className="bg-white rounded-lg border-slate-200 text-sm h-10 shadow-sm" />
                           </div>
                           <div className="space-y-1">
-                            <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Price</Label>
-                            <Input required type="number" min="0" value={newRoom.price} onChange={e => setNewRoom({...newRoom, price: e.target.value})} placeholder="UGX" className="bg-white rounded-none border-slate-300 text-[9px] h-8" />
+                            <Label className="text-xs font-semibold text-slate-700">Price</Label>
+                            <Input required type="number" min="0" value={newRoom.price} onChange={e => setNewRoom({...newRoom, price: e.target.value})} placeholder="UGX" className="bg-white rounded-lg border-slate-200 text-sm h-10 shadow-sm" />
                           </div>
                         </div>
                       </div>
-                      <div className="flex justify-end">
-                        <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] font-bold uppercase tracking-widest rounded-none h-8 px-4">
-                          <Plus className="h-3 w-3 mr-1" /> Add_Room_Type
+                      <div className="flex justify-end pt-2">
+                        <Button type="submit" className="bg-primary hover:bg-primary/90 text-white text-xs font-bold rounded-lg h-9 px-5 shadow-sm transition-transform hover:scale-[1.02]">
+                          <Plus className="h-4 w-4 mr-1.5" /> Add Room Type
                         </Button>
                       </div>
                     </form>
                   </div>
                   
-                  <DialogFooter className="sticky bottom-0 bg-white pt-4 border-t border-slate-100">
-                    <Button onClick={() => setIsCreateDialogOpen(false)} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-none h-10">
-                      Finish_Setup
+                  <DialogFooter className="sticky bottom-0 bg-white pt-4 border-t border-slate-100 mt-4">
+                    <Button onClick={() => setIsCreateDialogOpen(false)} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl h-11 shadow-sm transition-transform hover:scale-[1.02]">
+                      Finish Setup
                     </Button>
                   </DialogFooter>
                 </div>
@@ -472,49 +472,49 @@ export default function HostelsManager() {
       </div>
     </div>
 
-      <Card className="border-slate-200 rounded-none shadow-sm bg-white overflow-hidden">
+      <Card className="border-slate-200 rounded-2xl shadow-sm bg-white overflow-hidden">
         <CardContent className="p-0">
           {isLoading ? (
             <div className="py-24 flex flex-col items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-indigo-400 mb-3" />
-              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">Streaming_Inventory_Data...</span>
+              <Loader2 className="h-8 w-8 animate-spin text-primary mb-3" />
+              <span className="text-sm font-medium text-slate-500">Loading Inventory Data...</span>
             </div>
           ) : (
-            <Table className="font-mono">
-              <TableHeader className="bg-slate-50/80 border-b border-slate-200">
+            <Table>
+              <TableHeader className="bg-slate-50 border-b border-slate-200">
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-widest h-10">Property_Identity</TableHead>
-                  <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-widest h-10">Geographic_Data</TableHead>
-                  <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-widest h-10">System_Status</TableHead>
-                  <TableHead className="text-right text-[10px] font-bold text-slate-500 uppercase tracking-widest h-10 pr-6">Operations</TableHead>
+                  <TableHead className="text-xs font-semibold text-slate-600 h-11">Property Name</TableHead>
+                  <TableHead className="text-xs font-semibold text-slate-600 h-11">Location</TableHead>
+                  <TableHead className="text-xs font-semibold text-slate-600 h-11">Status</TableHead>
+                  <TableHead className="text-right text-xs font-semibold text-slate-600 h-11 pr-6">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredHostels.map((hostel) => (
                   <TableRow key={hostel.id} className="hover:bg-slate-50/50 transition-colors border-b border-slate-100 last:border-0">
-                    <TableCell className="py-3">
+                    <TableCell className="py-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-7 w-7 bg-slate-100 border border-slate-200 text-slate-600 rounded flex items-center justify-center text-[10px] font-bold">
+                        <div className="h-10 w-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center text-sm font-bold shadow-sm">
                           {hostel.name.charAt(0)}
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-xs font-bold text-slate-900 uppercase tracking-tight">{hostel.name}</span>
-                          <span className="text-[9px] text-slate-400 tracking-widest">ID: {hostel.id.split('-')[0]}</span>
+                          <span className="text-sm font-bold text-slate-800 tracking-tight">{hostel.name}</span>
+                          <span className="text-xs text-slate-500 font-medium">ID: {hostel.id.split('-')[0]}</span>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-[10px] text-slate-500 uppercase tracking-tight">
+                    <TableCell className="text-sm text-slate-600 font-medium">
                       <div className="flex items-center gap-1.5">
-                        <MapPin className="h-3 w-3 text-slate-400" /> 
+                        <MapPin className="h-4 w-4 text-slate-400" /> 
                         {hostel.university || hostel.address}
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className={cn(
-                        "inline-flex items-center px-2 py-0.5 rounded border text-[9px] font-bold uppercase tracking-widest",
-                        hostel.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
-                        hostel.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' : 
-                        'bg-rose-50 text-rose-600 border-rose-100'
+                        "inline-flex items-center px-2.5 py-1 rounded-md border text-xs font-semibold shadow-sm",
+                        hostel.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 
+                        hostel.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' : 
+                        'bg-rose-50 text-rose-700 border-rose-200'
                       )}>
                         {hostel.status === 'approved' ? 'Active' : hostel.status}
                       </div>
@@ -523,10 +523,10 @@ export default function HostelsManager() {
                       <div className="flex justify-end items-center gap-2">
                         {hostel.status === 'pending' && (
                           <div className="flex gap-2 mr-2">
-                            <Button onClick={() => handleUpdateStatus(hostel.id, "approved")} variant="outline" className="h-7 text-[9px] font-bold uppercase tracking-widest text-emerald-600 border-emerald-200 hover:bg-emerald-50 rounded-none px-3">
+                            <Button onClick={() => handleUpdateStatus(hostel.id, "approved")} variant="outline" className="h-8 text-xs font-semibold text-emerald-600 border-emerald-200 hover:bg-emerald-600 hover:text-white rounded-lg px-3 transition-colors">
                               Approve
                             </Button>
-                            <Button onClick={() => handleUpdateStatus(hostel.id, "rejected")} variant="outline" className="h-7 text-[9px] font-bold uppercase tracking-widest text-rose-600 border-rose-200 hover:bg-rose-50 rounded-none px-3">
+                            <Button onClick={() => handleUpdateStatus(hostel.id, "rejected")} variant="outline" className="h-8 text-xs font-semibold text-rose-600 border-rose-200 hover:bg-rose-600 hover:text-white rounded-lg px-3 transition-colors">
                               Reject
                             </Button>
                           </div>
@@ -534,21 +534,21 @@ export default function HostelsManager() {
                         
                         <Button 
                           variant="outline" 
-                          className="h-7 text-[9px] font-bold uppercase tracking-widest text-indigo-600 border-indigo-200 hover:bg-indigo-50 rounded-none px-3"
+                          className="h-8 text-xs font-semibold text-primary border-slate-200 hover:border-primary hover:bg-primary/5 rounded-lg px-3"
                           onClick={() => {
                             setSelectedHostel(hostel);
                             setIsRoomDialogOpen(true);
                           }}
                         >
-                          <LayoutPanelLeft className="h-3.5 w-3.5 mr-1.5" /> Rooms
+                          <LayoutPanelLeft className="h-4 w-4 mr-1.5" /> Rooms
                         </Button>
 
                         <Button onClick={() => {
                           if (window.confirm("Are you sure you want to permanently delete this hostel?")) {
                             handleDelete(hostel.id);
                           }
-                        }} variant="ghost" className="h-7 w-7 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded">
-                           <Trash2 className="h-3.5 w-3.5" />
+                        }} variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg">
+                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -562,75 +562,77 @@ export default function HostelsManager() {
 
       {/* Manage Rooms Dialog */}
       <Dialog open={isRoomDialogOpen} onOpenChange={setIsRoomDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto rounded-none border-slate-200 font-mono">
-          <DialogHeader className="border-b border-slate-100 pb-4">
-            <DialogTitle className="text-xs font-bold uppercase tracking-widest">Admin_Room_Config: {selectedHostel?.name}</DialogTitle>
-            <DialogDescription className="text-[10px] uppercase tracking-wider text-slate-400">Inventory_Modification_Protocol</DialogDescription>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto rounded-2xl border-0 shadow-2xl bg-white p-0">
+          <DialogHeader className="border-b border-slate-100 p-6 bg-slate-50 relative">
+            <DialogTitle className="text-xl font-bold text-slate-900 tracking-tight">Room Inventory: {selectedHostel?.name}</DialogTitle>
+            <DialogDescription className="text-sm font-medium text-slate-500 mt-1">Manage physical units and pricing structure</DialogDescription>
           </DialogHeader>
 
-          <div className="mt-4 space-y-6">
+          <div className="p-6 space-y-8">
             <div>
-              <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">Existing_Inventory</h4>
+              <h4 className="text-sm font-semibold text-slate-700 mb-4">Existing Inventory Types</h4>
               {isLoadingRooms ? (
-                 <div className="py-10 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-indigo-500" /></div>
+                 <div className="py-10 flex flex-col justify-center items-center"><Loader2 className="h-8 w-8 animate-spin text-primary mb-2" /><span className="text-sm text-slate-500">Loading units...</span></div>
               ) : rooms.length === 0 ? (
-                 <p className="text-[10px] text-slate-400 uppercase tracking-widest italic py-4 border border-dashed border-slate-200 text-center">No_Inventory_Detected</p>
+                 <p className="text-sm text-slate-500 bg-slate-50 rounded-xl py-8 border border-dashed border-slate-200 text-center font-medium">No inventory data configured for this property.</p>
               ) : (
-                <Table className="border border-slate-100">
-                  <TableHeader className="bg-slate-50/50">
-                    <TableRow className="hover:bg-transparent">
-                      <TableHead className="text-[9px] font-bold uppercase tracking-widest h-8">Type_Label</TableHead>
-                      <TableHead className="text-[9px] font-bold uppercase tracking-widest h-8">Unit_Price</TableHead>
-                      <TableHead className="text-[9px] font-bold uppercase tracking-widest h-8">Capacity</TableHead>
-                      <TableHead className="h-8"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {rooms.map(room => (
-                      <TableRow key={room.id} className="hover:bg-slate-50/50 transition-colors">
-                        <TableCell className="text-[10px] font-bold text-slate-700 uppercase">{room.name}</TableCell>
-                        <TableCell className="text-[10px] font-bold text-slate-600">{room.price.toLocaleString()} UGX</TableCell>
-                        <TableCell className="text-[10px] font-bold text-slate-600">{room.capacity} UNIT</TableCell>
-                        <TableCell className="text-right">
-                          <Button onClick={() => handleDeleteRoom(room.id)} variant="ghost" className="text-rose-500 hover:bg-rose-50 p-0 h-6 w-6 rounded">
-                             <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </TableCell>
+                <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                  <Table>
+                    <TableHeader className="bg-slate-50 border-b border-slate-200">
+                      <TableRow className="hover:bg-transparent">
+                        <TableHead className="text-xs font-semibold text-slate-600 h-10">Unit Type</TableHead>
+                        <TableHead className="text-xs font-semibold text-slate-600 h-10">Unit Price</TableHead>
+                        <TableHead className="text-xs font-semibold text-slate-600 h-10">Capacity</TableHead>
+                        <TableHead className="h-10"></TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {rooms.map(room => (
+                        <TableRow key={room.id} className="hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0">
+                          <TableCell className="text-sm font-bold text-slate-800">{room.name}</TableCell>
+                          <TableCell className="text-sm font-medium text-slate-600">{room.price.toLocaleString()} UGX</TableCell>
+                          <TableCell className="text-sm font-medium text-slate-600">{room.capacity} Beds</TableCell>
+                          <TableCell className="text-right">
+                            <Button onClick={() => handleDeleteRoom(room.id)} variant="ghost" className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-0 h-8 w-8 rounded-lg">
+                               <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </div>
 
-            <div className="border border-slate-200 bg-slate-50/50 p-5">
-              <h4 className="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.2em] mb-4">Add_New_Inventory_Unit</h4>
+            <div className="border border-slate-200 bg-slate-50 rounded-2xl p-6 shadow-sm">
+              <h4 className="text-sm font-bold text-slate-900 mb-4">Add New Inventory Unit</h4>
               <form onSubmit={handleAddRoom} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                   <div className="space-y-1.5">
-                    <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Unit_Label</Label>
-                    <Input required value={newRoom.name} onChange={e => setNewRoom({...newRoom, name: e.target.value})} placeholder="SINGLE_SELF" className="bg-white rounded-none border-slate-200 text-[10px] h-9 uppercase" />
+                    <Label className="text-xs font-semibold text-slate-700">Unit Label</Label>
+                    <Input required value={newRoom.name} onChange={e => setNewRoom({...newRoom, name: e.target.value})} placeholder="e.g. Single Self" className="bg-white rounded-lg border-slate-200 text-sm h-11 shadow-sm focus:ring-primary focus:border-primary" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Price_UGX</Label>
-                    <Input required type="number" min="0" value={newRoom.price} onChange={e => setNewRoom({...newRoom, price: e.target.value})} placeholder="1500000" className="bg-white rounded-none border-slate-200 text-[10px] h-9" />
+                    <Label className="text-xs font-semibold text-slate-700">Price (UGX)</Label>
+                    <Input required type="number" min="0" value={newRoom.price} onChange={e => setNewRoom({...newRoom, price: e.target.value})} placeholder="1,500,000" className="bg-white rounded-lg border-slate-200 text-sm h-11 shadow-sm focus:ring-primary focus:border-primary" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Bed_Count</Label>
-                    <Input required type="number" min="1" value={newRoom.capacity} onChange={e => setNewRoom({...newRoom, capacity: e.target.value})} placeholder="1" className="bg-white rounded-none border-slate-200 text-[10px] h-9" />
+                    <Label className="text-xs font-semibold text-slate-700">Bed Count / Capacity</Label>
+                    <Input required type="number" min="1" value={newRoom.capacity} onChange={e => setNewRoom({...newRoom, capacity: e.target.value})} placeholder="1" className="bg-white rounded-lg border-slate-200 text-sm h-11 shadow-sm focus:ring-primary focus:border-primary" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Media_Assets (URLs)</Label>
-                    <Input value={newRoom.images} onChange={e => setNewRoom({...newRoom, images: e.target.value})} placeholder="HTTPS://ROOM-IMG.JPG" className="bg-white rounded-none border-slate-200 text-[10px] h-9" />
+                    <Label className="text-xs font-semibold text-slate-700">Media Asset URLs (Comma-separated)</Label>
+                    <Input value={newRoom.images} onChange={e => setNewRoom({...newRoom, images: e.target.value})} placeholder="https://room-img.jpg" className="bg-white rounded-lg border-slate-200 text-sm h-11 shadow-sm focus:ring-primary focus:border-primary" />
                   </div>
                   <div className="space-y-1.5 md:col-span-2">
-                    <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Unit_Description</Label>
-                    <Textarea value={newRoom.description} onChange={e => setNewRoom({...newRoom, description: e.target.value})} placeholder="DESCRIBE_UNIT_FEATURES" className="bg-white rounded-none border-slate-200 text-[10px] resize-none h-20 uppercase" />
+                    <Label className="text-xs font-semibold text-slate-700">Unit Description</Label>
+                    <Textarea value={newRoom.description} onChange={e => setNewRoom({...newRoom, description: e.target.value})} placeholder="Describe specific unit features..." className="bg-white rounded-lg border-slate-200 text-sm resize-none h-24 shadow-sm focus:ring-primary focus:border-primary" />
                   </div>
                 </div>
-                <div className="flex justify-end pt-2">
-                   <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-none h-9 px-6 shadow-sm gap-2">
-                     <Plus className="h-3.5 w-3.5" /> Commit_Unit
+                <div className="flex justify-end pt-4 border-t border-slate-200 mt-4">
+                   <Button type="submit" className="bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-xl h-11 px-6 shadow-sm gap-2 transition-transform hover:scale-[1.02]">
+                     <Plus className="h-4 w-4" /> Add Unit
                    </Button>
                 </div>
               </form>

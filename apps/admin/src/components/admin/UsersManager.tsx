@@ -72,39 +72,39 @@ export default function UsersManager() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]" />
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">Module_Access</span>
+            <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(249,115,22,0.6)]" />
+            <span className="text-sm font-bold text-slate-500 tracking-wide">Module Access</span>
           </div>
-          <h2 className="text-2xl font-black tracking-tighter text-slate-900 uppercase">User_Management</h2>
-          <p className="text-slate-500 text-[10px] font-mono mt-1 uppercase tracking-widest">ACCESS_CONTROL_AND_PRIVILEGE_MANAGEMENT</p>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900">User Management</h2>
+          <p className="text-slate-500 text-sm mt-1">Access control and privilege management</p>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded shadow-sm">
-          <Users className="h-3.5 w-3.5 text-slate-400" />
-          <span className="text-[10px] font-mono font-bold text-slate-600 uppercase tracking-widest">Total_Records: {users.length.toString().padStart(3, '0')}</span>
+        <div className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl shadow-sm">
+          <Users className="h-4 w-4 text-slate-400" />
+          <span className="text-sm font-semibold text-slate-600">Total Records: {users.length}</span>
         </div>
       </div>
 
-      <Card className="border-slate-200 rounded-none shadow-sm bg-white overflow-hidden">
+      <Card className="border-slate-200 rounded-2xl shadow-sm bg-white overflow-hidden">
         <CardContent className="p-0">
           {isLoading ? (
             <div className="py-24 flex flex-col items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-indigo-400 mb-3" />
-              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">Streaming_User_Registry...</span>
+              <Loader2 className="h-8 w-8 animate-spin text-primary mb-3" />
+              <span className="text-sm font-medium text-slate-500">Loading User Registry...</span>
             </div>
           ) : users.length === 0 ? (
              <div className="py-24 text-center">
-               <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">No_Records_Found</span>
+               <span className="text-sm font-medium text-slate-500">No Records Found</span>
              </div>
           ) : (
             <div className="overflow-x-auto">
-              <Table className="font-mono">
-                <TableHeader className="bg-slate-50/80 border-b border-slate-200">
+              <Table>
+                <TableHeader className="bg-slate-50 border-b border-slate-200">
                   <TableRow className="hover:bg-transparent">
-                    <TableHead className="w-[300px] text-[10px] font-bold text-slate-500 uppercase tracking-widest h-10">Identity_Hash</TableHead>
-                    <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-widest h-10">Communication_Node</TableHead>
-                    <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-widest h-10">Access_Level</TableHead>
-                    <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-widest h-10">Status_Flag</TableHead>
-                    <TableHead className="text-right text-[10px] font-bold text-slate-500 uppercase tracking-widest h-10 pr-6">Operations</TableHead>
+                    <TableHead className="w-[300px] text-xs font-semibold text-slate-600 h-11">User Details</TableHead>
+                    <TableHead className="text-xs font-semibold text-slate-600 h-11">Email Address</TableHead>
+                    <TableHead className="text-xs font-semibold text-slate-600 h-11">Access Level</TableHead>
+                    <TableHead className="text-xs font-semibold text-slate-600 h-11">Status</TableHead>
+                    <TableHead className="text-right text-xs font-semibold text-slate-600 h-11 pr-6">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <motion.tbody 
@@ -115,32 +115,32 @@ export default function UsersManager() {
                 >
                   {users.map((u) => (
                     <motion.tr variants={itemVariants} key={u.id} className="group hover:bg-slate-50/50 transition-colors border-b border-slate-100 last:border-0">
-                      <TableCell className="py-3">
+                      <TableCell className="py-4">
                         <div className="flex items-center gap-3">
-                          <div className="h-7 w-7 bg-slate-100 border border-slate-200 text-slate-600 rounded flex items-center justify-center text-[10px] font-bold">
+                          <div className="h-10 w-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center text-sm font-bold shadow-sm">
                             {u.first_name?.charAt(0) || "?"}
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-xs font-bold text-slate-900 uppercase tracking-tight">
+                            <span className="text-sm font-bold text-slate-800 tracking-tight">
                               {u.first_name} {u.last_name}
                             </span>
-                            <span className="text-[9px] text-slate-400 tracking-widest">UID: {u.id.split('-')[0]}</span>
+                            <span className="text-xs text-slate-500 font-medium">UID: {u.id.split('-')[0]}</span>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-[11px] text-slate-600 lowercase">{u.email}</TableCell>
+                      <TableCell className="text-sm text-slate-600 font-medium">{u.email}</TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-700 uppercase tracking-widest">
-                          {u.role === 'super_admin' && <Shield className="h-3 w-3 text-indigo-500" />}
-                          {u.role === 'hostel_owner' && <Home className="h-3 w-3 text-amber-500" />}
-                          {u.role === 'student' && <GraduationCap className="h-3 w-3 text-emerald-500" />}
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 capitalize">
+                          {u.role === 'super_admin' && <Shield className="h-4 w-4 text-primary" />}
+                          {u.role === 'hostel_owner' && <Home className="h-4 w-4 text-emerald-500" />}
+                          {u.role === 'student' && <GraduationCap className="h-4 w-4 text-indigo-500" />}
                           {u.role.replace('_', ' ')}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className={cn(
-                          "inline-flex items-center px-2 py-0.5 rounded border text-[9px] font-bold uppercase tracking-widest",
-                          u.is_active === false ? "bg-rose-50 text-rose-600 border-rose-100" : "bg-emerald-50 text-emerald-600 border-emerald-100"
+                          "inline-flex items-center px-2.5 py-1 rounded-md border text-xs font-semibold shadow-sm",
+                          u.is_active === false ? "bg-rose-50 text-rose-700 border-rose-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"
                         )}>
                           {u.is_active === false ? "Suspended" : "Active"}
                         </div>
@@ -148,27 +148,27 @@ export default function UsersManager() {
                       <TableCell className="text-right pr-6">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-7 w-7 p-0 hover:bg-slate-200 rounded" disabled={u.role === 'super_admin'}>
-                              <MoreHorizontal className="h-3.5 w-3.5 text-slate-500" />
+                            <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-slate-100 rounded-lg" disabled={u.role === 'super_admin'}>
+                              <MoreHorizontal className="h-4 w-4 text-slate-500" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-56 rounded-none shadow-xl border-slate-200 p-1 font-mono">
-                            <DropdownMenuLabel className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] px-2 py-1.5">Security_Protocol</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleToggleStatus(u.id, u.is_active)} className="cursor-pointer focus:bg-slate-100 text-[10px] font-bold uppercase tracking-widest px-2 py-2">
-                              {u.is_active === false ? <><UserCheck className="mr-2 h-3.5 w-3.5 text-emerald-500" /> Restore_Access</> : <><Ban className="mr-2 h-3.5 w-3.5 text-rose-500" /> Suspend_Account</>}
+                          <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-lg border-slate-200 p-1">
+                            <DropdownMenuLabel className="text-xs font-semibold text-slate-500 px-2 py-1.5">Security Protocol</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handleToggleStatus(u.id, u.is_active)} className="cursor-pointer focus:bg-slate-50 text-sm font-medium px-2 py-2 rounded-lg">
+                              {u.is_active === false ? <><UserCheck className="mr-2 h-4 w-4 text-emerald-500" /> Restore Access</> : <><Ban className="mr-2 h-4 w-4 text-rose-500" /> Suspend Account</>}
                             </DropdownMenuItem>
                             
                             <DropdownMenuSeparator className="bg-slate-100" />
-                            <DropdownMenuLabel className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] px-2 py-1.5">Privilege_Shift</DropdownMenuLabel>
+                            <DropdownMenuLabel className="text-xs font-semibold text-slate-500 px-2 py-1.5">Privilege Shift</DropdownMenuLabel>
                             
                             {u.role !== 'student' && (
-                              <DropdownMenuItem onClick={() => handleUpdateRole(u.id, 'student')} className="cursor-pointer focus:bg-slate-100 text-[10px] font-bold uppercase tracking-widest px-2 py-2">
-                                <GraduationCap className="mr-2 h-3.5 w-3.5 text-emerald-500" /> Demote_To_Student
+                              <DropdownMenuItem onClick={() => handleUpdateRole(u.id, 'student')} className="cursor-pointer focus:bg-slate-50 text-sm font-medium px-2 py-2 rounded-lg">
+                                <GraduationCap className="mr-2 h-4 w-4 text-indigo-500" /> Demote to Student
                               </DropdownMenuItem>
                             )}
                             {u.role !== 'hostel_owner' && (
-                              <DropdownMenuItem onClick={() => handleUpdateRole(u.id, 'hostel_owner')} className="cursor-pointer focus:bg-slate-100 text-[10px] font-bold uppercase tracking-widest px-2 py-2">
-                                <Home className="mr-2 h-3.5 w-3.5 text-amber-500" /> Promote_To_Owner
+                              <DropdownMenuItem onClick={() => handleUpdateRole(u.id, 'hostel_owner')} className="cursor-pointer focus:bg-slate-50 text-sm font-medium px-2 py-2 rounded-lg">
+                                <Home className="mr-2 h-4 w-4 text-emerald-500" /> Promote to Owner
                               </DropdownMenuItem>
                             )}
                           </DropdownMenuContent>
