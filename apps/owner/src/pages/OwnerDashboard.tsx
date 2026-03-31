@@ -92,6 +92,11 @@ export default function OwnerDashboard() {
     images: "", // comma separated URLs
   });
 
+  // Wizard State
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [wizardStep, setWizardStep] = useState<1 | 2 | 3>(1);
+  const [createdHostelId, setCreatedHostelId] = useState<string | null>(null);
+
   // Manage Rooms State
   const [selectedHostel, setSelectedHostel] = useState<Hostel | null>(null);
   const [rooms, setRooms] = useState<RoomType[]>([]);
@@ -227,7 +232,7 @@ export default function OwnerDashboard() {
             .filter(Boolean)
         : [];
 
-      const { error } = await supabase.from("hostels").insert({
+      const { data, error } = await supabase.from("hostels").insert({
         name: newHostel.name,
         university: newHostel.university,
         address: newHostel.address,
@@ -236,20 +241,13 @@ export default function OwnerDashboard() {
         images: imagesArray,
         owner_id: user?.id,
         status: "pending",
-      });
+      }).select().single();
 
       if (error) throw error;
-      toast.success("Property submitted for review");
-      setNewHostel({
-        name: "",
-        university: "",
-        address: "",
-        description: "",
-        price_range: "",
-        images: "",
-      });
+      toast.success("Property saved! Now, let's configure your rooms.");
+      setCreatedHostelId(data.id);
+      setWizardStep(3);
       fetchData();
-      document.dispatchEvent(new MouseEvent("mousedown"));
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, "Failed to create property"));
     } finally {
@@ -257,12 +255,13 @@ export default function OwnerDashboard() {
     }
   };
 
-  const handleAddRoom = async (e: React.FormEvent) => {
+  const handleAddRoom = async (e: React.FormEvent, targetHostelId?: string) => {
     e.preventDefault();
-    if (!selectedHostel) return;
+    const hId = targetHostelId || selectedHostel?.id;
+    if (!hId) return;
     try {
       const { error } = await supabase.from("room_types").insert({
-        hostel_id: selectedHostel.id,
+        hostel_id: hId,
         name: newRoom.name,
         price: parseFloat(newRoom.price),
         capacity: parseInt(newRoom.capacity),
@@ -271,7 +270,7 @@ export default function OwnerDashboard() {
       if (error) throw error;
       toast.success("Room type added");
       setNewRoom({ name: "", price: "", capacity: "" });
-      fetchRooms(selectedHostel.id);
+      fetchRooms(hId);
     } catch (error: unknown) {
       toast.error(
         `Failed to add room: ${getErrorMessage(error, "Unknown error")}`,
@@ -358,41 +357,41 @@ export default function OwnerDashboard() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Dialog>
+            <Dialog open={isWizardOpen} onOpenChange={(open) => {
+              setIsWizardOpen(open);
+              if (!open) {
+                setWizardStep(1);
+                setCreatedHostelId(null);
+                setNewHostel({ name: "", university: "", address: "", description: "", price_range: "", images: "" });
+              }
+            }}>
               <DialogTrigger asChild>
                 <Button className="h-12 px-6 bg-slate-900 hover:bg-slate-800 text-white rounded-none border-b-4 border-orange-600 active:border-b-0 active:translate-y-1 transition-all font-bold uppercase tracking-widest text-xs flex items-center gap-2">
                   <Plus className="h-4 w-4" /> Add_New_Property
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px] rounded-none border-2 border-slate-900 p-0 overflow-hidden">
-                <div className="bg-slate-900 text-white p-6">
+              <DialogContent className="sm:max-w-[600px] rounded-none border-2 border-slate-900 p-0 overflow-hidden">
+                <div className="bg-slate-900 text-white p-6 relative">
                   <DialogHeader>
                     <DialogTitle className="text-xl font-black uppercase tracking-tighter">
-                      Register_New_Hostel
+                      {wizardStep === 1 && "Step 1: University Alliance"}
+                      {wizardStep === 2 && "Step 2: Property Details"}
+                      {wizardStep === 3 && "Step 3: Room Setup"}
                     </DialogTitle>
                     <DialogDescription className="text-slate-400 text-[10px] uppercase tracking-widest font-mono">
-                      Property verification protocol required.
+                      {wizardStep === 1 && "Link this property to a nearby institution."}
+                      {wizardStep === 2 && "Enter the physical and visual details."}
+                      {wizardStep === 3 && "Configure the available room types."}
                     </DialogDescription>
                   </DialogHeader>
+                  <div className="absolute top-6 right-6 text-xs font-bold text-orange-500 uppercase tracking-widest">
+                    Step {wizardStep} of 3
+                  </div>
                 </div>
-                <form onSubmit={handleCreateProperty} className="p-6 space-y-6">
-                  <div className="grid grid-cols-1 gap-6">
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                        Hostel_Identity
-                      </Label>
-                      <Input
-                        required
-                        value={newHostel.name}
-                        onChange={(e) =>
-                          setNewHostel({ ...newHostel, name: e.target.value })
-                        }
-                        placeholder="E.G. CITY GATEWAY HOSTEL"
-                        className="rounded-none border-slate-200 focus:ring-orange-500 uppercase text-xs"
-                      />
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                <div className="p-6">
+                  {wizardStep === 1 && (
+                    <form onSubmit={(e) => { e.preventDefault(); setWizardStep(2); }} className="space-y-6">
                       <div className="space-y-2">
                         <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
                           Affiliated_Uni
@@ -406,91 +405,217 @@ export default function OwnerDashboard() {
                               university: e.target.value,
                             })
                           }
-                          placeholder="E.G. MAKERERE"
-                          className="rounded-none border-slate-200 focus:ring-orange-500 uppercase text-xs"
+                          placeholder="E.G. MAKERERE UNIVERSITY"
+                          className="rounded-none border-slate-200 focus:ring-orange-500 uppercase text-xs h-12"
                         />
+                        <p className="text-[10px] text-slate-400">Which university is this hostel primarily serving?</p>
                       </div>
-                      <div className="space-y-2">
-                        <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                          Price_Metric
-                        </Label>
-                        <Input
-                          required
-                          value={newHostel.price_range}
-                          onChange={(e) =>
-                            setNewHostel({
-                              ...newHostel,
-                              price_range: e.target.value,
-                            })
-                          }
-                          placeholder="E.G. 1M - 1.5M UGX"
-                          className="rounded-none border-slate-200 focus:ring-orange-500 uppercase text-xs"
-                        />
+                      <DialogFooter>
+                        <Button
+                          type="submit"
+                          className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-none font-bold uppercase tracking-widest text-xs"
+                        >
+                          Continue_To_Details
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  )}
+
+                  {wizardStep === 2 && (
+                    <form onSubmit={handleCreateProperty} className="space-y-6">
+                      <div className="grid grid-cols-1 gap-6">
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                            Hostel_Identity
+                          </Label>
+                          <Input
+                            required
+                            value={newHostel.name}
+                            onChange={(e) =>
+                              setNewHostel({ ...newHostel, name: e.target.value })
+                            }
+                            placeholder="E.G. CITY GATEWAY HOSTEL"
+                            className="rounded-none border-slate-200 focus:ring-orange-500 uppercase text-xs"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                              Price_Metric
+                            </Label>
+                            <Input
+                              required
+                              value={newHostel.price_range}
+                              onChange={(e) =>
+                                setNewHostel({
+                                  ...newHostel,
+                                  price_range: e.target.value,
+                                })
+                              }
+                              placeholder="E.G. 1M - 1.5M UGX/SEM"
+                              className="rounded-none border-slate-200 focus:ring-orange-500 uppercase text-xs"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                              <ImageIcon className="h-3 w-3" /> Visual_Assets
+                            </Label>
+                            <Input
+                              value={newHostel.images}
+                              onChange={(e) =>
+                                setNewHostel({ ...newHostel, images: e.target.value })
+                              }
+                              placeholder="URL1, URL2 (Comma separated)"
+                              className="rounded-none border-slate-200 focus:ring-orange-500 text-xs"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                            Geographic_Location
+                          </Label>
+                          <Input
+                            required
+                            value={newHostel.address}
+                            onChange={(e) =>
+                              setNewHostel({
+                                ...newHostel,
+                                address: e.target.value,
+                              })
+                            }
+                            placeholder="E.G. KIKONI, KAMPALA"
+                            className="rounded-none border-slate-200 focus:ring-orange-500 uppercase text-xs"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                            Property_Brief
+                          </Label>
+                          <Textarea
+                            value={newHostel.description}
+                            onChange={(e) =>
+                              setNewHostel({
+                                ...newHostel,
+                                description: e.target.value,
+                              })
+                            }
+                            placeholder="DESCRIBE PLATFORM AMENITIES, SAFETY, CULTURE..."
+                            className="rounded-none border-slate-200 focus:ring-orange-500 min-h-[80px] uppercase text-xs"
+                          />
+                        </div>
                       </div>
-                    </div>
+                      <DialogFooter className="flex flex-row gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setWizardStep(1)}
+                          className="w-1/3 h-12 rounded-none font-bold uppercase tracking-widest text-[10px]"
+                        >
+                          Go_Back
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={isCreating}
+                          className="w-2/3 h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-none font-bold uppercase tracking-widest text-[10px]"
+                        >
+                          {isCreating ? (
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          ) : null}
+                          Save_&_Continue
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  )}
 
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                        Geographic_Location
-                      </Label>
-                      <Input
-                        required
-                        value={newHostel.address}
-                        onChange={(e) =>
-                          setNewHostel({
-                            ...newHostel,
-                            address: e.target.value,
-                          })
-                        }
-                        placeholder="E.G. KIKONI, MAKERERE"
-                        className="rounded-none border-slate-200 focus:ring-orange-500 uppercase text-xs"
-                      />
-                    </div>
+                  {wizardStep === 3 && (
+                    <div className="space-y-6">
+                      {rooms.length > 0 && (
+                        <div>
+                          <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Added_Rooms</h4>
+                          <div className="max-h-[120px] overflow-y-auto border border-slate-100">
+                            <Table className="font-mono">
+                              <TableBody>
+                                {rooms.map(room => (
+                                  <TableRow key={room.id} className="hover:bg-slate-50/50">
+                                    <TableCell className="text-[10px] py-2 font-bold uppercase text-slate-900">{room.name}</TableCell>
+                                    <TableCell className="text-[10px] py-2 text-slate-500">{room.price.toLocaleString()} UGX</TableCell>
+                                    <TableCell className="text-[10px] py-2 text-slate-500">Cap: {room.capacity}</TableCell>
+                                    <TableCell className="text-right py-2">
+                                      <Button onClick={() => handleDeleteRoom(room.id)} variant="ghost" className="h-6 w-6 p-0 text-rose-500 hover:bg-rose-50 rounded">
+                                        <Trash2 className="h-3 w-3" />
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
+                      )}
 
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                        <ImageIcon className="h-3 w-3" /> Visual_Assets_CSV
-                      </Label>
-                      <Input
-                        value={newHostel.images}
-                        onChange={(e) =>
-                          setNewHostel({ ...newHostel, images: e.target.value })
-                        }
-                        placeholder="URL1, URL2, URL3..."
-                        className="rounded-none border-slate-200 focus:ring-orange-500 text-xs"
-                      />
-                    </div>
+                      <div className="bg-slate-50 p-4 border border-slate-100">
+                        <h4 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest mb-4">Add_Room_Type</h4>
+                        
+                        <div className="flex gap-2 mb-4">
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            size="sm"
+                            className="rounded-none text-[9px] h-7 border-slate-200 uppercase font-bold text-slate-500"
+                            onClick={() => setNewRoom({ ...newRoom, name: "Single Room", capacity: "1" })}
+                          >
+                            Preset: Single
+                          </Button>
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            size="sm"
+                            className="rounded-none text-[9px] h-7 border-slate-200 uppercase font-bold text-slate-500"
+                            onClick={() => setNewRoom({ ...newRoom, name: "Double Room", capacity: "2" })}
+                          >
+                            Preset: Double
+                          </Button>
+                        </div>
 
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                        Property_Brief
-                      </Label>
-                      <Textarea
-                        value={newHostel.description}
-                        onChange={(e) =>
-                          setNewHostel({
-                            ...newHostel,
-                            description: e.target.value,
-                          })
-                        }
-                        placeholder="DESCRIBE AMENITIES, CULTURE, SAFETY..."
-                        className="rounded-none border-slate-200 focus:ring-orange-500 min-h-[100px] uppercase text-xs"
-                      />
+                        <form onSubmit={(e) => createdHostelId && handleAddRoom(e, createdHostelId)} className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                              <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Type_Label</Label>
+                              <Input required value={newRoom.name} onChange={e => setNewRoom({...newRoom, name: e.target.value})} placeholder="E.G. SINGLE VIP" className="bg-white rounded-none border-slate-200 text-[10px] h-9 uppercase" />
+                            </div>
+                            <div className="col-span-1 grid grid-cols-2 gap-2">
+                              <div className="space-y-1.5">
+                                <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Capacity</Label>
+                                <Input required type="number" min="1" value={newRoom.capacity} onChange={e => setNewRoom({...newRoom, capacity: e.target.value})} placeholder="1" className="bg-white rounded-none border-slate-200 text-[10px] h-9" />
+                              </div>
+                              <div className="space-y-1.5">
+                                <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Price</Label>
+                                <Input required type="number" min="0" value={newRoom.price} onChange={e => setNewRoom({...newRoom, price: e.target.value})} placeholder="UGX" className="bg-white rounded-none border-slate-200 text-[10px] h-9" />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex justify-end">
+                            <Button type="submit" className="bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold uppercase tracking-widest rounded-none h-8 px-4">
+                              <Plus className="h-3 w-3 mr-1" /> Add_Room_Type
+                            </Button>
+                          </div>
+                        </form>
+                      </div>
+
+                      <DialogFooter className="mt-6 border-t border-slate-100 pt-4">
+                        <Button
+                          onClick={() => setIsWizardOpen(false)}
+                          className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-none font-bold uppercase tracking-widest text-xs"
+                        >
+                          Finish_Setup
+                        </Button>
+                      </DialogFooter>
                     </div>
-                  </div>
-                  <DialogFooter>
-                    <Button
-                      type="submit"
-                      disabled={isCreating}
-                      className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-none font-bold uppercase tracking-widest text-xs"
-                    >
-                      {isCreating ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      ) : null}
-                      Commit_To_Review
-                    </Button>
-                  </DialogFooter>
-                </form>
+                  )}
+                </div>
               </DialogContent>
             </Dialog>
           </div>

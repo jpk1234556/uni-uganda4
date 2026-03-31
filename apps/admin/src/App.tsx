@@ -14,6 +14,7 @@ import AdminLayout from "./components/admin/AdminLayout";
 import Auth from "@/pages/Auth";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
 import { AuthProvider } from "@/context/AuthContext";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function App() {
   return (
@@ -66,6 +67,7 @@ export default function App() {
             element={<Navigate to="/admin/dashboard" replace />}
           />
         </Routes>
+        <Toaster />
       </AuthProvider>
     </BrowserRouter>
   );

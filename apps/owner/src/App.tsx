@@ -4,6 +4,7 @@ import Auth from "@/pages/Auth";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
 import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "@/components/layout/Navbar";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
             </Routes>
           </main>
         </div>
+        <Toaster />
       </AuthProvider>
     </BrowserRouter>
   );
