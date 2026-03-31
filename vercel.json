@@ -1,6 +1,6 @@
 {
-  "buildCommand": "npm run build -w @uni-nest/admin",
-  "outputDirectory": "apps/admin/dist",
+  "buildCommand": "npm run build -w @uni-nest/owner",
+  "outputDirectory": "apps/owner/dist",
   "rewrites": [
     {
       "source": "/(.*)",
