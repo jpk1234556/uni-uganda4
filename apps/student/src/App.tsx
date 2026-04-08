@@ -16,7 +16,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <div className="flex flex-col min-h-screen">
-          <Navbar appType="student" />
+          <Navbar />
           <main className="flex-grow">
             <Suspense
               fallback={
@@ -27,10 +27,7 @@ export default function App() {
             >
               <Routes>
                 <Route path="/" element={<Home />} />
-                <Route
-                  path="/auth"
-                  element={<Auth appType="student" />}
-                />
+                <Route path="/auth" element={<Auth appType="student" />} />
                 <Route path="/search" element={<Search />} />
                 <Route path="/hostel/:id" element={<HostelDetail />} />
                 <Route

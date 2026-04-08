@@ -152,8 +152,12 @@ export default function Search() {
       }
 
       // University Match
-      if (selectedUniversity !== "all" && hostel.university !== selectedUniversity) {
-        return false;
+      if (selectedUniversity !== "all") {
+        const su = selectedUniversity.toLowerCase();
+        const hu = (hostel.university || "").toLowerCase();
+        if (hu !== su && !su.includes(hu) && !hu.includes(su)) {
+          return false;
+        }
       }
       
       // Amenities Match
@@ -216,10 +220,10 @@ export default function Search() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">University / Area</label>
                 <Select value={selectedUniversity} onValueChange={setSelectedUniversity}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full bg-white text-slate-900 border-slate-200">
                     <SelectValue placeholder="Select University" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white shadow-xl z-50 border border-slate-200">
                     <SelectItem value="all">All Universities</SelectItem>
                     {universities.map(uni => (
                        <SelectItem key={uni} value={uni}>{uni}</SelectItem>
@@ -247,10 +251,10 @@ export default function Search() {
               <div className="space-y-2 pt-4 border-t">
                 <label className="text-sm font-medium">Minimum Rating</label>
                 <Select value={minRating.toString()} onValueChange={(v) => setMinRating(Number(v))}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full bg-white text-slate-900 border-slate-200">
                     <SelectValue placeholder="Any Rating" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white shadow-xl z-50 border border-slate-200">
                     <SelectItem value="0">Any Rating</SelectItem>
                     <SelectItem value="3">3+ Stars</SelectItem>
                     <SelectItem value="4">4+ Stars</SelectItem>
@@ -323,10 +327,10 @@ export default function Search() {
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium whitespace-nowrap">Sort by:</span>
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[180px] bg-white/5 border-white/10">
+                <SelectTrigger className="w-[180px] bg-white border-slate-200 text-slate-900">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white shadow-xl z-50 border border-slate-200">
                   <SelectItem value="newest">Newest First</SelectItem>
                   <SelectItem value="price-asc">Price: Low to High</SelectItem>
                   <SelectItem value="price-desc">Price: High to Low</SelectItem>

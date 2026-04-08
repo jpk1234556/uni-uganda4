@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +13,14 @@ import { Menu, LogOut, LayoutDashboard } from "lucide-react";
 
 export default function Navbar() {
   const { user, dbUser, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const dashboardPath =
+    dbUser?.role === "student"
+      ? "/student/dashboard"
+      : dbUser?.role === "hostel_owner"
+        ? "/owner/dashboard"
+        : "/admin/dashboard";
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
@@ -29,24 +38,16 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
           {user ? (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={user.user_metadata?.avatar_url} alt={dbUser?.first_name} />
-                    <AvatarFallback>{dbUser?.first_name?.[0] || user.email?.[0]}</AvatarFallback>
-                  </Avatar>
-                </Button>
+              <DropdownMenuTrigger className="relative h-10 w-10 rounded-full">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={user.user_metadata?.avatar_url} alt={dbUser?.first_name} />
+                  <AvatarFallback>{dbUser?.first_name?.[0] || user.email?.[0]}</AvatarFallback>
+                </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem asChild>
-                  <Link to={
-                    dbUser?.role === 'student' ? '/student/dashboard' :
-                    dbUser?.role === 'hostel_owner' ? '/owner/dashboard' :
-                    '/admin/dashboard'
-                  }>
-                    <LayoutDashboard className="mr-2 h-4 w-4" />
-                    <span>Dashboard</span>
-                  </Link>
+                <DropdownMenuItem onClick={() => navigate(dashboardPath)}>
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  <span>Dashboard</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => signOut()}>
                   <LogOut className="mr-2 h-4 w-4" />
