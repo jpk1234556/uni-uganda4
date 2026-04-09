@@ -10,6 +10,7 @@ const Home = lazy(() => import("./pages/Home"));
 const Search = lazy(() => import("./pages/Search"));
 const HostelDetail = lazy(() => import("./pages/HostelDetail"));
 const StudentDashboard = lazy(() => import("./pages/StudentDashboard"));
+const Roommates = lazy(() => import("./pages/Roommates"));
 const Auth = lazy(() => import("@/pages/Auth"));
 
 export default function App() {
@@ -36,6 +37,7 @@ export default function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/auth" element={<Auth appType="student" />} />
                 <Route path="/search" element={<Search />} />
+                <Route path="/roommates" element={<Roommates />} />
                 <Route path="/hostel/:id" element={<HostelDetail />} />
                 <Route
                   path="/student/dashboard"
