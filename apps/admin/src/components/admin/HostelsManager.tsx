@@ -335,7 +335,7 @@ export default function HostelsManager() {
             >
               <Plus className="h-4 w-4" /> Add New Hostel
             </Button>
-            <DialogContent className="sm:max-w-[600px] rounded-2xl border-0 shadow-2xl bg-white">
+            <DialogContent className="fixed left-1/2 top-1/2 z-50 w-[95vw] max-w-[600px] max-h-[90vh] -translate-x-1/2 -translate-y-1/2 rounded-2xl border-0 shadow-2xl bg-white overflow-y-auto">
               <DialogHeader className="border-b border-slate-100 pb-4 bg-slate-50 -mx-6 px-6 -mt-6 pt-6 rounded-t-2xl relative">
                 <DialogTitle className="flex items-center gap-2 text-xl font-bold text-slate-900 tracking-tight">
                   <Building2 className="h-5 w-5 text-primary"/>
