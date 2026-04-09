@@ -62,7 +62,7 @@ export default function AdminSidebar() {
         </div>
       </div>
 
-      <nav className="flex-1 space-y-1 px-4 overflow-y-auto">
+      <nav className="flex-1 space-y-1 px-3 overflow-y-auto">
         <div className="px-3 mb-3">
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Core Modules</span>
         </div>
@@ -82,7 +82,7 @@ export default function AdminSidebar() {
               )}
             >
               <Icon className={cn("h-5 w-5 transition-colors", isActive ? "text-white" : "text-slate-400 group-hover:text-primary")} />
-              <span>{item.label}</span>
+              <span className="truncate">{item.label}</span>
             </Link>
           );
         })}

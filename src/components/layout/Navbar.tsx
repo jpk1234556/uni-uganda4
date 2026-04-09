@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +15,7 @@ import { Menu, LogOut, LayoutDashboard } from "lucide-react";
 export default function Navbar() {
   const { user, dbUser, signOut } = useAuth();
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const dashboardPath =
     dbUser?.role === "student"
@@ -73,7 +75,7 @@ export default function Navbar() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-2">
               <Link to="/auth">
                 <Button variant="ghost">Log in</Button>
               </Link>
@@ -82,11 +84,48 @@ export default function Navbar() {
               </Link>
             </div>
           )}
-          <Button variant="ghost" size="icon" className="md:hidden">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            aria-label="Toggle menu"
+          >
             <Menu className="h-6 w-6" />
           </Button>
         </div>
       </div>
+
+      {isMobileMenuOpen && (
+        <div className="md:hidden border-t bg-background/95 backdrop-blur px-4 py-4">
+          <div className="flex flex-col gap-2">
+            <Link
+              to="/search"
+              className="text-sm font-medium px-3 py-2 rounded-lg hover:bg-slate-100"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Search
+            </Link>
+            <Link
+              to="/roommates"
+              className="text-sm font-medium px-3 py-2 rounded-lg hover:bg-slate-100"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Roommates
+            </Link>
+            {!user && (
+              <div className="flex gap-2 pt-2">
+                <Link to="/auth" className="flex-1" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button variant="outline" className="w-full">Log in</Button>
+                </Link>
+                <Link to="/auth?mode=signup" className="flex-1" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button className="w-full">Sign up</Button>
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

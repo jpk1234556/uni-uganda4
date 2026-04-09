@@ -50,7 +50,7 @@ export default function AdminLayout({ sidebar, children }: AdminLayoutProps) {
       </div>
       
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto bg-[#F8FAFC] flex flex-col relative w-full custom-scrollbar pt-14 md:pt-0">
+      <main className="flex-1 min-w-0 overflow-y-auto bg-[#F8FAFC] flex flex-col relative w-full custom-scrollbar pt-16 md:pt-0">
         {/* Subtle Grid Pattern Overlay */}
         <div className="absolute inset-0 pointer-events-none opacity-[0.03]" 
              style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '24px 24px' }} />

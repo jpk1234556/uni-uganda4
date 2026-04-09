@@ -213,7 +213,7 @@ export default function Search() {
         
         {/* Filters Sidebar */}
         <div className="w-full lg:w-1/4 space-y-6">
-          <div className="bg-white/5 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-white/10">
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 sticky top-20">
             <h3 className="font-semibold text-lg mb-4">Filters</h3>
             
             <div className="space-y-4">
@@ -232,7 +232,7 @@ export default function Search() {
                 </Select>
               </div>
 
-              <div className="space-y-4 pt-4 border-t">
+              <div className="space-y-4 pt-4 border-t border-slate-200">
                 <div className="flex justify-between items-center">
                   <label className="text-sm font-medium">Price Range (UGX)</label>
                   <span className="text-xs text-muted-foreground">{priceRange[0]/1000}k - {priceRange[1]/1000}k</span>
@@ -248,7 +248,7 @@ export default function Search() {
                 />
               </div>
 
-              <div className="space-y-2 pt-4 border-t">
+              <div className="space-y-2 pt-4 border-t border-slate-200">
                 <label className="text-sm font-medium">Minimum Rating</label>
                 <Select value={minRating.toString()} onValueChange={(v) => setMinRating(Number(v))}>
                   <SelectTrigger className="w-full bg-white text-slate-900 border-slate-200">
@@ -263,7 +263,7 @@ export default function Search() {
                 </Select>
               </div>
 
-              <div className="space-y-3 pt-4 border-t">
+              <div className="space-y-3 pt-4 border-t border-slate-200">
                 <label className="text-sm font-medium">Amenities</label>
                 {AMENITIES.map((amenity) => (
                   <div key={amenity.id} className="flex items-center space-x-2">
@@ -306,17 +306,17 @@ export default function Search() {
 
         {/* Results Area */}
         <div className="w-full lg:w-3/4">
-          <div className="mb-6 flex gap-4">
+          <div className="mb-6 flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input 
                 placeholder="Search by hostel name or university..." 
-                className="pl-10 h-12 text-lg rounded-full shadow-sm bg-white/5 border-white/10 text-white focus-visible:ring-primary"
+                className="pl-10 h-12 text-base rounded-xl shadow-sm bg-white border-slate-200 text-slate-900 focus-visible:ring-primary"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <Button className="h-12 px-8 rounded-full shadow-md bg-gradient-primary hover:opacity-90 text-white">Search</Button>
+            <Button className="h-12 px-8 rounded-xl shadow-md bg-gradient-primary hover:opacity-90 text-white sm:w-auto w-full">Search</Button>
           </div>
 
           <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -353,14 +353,14 @@ export default function Search() {
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {sortedHostels.map((hostel) => (
                 <Link to={`/hostel/${hostel.id}`} key={hostel.id}>
-                    <Card className="overflow-hidden bg-white/5 hover:bg-white/10 border-white/10 hover:border-primary/50 transition-all duration-300 group cursor-pointer shadow-xl">
+                    <Card className="overflow-hidden bg-white border-slate-200 hover:border-primary/40 transition-all duration-300 group cursor-pointer shadow-sm hover:shadow-lg">
                     <div className="aspect-[4/3] relative overflow-hidden bg-muted">
                         <img 
                             src={hostel.images?.[0] || `https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&q=80&w=800`} 
                             alt={hostel.name}
                             className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
                         />
-                        <div className="absolute top-4 right-4 bg-background/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold shadow-sm flex items-center gap-1">
+                        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold shadow-sm flex items-center gap-1 text-slate-800">
                           <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
                           {(hostel.rating || 0) > 0 ? hostel.rating : "New"}
                         </div>
@@ -374,7 +374,7 @@ export default function Search() {
                             "absolute top-4 left-4 rounded-full backdrop-blur-md transition-all",
                             favorites.includes(hostel.id) 
                               ? "bg-rose-500 text-white hover:bg-rose-600" 
-                              : "bg-black/20 text-white hover:bg-black/40"
+                              : "bg-black/50 text-white hover:bg-black/70"
                           )}
                           onClick={(e) => toggleFavorite(e, hostel.id)}
                         >
@@ -383,13 +383,13 @@ export default function Search() {
                     </div>
                     <CardContent className="p-5">
                         <div className="flex justify-between items-start mb-2">
-                            <h3 className="font-bold text-xl text-white group-hover:text-primary transition-colors line-clamp-1">{hostel.name}</h3>
+                          <h3 className="font-bold text-xl text-slate-900 group-hover:text-primary transition-colors line-clamp-1">{hostel.name}</h3>
                         </div>
-                        <div className="flex items-center text-muted-foreground mb-4 text-sm">
+                        <div className="flex items-center text-slate-500 mb-4 text-sm">
                             <MapPin className="h-4 w-4 mr-1 shrink-0" />
                             <span className="line-clamp-1">{hostel.address || hostel.university}</span>
                         </div>
-                        <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
+                        <div className="flex gap-2 mb-1 flex-wrap">
                            {hostel.amenities?.slice(0, 3).map((amenity, i) => (
                              <span key={i} className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-md whitespace-nowrap">{amenity}</span>
                            )) || <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-md">Basic Amenities</span>}

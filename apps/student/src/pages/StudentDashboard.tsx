@@ -197,10 +197,10 @@ export default function StudentDashboard() {
 
       <div className="container mx-auto px-4 max-w-5xl">
         <Tabs defaultValue="applications" className="space-y-6">
-          <TabsList className="bg-white border border-slate-200 p-1.5 shadow-sm rounded-xl h-auto flex flex-wrap max-w-fit">
-            <TabsTrigger value="applications" className="gap-2 px-6 py-2.5 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 rounded-lg transition-all"><ClipboardList className="h-4 w-4" /> Booking History</TabsTrigger>
-            <TabsTrigger value="saved" className="gap-2 px-6 py-2.5 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 rounded-lg transition-all"><Heart className="h-4 w-4" /> Saved Hostels</TabsTrigger>
-            <TabsTrigger value="profile" className="gap-2 px-6 py-2.5 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 rounded-lg transition-all"><UserCircle className="h-4 w-4" /> Profile Details</TabsTrigger>
+          <TabsList className="bg-white border border-slate-200 p-1.5 shadow-sm rounded-xl h-auto w-full grid grid-cols-1 sm:grid-cols-3 gap-1">
+            <TabsTrigger value="applications" className="gap-2 px-4 py-2.5 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 rounded-lg transition-all text-xs sm:text-sm"><ClipboardList className="h-4 w-4" /> Booking History</TabsTrigger>
+            <TabsTrigger value="saved" className="gap-2 px-4 py-2.5 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 rounded-lg transition-all text-xs sm:text-sm"><Heart className="h-4 w-4" /> Saved Hostels</TabsTrigger>
+            <TabsTrigger value="profile" className="gap-2 px-4 py-2.5 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 rounded-lg transition-all text-xs sm:text-sm"><UserCircle className="h-4 w-4" /> Profile Details</TabsTrigger>
           </TabsList>
 
           <TabsContent value="applications">
@@ -223,15 +223,15 @@ export default function StudentDashboard() {
               ) : (
                 <div className="space-y-4">
                   {applications.map((app) => (
-                    <div key={app.id} className="flex justify-between items-center p-5 border rounded-xl hover:shadow-md hover:border-blue-200 transition-all bg-white">
-                      <div>
+                    <div key={app.id} className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 p-5 border rounded-xl hover:shadow-md hover:border-blue-200 transition-all bg-white">
+                      <div className="min-w-0">
                         <h4 className="font-semibold text-lg text-slate-900">{app.hostels?.name}</h4>
                         <p className="text-sm text-slate-500 mb-1">
                           {app.room_types?.name} &bull; {new Date(app.created_at).toLocaleDateString()}
                         </p>
                         <p className="text-sm font-medium text-slate-700">Price: {app.room_types?.price?.toLocaleString()} UGX</p>
                       </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-3 md:justify-end">
                         <Badge variant={app.status === "approved" ? "default" : app.status === "pending" ? "outline" : app.status === "completed" ? "default" : "destructive"} 
                                className={
                                  app.status === "approved" ? "bg-amber-500 text-white" : 
@@ -241,11 +241,11 @@ export default function StudentDashboard() {
                         </Badge>
                         
                         {app.status === "approved" ? (
-                          <Button onClick={() => handleOpenPayment(app)} size="sm" className="bg-emerald-600 hover:bg-emerald-700 shadow-sm text-white gap-2">
+                          <Button onClick={() => handleOpenPayment(app)} size="sm" className="bg-emerald-600 hover:bg-emerald-700 shadow-sm text-white gap-2 w-full sm:w-auto">
                              <Smartphone className="h-4 w-4" /> Pay Now
                           </Button>
                         ) : (
-                          <Button variant="ghost" size="sm" className="text-blue-600">View</Button>
+                          <Button variant="ghost" size="sm" className="text-blue-600 w-full sm:w-auto">View</Button>
                         )}
                       </div>
                     </div>

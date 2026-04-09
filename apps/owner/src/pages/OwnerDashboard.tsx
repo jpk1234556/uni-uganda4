@@ -314,7 +314,7 @@ export default function OwnerDashboard() {
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
       {/* System Status Bar */}
-      <div className="bg-white border-b border-slate-200 py-2 px-4 flex items-center justify-between text-xs font-medium text-slate-600">
+      <div className="bg-white border-b border-slate-200 py-2 px-4 flex items-center justify-between text-xs font-medium text-slate-600 gap-4">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
@@ -325,7 +325,7 @@ export default function OwnerDashboard() {
             <span>Database Sync: Active</span>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-4 whitespace-nowrap">
           <span>Region: UG-KAMPALA-01</span>
           <span>Latency: 24ms</span>
           <span className="text-slate-400">
@@ -442,7 +442,7 @@ export default function OwnerDashboard() {
                           />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label className="text-sm font-semibold text-slate-700">
                               Price Range
@@ -589,7 +589,7 @@ export default function OwnerDashboard() {
                               <Label className="text-xs font-semibold text-slate-600">Type Label</Label>
                               <Input required value={newRoom.name} onChange={e => setNewRoom({...newRoom, name: e.target.value})} placeholder="e.g. Single VIP" className="bg-white rounded-lg border-slate-200 h-10 shadow-sm" />
                             </div>
-                            <div className="col-span-1 grid grid-cols-2 gap-2">
+                            <div className="col-span-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
                               <div className="space-y-1.5">
                                 <Label className="text-xs font-semibold text-slate-600">Capacity</Label>
                                 <Input required type="number" min="1" value={newRoom.capacity} onChange={e => setNewRoom({...newRoom, capacity: e.target.value})} placeholder="1" className="bg-white rounded-lg border-slate-200 h-10 shadow-sm" />
@@ -733,22 +733,22 @@ export default function OwnerDashboard() {
 
         {/* Main Dashboard Tabs */}
         <Tabs defaultValue="properties" className="space-y-8">
-          <TabsList className="bg-white p-1 rounded-xl shadow-sm border border-slate-200 w-full sm:w-auto overflow-x-auto flex-nowrap">
+          <TabsList className="bg-white p-1 rounded-xl shadow-sm border border-slate-200 w-full overflow-x-auto flex-nowrap">
             <TabsTrigger
               value="properties"
-              className="rounded-lg px-8 py-3 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm transition-all text-slate-600"
+              className="rounded-lg px-5 sm:px-8 py-3 text-sm font-semibold whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm transition-all text-slate-600"
             >
               <Home className="h-4 w-4 mr-2" /> Inventory
             </TabsTrigger>
             <TabsTrigger
               value="bookings"
-              className="rounded-lg px-8 py-3 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm transition-all text-slate-600"
+              className="rounded-lg px-5 sm:px-8 py-3 text-sm font-semibold whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm transition-all text-slate-600"
             >
               <Users className="h-4 w-4 mr-2" /> Booking Logs
             </TabsTrigger>
             <TabsTrigger
               value="settings"
-              className="rounded-lg px-8 py-3 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm transition-all text-slate-600"
+              className="rounded-lg px-5 sm:px-8 py-3 text-sm font-semibold whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm transition-all text-slate-600"
             >
               <Settings className="h-4 w-4 mr-2" /> System Config
             </TabsTrigger>
