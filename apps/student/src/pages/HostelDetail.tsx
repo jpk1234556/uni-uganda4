@@ -246,7 +246,12 @@ export default function HostelDetail() {
       setIsBookingOpen(false);
       navigate("/student/dashboard");
     } catch (error: unknown) {
-      toast.error(getErrorMessage(error, "Booking failed"));
+      const message = getErrorMessage(error, "Booking failed");
+      if (/row-level security|permission denied|policy/i.test(message)) {
+        toast.error("Booking is blocked by database permissions. Run phase22_booking_enablement.sql in Supabase and try again.");
+      } else {
+        toast.error(message);
+      }
     } finally {
       setIsSubmitting(false);
     }
