@@ -50,9 +50,7 @@ export default function AdminSidebar() {
     <div className="flex flex-col h-full w-64 shrink-0 bg-white border-r border-slate-200 overflow-y-auto">
       <div className="px-6 py-8 mb-4 flex flex-col gap-4 border-b border-slate-100">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 border border-primary/20 text-primary rounded-xl shadow-sm">
-            <ShieldCheck className="h-6 w-6" />
-          </div>
+          <img src="/logo.png" alt="Kaju Housing Logo" className="h-10 w-10 object-contain rounded-xl shadow-sm" />
           <div className="flex flex-col">
             <span className="font-bold text-base text-slate-900 leading-tight tracking-tight">Kaju Housing</span>
             <span className="text-xs text-slate-500 font-medium tracking-tight">System Admin</span>

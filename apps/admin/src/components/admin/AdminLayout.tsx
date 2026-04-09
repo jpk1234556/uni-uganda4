@@ -17,7 +17,10 @@ export default function AdminLayout({ sidebar, children }: AdminLayoutProps) {
         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 -ml-2 text-slate-500 hover:bg-slate-50 hover:text-primary rounded-xl transition-colors">
           <Menu className="h-6 w-6" />
         </button>
-        <span className="font-semibold text-sm text-slate-900 ml-3 tracking-tight">Kaju Housing Admin</span>
+        <div className="flex items-center gap-2 ml-2">
+          <img src="/logo.png" alt="Logo" className="h-7 w-7 object-contain rounded-md" />
+          <span className="font-semibold text-sm text-slate-900 tracking-tight">Kaju Admin</span>
+        </div>
       </div>
 
       {/* Mobile Overlay */}

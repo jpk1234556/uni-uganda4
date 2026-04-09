@@ -17,10 +17,8 @@ export default function Navbar({ appType }: { appType?: "student" | "owner" | "a
       <div className="container mx-auto flex h-20 items-center justify-between px-4 lg:px-8">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 mr-8 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg z-50">
-          <div className="p-1.5 rounded-lg flex items-center justify-center shadow-sm bg-gradient-primary">
-            <Building2 className="h-6 w-6 text-white" />
-          </div>
-          <span className="text-xl font-extrabold tracking-tight text-slate-900">
+          <img src="/logo.png" alt="Kaju Housing" className="h-10 w-auto object-contain rounded-md" />
+          <span className="text-xl font-extrabold tracking-tight text-slate-900 hidden sm:inline-block ml-1">
             KAJU<span className="font-normal text-slate-500">HOUSING</span>
           </span>
         </Link>
