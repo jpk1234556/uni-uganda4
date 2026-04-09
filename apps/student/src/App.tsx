@@ -4,6 +4,7 @@ import ProtectedRoute from "@/components/layout/ProtectedRoute";
 import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import studentBackground from "../../../images/e0901fce5aa5c561965db8d07c519a71.jpg";
 
 const Home = lazy(() => import("./pages/Home"));
 const Search = lazy(() => import("./pages/Search"));
@@ -15,7 +16,13 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <div className="flex flex-col min-h-screen">
+        <div className="relative flex flex-col min-h-screen">
+          <div
+            className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url(${studentBackground})` }}
+            aria-hidden="true"
+          />
+          <div className="fixed inset-0 -z-10 bg-white/85" aria-hidden="true" />
           <Navbar />
           <main className="flex-grow">
             <Suspense
