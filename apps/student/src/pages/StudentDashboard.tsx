@@ -13,6 +13,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
+const formatUGX = (amount: number | string | null | undefined) =>
+  new Intl.NumberFormat("en-UG", {
+    style: "currency",
+    currency: "UGX",
+    currencyDisplay: "code",
+    maximumFractionDigits: 0,
+  }).format(Number(amount ?? 0));
+
 export default function StudentDashboard() {
   const { user, dbUser } = useAuth();
   const [applications, setApplications] = useState<any[]>([]);
@@ -229,7 +237,7 @@ export default function StudentDashboard() {
                         <p className="text-sm text-slate-500 mb-1">
                           {app.room_types?.name} &bull; {new Date(app.created_at).toLocaleDateString()}
                         </p>
-                        <p className="text-sm font-medium text-slate-700">Price: {app.room_types?.price?.toLocaleString()} UGX</p>
+                        <p className="text-sm font-medium text-slate-700">Price: {formatUGX(app.room_types?.price)}</p>
                       </div>
                       <div className="flex flex-col sm:flex-row sm:items-center gap-3 md:justify-end">
                         <Badge variant={app.status === "approved" ? "default" : app.status === "pending" ? "outline" : app.status === "completed" ? "default" : "destructive"} 
@@ -414,9 +422,7 @@ export default function StudentDashboard() {
           <div className="space-y-6 py-4">
              <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-4 text-center">
                 <p className="text-sm text-emerald-800 mb-1">Amount Due</p>
-                <div className="text-3xl font-bold text-emerald-900">
-                  {selectedBooking?.room_types?.price?.toLocaleString() || "0"} <span className="text-lg">UGX</span>
-                </div>
+                <div className="text-3xl font-bold text-emerald-900">{formatUGX(selectedBooking?.room_types?.price)}</div>
              </div>
 
              <div className="space-y-4 text-sm text-slate-600">

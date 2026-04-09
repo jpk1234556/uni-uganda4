@@ -14,6 +14,14 @@ import type { Hostel } from "@/types";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
+const formatUGX = (amount: number | string | null | undefined) =>
+  new Intl.NumberFormat("en-UG", {
+    style: "currency",
+    currency: "UGX",
+    currencyDisplay: "code",
+    maximumFractionDigits: 0,
+  }).format(Number(amount ?? 0));
+
 export default function HostelsManager() {
   const { user, dbUser } = useAuth();
   
@@ -42,6 +50,9 @@ export default function HostelsManager() {
     amenities: "",
     owner_id: ""
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragActive, setIsDragActive] = useState(false);
+  const [selectedImageDataUrls, setSelectedImageDataUrls] = useState<string[]>([]);
 
   // Manage Rooms State
   const [selectedHostel, setSelectedHostel] = useState<Hostel | null>(null);
@@ -109,6 +120,40 @@ export default function HostelsManager() {
     }
   };
 
+  const readFileAsDataUrl = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(new Error(`Failed to read ${file.name}`));
+      reader.readAsDataURL(file);
+    });
+
+  const handleIncomingFiles = async (incoming: FileList | null) => {
+    if (!incoming || incoming.length === 0) return;
+
+    const files = Array.from(incoming);
+    const imageFiles = files.filter((file) => file.type.startsWith("image/"));
+
+    if (imageFiles.length !== files.length) {
+      toast.error("Only image files are allowed.");
+    }
+
+    if (imageFiles.length === 0) return;
+
+    if (selectedImageDataUrls.length + imageFiles.length > 8) {
+      toast.error("You can attach up to 8 images per hostel.");
+      return;
+    }
+
+    try {
+      const encoded = await Promise.all(imageFiles.map(readFileAsDataUrl));
+      setSelectedImageDataUrls((prev) => [...prev, ...encoded]);
+      toast.success(`${imageFiles.length} image(s) attached.`);
+    } catch (error) {
+      toast.error("Failed to process selected image files.");
+    }
+  };
+
   const handleSaveProperty = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -120,7 +165,8 @@ export default function HostelsManager() {
       const ownerId = (newHostel.owner_id || user.id || "").trim();
       if (!ownerId) throw new Error("Please assign an owner.");
       
-      const imagesArray = newHostel.images ? newHostel.images.split(",").map(i => i.trim()).filter(Boolean) : [];
+      const manualImageUrls = newHostel.images ? newHostel.images.split(",").map(i => i.trim()).filter(Boolean) : [];
+      const imagesArray = Array.from(new Set([...manualImageUrls, ...selectedImageDataUrls]));
       const amenitiesArray = newHostel.amenities ? newHostel.amenities.split(",").map(a => a.trim()).filter(Boolean) : [];
 
       const payload = {
@@ -140,6 +186,7 @@ export default function HostelsManager() {
         if (error) throw error;
         toast.success("Hostel updated successfully!");
         setWizardStep(3);
+        setSelectedImageDataUrls([]);
         fetchHostels();
       } else {
         const { data, error } = await supabase.from("hostels").insert(payload).select().single();
@@ -147,6 +194,7 @@ export default function HostelsManager() {
         toast.success("Hostel created! Now configure the rooms.");
         setCreatedHostelId(data.id);
         setWizardStep(3);
+        setSelectedImageDataUrls([]);
         fetchHostels();
       }
     } catch (error: any) {
@@ -200,6 +248,7 @@ export default function HostelsManager() {
       amenities: (hostel.amenities || []).join(", "),
       owner_id: hostel.owner_id || ""
     });
+    setSelectedImageDataUrls([]);
     setWizardStep(2);
     setIsCreateDialogOpen(true);
   };
@@ -278,8 +327,6 @@ export default function HostelsManager() {
     }
   };
 
-  const triggerRef = useRef<HTMLButtonElement>(null);
-
   return (
     <>
       <motion.div 
@@ -319,6 +366,7 @@ export default function HostelsManager() {
                 setWizardStep(1);
                 setCreatedHostelId(null);
                 setIsEditingHostel(false);
+                setSelectedImageDataUrls([]);
                 setNewHostel({ name: "", university: "", address: "", description: "", price_range: "", images: "", amenities: "", owner_id: "" });
               }
           }}>
@@ -328,6 +376,7 @@ export default function HostelsManager() {
                 setWizardStep(1);
                 setCreatedHostelId(null);
                 setIsEditingHostel(false);
+                setSelectedImageDataUrls([]);
                 setNewHostel({ name: "", university: "", address: "", description: "", price_range: "", images: "", amenities: "", owner_id: "" });
                 setIsCreateDialogOpen(true);
               }}
@@ -423,6 +472,56 @@ export default function HostelsManager() {
                            <ImageIcon className="h-4 w-4 text-primary"/> Media Image URLs
                          </Label>
                          <Input id="images" value={newHostel.images} onChange={(e) => setNewHostel({...newHostel, images: e.target.value})} placeholder="https://..., https://..." className="rounded-xl border-slate-200 text-sm h-11 bg-white shadow-sm" />
+                         <input
+                           ref={fileInputRef}
+                           type="file"
+                           accept="image/*"
+                           multiple
+                           className="hidden"
+                           onChange={(e) => handleIncomingFiles(e.target.files)}
+                         />
+                         <div
+                           onDragOver={(e) => {
+                             e.preventDefault();
+                             setIsDragActive(true);
+                           }}
+                           onDragLeave={() => setIsDragActive(false)}
+                           onDrop={(e) => {
+                             e.preventDefault();
+                             setIsDragActive(false);
+                             handleIncomingFiles(e.dataTransfer.files);
+                           }}
+                           className={cn(
+                             "mt-2 rounded-xl border border-dashed p-3 text-center transition-colors",
+                             isDragActive ? "border-primary bg-primary/5" : "border-slate-300 bg-slate-50",
+                           )}
+                         >
+                           <p className="text-xs text-slate-600 mb-2">Drag and drop images here</p>
+                           <Button
+                             type="button"
+                             variant="outline"
+                             className="h-8 text-xs"
+                             onClick={() => fileInputRef.current?.click()}
+                           >
+                             Choose From Files
+                           </Button>
+                         </div>
+                         {selectedImageDataUrls.length > 0 && (
+                           <div className="mt-2 grid grid-cols-4 gap-2">
+                             {selectedImageDataUrls.map((img, idx) => (
+                               <div key={`${idx}-${img.slice(0, 20)}`} className="relative rounded-md overflow-hidden border border-slate-200">
+                                 <img src={img} alt={`upload-${idx + 1}`} className="h-14 w-full object-cover" />
+                                 <button
+                                   type="button"
+                                   className="absolute top-0.5 right-0.5 h-5 w-5 rounded-full bg-black/60 text-white text-[10px]"
+                                   onClick={() => setSelectedImageDataUrls((prev) => prev.filter((_, i) => i !== idx))}
+                                 >
+                                   x
+                                 </button>
+                               </div>
+                             ))}
+                           </div>
+                         )}
                       </div>
                     </div>
                     <div className="space-y-2">
@@ -460,7 +559,7 @@ export default function HostelsManager() {
                               {rooms.map(room => (
                                 <TableRow key={room.id} className="hover:bg-slate-100 border-slate-200">
                                   <TableCell className="text-xs font-semibold text-slate-900">{room.name}</TableCell>
-                                  <TableCell className="text-xs text-slate-600">{room.price.toLocaleString()} UGX</TableCell>
+                                  <TableCell className="text-xs text-slate-600">{formatUGX(room.price)}</TableCell>
                                   <TableCell className="text-xs text-slate-600">Cap:{room.capacity}</TableCell>
                                   <TableCell className="text-right">
                                     <Button type="button" onClick={() => {
@@ -672,7 +771,7 @@ export default function HostelsManager() {
                       {rooms.map(room => (
                         <TableRow key={room.id} className="hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0">
                           <TableCell className="text-sm font-bold text-slate-800">{room.name}</TableCell>
-                          <TableCell className="text-sm font-medium text-slate-600">{Number(room.price || 0).toLocaleString()} UGX</TableCell>
+                          <TableCell className="text-sm font-medium text-slate-600">{formatUGX(room.price)}</TableCell>
                           <TableCell className="text-sm font-medium text-slate-600">{room.capacity || 1} Beds</TableCell>
                           <TableCell className="text-right">
                             <Button type="button" onClick={() => {

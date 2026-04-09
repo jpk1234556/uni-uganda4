@@ -16,6 +16,14 @@ import { Input } from "@/components/ui/input";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
+const formatUGX = (amount: number | string | null | undefined) =>
+  new Intl.NumberFormat("en-UG", {
+    style: "currency",
+    currency: "UGX",
+    currencyDisplay: "code",
+    maximumFractionDigits: 0,
+  }).format(Number(amount ?? 0));
+
 export default function PaymentsManager() {
   const [payments, setPayments] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -153,10 +161,7 @@ export default function PaymentsManager() {
                     <TableCell>
                       <div className="flex items-baseline gap-1">
                         <span className="text-sm font-bold text-slate-900 tracking-tighter">
-                          {parseInt(payment.amount).toLocaleString()}
-                        </span>
-                        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
-                          {payment.currency || "UGX"}
+                          {formatUGX(payment.amount)}
                         </span>
                       </div>
                     </TableCell>

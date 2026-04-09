@@ -73,6 +73,14 @@ const getErrorMessage = (error: unknown, fallback: string): string => {
   return fallback;
 };
 
+const formatUGX = (amount: number | string | null | undefined) =>
+  new Intl.NumberFormat("en-UG", {
+    style: "currency",
+    currency: "UGX",
+    currencyDisplay: "code",
+    maximumFractionDigits: 0,
+  }).format(Number(amount ?? 0));
+
 export default function OwnerDashboard() {
   const { user } = useAuth();
 
@@ -546,7 +554,7 @@ export default function OwnerDashboard() {
                                 {rooms.map(room => (
                                   <TableRow key={room.id} className="hover:bg-slate-50/50">
                                     <TableCell className="text-xs py-2 font-bold text-slate-900">{room.name}</TableCell>
-                                    <TableCell className="text-xs py-2 text-slate-500">{room.price.toLocaleString()} UGX</TableCell>
+                                    <TableCell className="text-xs py-2 text-slate-500">{formatUGX(room.price)}</TableCell>
                                     <TableCell className="text-xs py-2 text-slate-500">Cap: {room.capacity}</TableCell>
                                     <TableCell className="text-right py-2">
                                       <Button onClick={() => handleDeleteRoom(room.id)} variant="ghost" className="h-6 w-6 p-0 text-rose-500 hover:bg-rose-50 rounded-lg">
@@ -1086,9 +1094,7 @@ export default function OwnerDashboard() {
                             <TableCell className="text-sm font-semibold text-slate-900">
                               {room.name}
                             </TableCell>
-                            <TableCell className="text-sm text-slate-600">
-                              {room.price.toLocaleString()}
-                            </TableCell>
+                            <TableCell className="text-sm text-slate-600">{formatUGX(room.price)}</TableCell>
                             <TableCell className="text-sm text-slate-600">
                               {room.capacity}
                             </TableCell>

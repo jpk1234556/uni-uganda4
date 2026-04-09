@@ -68,6 +68,14 @@ const getErrorMessage = (error: unknown, fallback: string): string => {
   return fallback;
 };
 
+const formatUGX = (amount: number | string | null | undefined) =>
+  new Intl.NumberFormat("en-UG", {
+    style: "currency",
+    currency: "UGX",
+    currencyDisplay: "code",
+    maximumFractionDigits: 0,
+  }).format(Number(amount ?? 0));
+
 export default function HostelDetail() {
   const { id } = useParams();
   const { user, dbUser } = useAuth();
@@ -469,12 +477,7 @@ export default function HostelDetail() {
                             </div>
                           </div>
                           <div className="flex flex-col sm:items-end justify-center gap-3 w-full sm:w-auto border-t sm:border-t-0 sm:border-l border-slate-100 pt-4 sm:pt-0 sm:pl-6 shrink-0">
-                            <div className="text-2xl font-bold text-indigo-600">
-                              {room.price.toLocaleString("en-UG")}{" "}
-                              <span className="text-sm font-normal text-slate-500">
-                                UGX
-                              </span>
-                            </div>
+                            <div className="text-2xl font-bold text-indigo-600">{formatUGX(room.price)}</div>
                             <Button
                               onClick={() => handleBookClick(room)}
                               disabled={room.available === 0}
