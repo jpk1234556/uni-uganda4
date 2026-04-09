@@ -147,12 +147,25 @@ export default function Search() {
       setIsLoading(true);
       const { data, error } = await supabase
         .from("hostels")
-        .select("*, room_types(price)")
+        .select("*, room_types(price, available)")
         .eq("status", "approved")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      setHostels((data as HostelWithRooms[]) || []);
+      if (error) {
+        console.warn("Primary fetch in Search failed, trying fallback...", error);
+        const fallback = await supabase
+          .from("hostels")
+          .select("*")
+          .eq("status", "approved");
+        
+        if (fallback.error) {
+           console.error("Fallback fetch also failed:", fallback.error);
+        } else {
+           setHostels((fallback.data as HostelWithRooms[]) || []);
+        }
+      } else {
+        setHostels((data as HostelWithRooms[]) || []);
+      }
     } catch (error) {
       console.error("Error fetching hostels:", error);
     } finally {
@@ -164,7 +177,9 @@ export default function Search() {
     // Name or Location Match
     if (
       searchTerm &&
-      !hostel.name.toLowerCase().includes(searchTerm.toLowerCase())
+      !(hostel.name || "").toLowerCase().includes(searchTerm.toLowerCase()) &&
+      !(hostel.university || "").toLowerCase().includes(searchTerm.toLowerCase()) &&
+      !(hostel.address || "").toLowerCase().includes(searchTerm.toLowerCase())
     ) {
       return false;
     }
@@ -196,9 +211,11 @@ export default function Search() {
 
     // Price Match
     if (hostel.room_types && hostel.room_types.length > 0) {
-      const minHostelPrice = Math.min(...hostel.room_types.map((r) => r.price));
-      if (minHostelPrice < priceRange[0] || minHostelPrice > priceRange[1]) {
-        return false;
+      const minHostelPrice = Math.min(...hostel.room_types.map((r) => r.price || Infinity));
+      if (minHostelPrice !== Infinity) {
+        if (minHostelPrice < priceRange[0] || minHostelPrice > priceRange[1]) {
+          return false;
+        }
       }
     } else if (priceRange[0] > 300000) {
       // If no rooms listed, but user is looking for a specific range, hide it?
@@ -213,22 +230,22 @@ export default function Search() {
     if (sortBy === "price-asc") {
       const minA =
         a.room_types && a.room_types.length > 0
-          ? Math.min(...a.room_types.map((r) => r.price))
+          ? Math.min(...a.room_types.map((r) => r.price || Infinity))
           : Infinity;
       const minB =
         b.room_types && b.room_types.length > 0
-          ? Math.min(...b.room_types.map((r) => r.price))
+          ? Math.min(...b.room_types.map((r) => r.price || Infinity))
           : Infinity;
       return minA - minB;
     }
     if (sortBy === "price-desc") {
       const minA =
         a.room_types && a.room_types.length > 0
-          ? Math.min(...a.room_types.map((r) => r.price))
+          ? Math.min(...a.room_types.map((r) => r.price || -Infinity))
           : -Infinity;
       const minB =
         b.room_types && b.room_types.length > 0
-          ? Math.min(...b.room_types.map((r) => r.price))
+          ? Math.min(...b.room_types.map((r) => r.price || -Infinity))
           : -Infinity;
       return minB - minA;
     }

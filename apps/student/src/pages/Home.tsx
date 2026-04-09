@@ -270,7 +270,7 @@ export default function Home() {
                 <p className="text-xs text-primary font-bold tracking-wide uppercase mb-1">
                   {stat.label}
                 </p>
-                <p className="text-[10px] text-slate-500 font-medium">
+                <p className="text-xs text-slate-300 font-medium mt-1">
                   {stat.sub}
                 </p>
               </motion.div>
@@ -361,7 +361,7 @@ export default function Home() {
                           <div className="font-extrabold text-xl">
                             {hostel.price_range || "Contact"}
                           </div>
-                          <div className="text-[10px] text-slate-400 font-medium">
+                          <div className="text-xs text-slate-300 font-medium">
                             per semester
                           </div>
                         </div>
