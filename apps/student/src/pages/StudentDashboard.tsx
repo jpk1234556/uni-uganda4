@@ -394,14 +394,17 @@ export default function StudentDashboard() {
                         className="group relative flex flex-col sm:flex-row gap-4 p-4 border rounded-xl hover:shadow-md hover:border-blue-200 transition-all bg-white overflow-hidden"
                       >
                         <div className="w-full sm:w-24 h-24 rounded-lg overflow-hidden bg-slate-100 shrink-0">
-                          <img
-                            src={
-                              item.hostels?.images?.[0] ||
-                              "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&q=80&w=200"
-                            }
-                            alt={item.hostels?.name}
-                            className="w-full h-full object-cover"
-                          />
+                          {item.hostels?.images?.[0] ? (
+                            <img
+                              src={item.hostels.images[0]}
+                              alt={item.hostels?.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-[11px] text-slate-500 font-semibold px-2 text-center">
+                              No image
+                            </div>
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="font-bold text-slate-900 truncate">

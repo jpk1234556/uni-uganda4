@@ -315,9 +315,11 @@ export default function HostelDetail() {
   const images =
     hostel.images && hostel.images.length > 0
       ? hostel.images
-      : [
-          "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=2000&auto=format&fit=crop",
-        ];
+      : [];
+
+  const mapQuery = encodeURIComponent(
+    hostel.address || hostel.university || "Kampala, Uganda",
+  );
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
@@ -334,6 +336,13 @@ export default function HostelDetail() {
                 />
               </CarouselItem>
             ))}
+            {images.length === 0 && (
+              <CarouselItem className="h-full pl-0">
+                <div className="w-full h-full flex items-center justify-center bg-slate-300 text-slate-700 font-semibold">
+                  No property images uploaded
+                </div>
+              </CarouselItem>
+            )}
           </CarouselContent>
           {images.length > 1 && (
             <>
@@ -369,7 +378,7 @@ export default function HostelDetail() {
                   className="text-white border-white/50 backdrop-blur-md bg-black/20"
                 >
                   <Star className="h-3 w-3 mr-1 text-amber-400 fill-amber-400" />
-                  {(hostel.rating || 0) > 0 ? hostel.rating : "New"}
+                    {(hostel.rating || 0) > 0 ? hostel.rating : "-"}
                 </Badge>
               </div>
               <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-2 drop-shadow-md">
@@ -412,7 +421,7 @@ export default function HostelDetail() {
               </h2>
               <div className="w-full h-[300px] md:h-[400px] rounded-xl overflow-hidden bg-slate-100 relative shadow-inner">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d15959.066036746155!2d32.59735055!3d0.2919935!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sug!4v1774273240433!5m2!1sen!2sug"
+                  src={`https://www.google.com/maps?q=${mapQuery}&output=embed`}
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}

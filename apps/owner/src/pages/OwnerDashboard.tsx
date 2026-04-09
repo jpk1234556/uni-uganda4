@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -51,18 +51,10 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
 import { ResponsiveContainer, AreaChart, Area } from "recharts";
 
-const chartData = [
-  { name: "Jan", bookings: 4, revenue: 2400 },
-  { name: "Feb", bookings: 7, revenue: 4200 },
-  { name: "Mar", bookings: 12, revenue: 7800 },
-  { name: "Apr", bookings: 9, revenue: 5400 },
-  { name: "May", bookings: 15, revenue: 9000 },
-  { name: "Jun", bookings: 22, revenue: 13200 },
-];
-
 interface BookingWithRelations {
   id: string;
   status: "pending" | "approved" | "rejected";
+  created_at: string;
   hostels: { name: string } | null;
   users: { first_name: string; last_name: string } | null;
 }
@@ -114,6 +106,28 @@ export default function OwnerDashboard() {
   const [isRoomDragActive, setIsRoomDragActive] = useState(false);
   const [selectedRoomImageDataUrls, setSelectedRoomImageDataUrls] = useState<string[]>([]);
   const triggerRef = useRef<HTMLButtonElement>(null);
+
+  const bookingTrendData = useMemo(() => {
+    const formatter = new Intl.DateTimeFormat("en-UG", { month: "short" });
+    const now = new Date();
+    const buckets = Array.from({ length: 6 }).map((_, index) => {
+      const date = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
+      return {
+        key: `${date.getFullYear()}-${date.getMonth() + 1}`,
+        name: formatter.format(date),
+        count: 0,
+      };
+    });
+
+    bookings.forEach((booking) => {
+      const date = new Date(booking.created_at);
+      const key = `${date.getFullYear()}-${date.getMonth() + 1}`;
+      const target = buckets.find((bucket) => bucket.key === key);
+      if (target) target.count += 1;
+    });
+
+    return buckets;
+  }, [bookings]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -391,16 +405,15 @@ export default function OwnerDashboard() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-            <span>Server Status: Online</span>
+            <span>Server Status: {isLoading ? "Syncing" : "Live"}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(249,115,22,0.5)]" />
-            <span>Database Sync: Active</span>
+            <span>Database Sync: Realtime</span>
           </div>
         </div>
         <div className="hidden md:flex items-center gap-4 whitespace-nowrap">
-          <span>Region: UG-KAMPALA-01</span>
-          <span>Latency: 24ms</span>
+          <span>Profile: {user?.email || "Unknown owner"}</span>
           <span className="text-slate-400">
             {new Date().toISOString().split("T")[0]}
           </span>
@@ -924,21 +937,21 @@ export default function OwnerDashboard() {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardDescription className="text-sm font-semibold text-slate-500">
-                  Revenue Growth
+                  Booking Trend (Last 6 Months)
                 </CardDescription>
                 <TrendingUp className="h-5 w-5 text-emerald-500" />
               </div>
               <CardTitle className="text-3xl font-bold tracking-tight text-slate-900 mt-2">
-                13.2M{" "}
+                {bookings.length}{" "}
                 <span className="text-base text-slate-500 font-medium">
-                  UGX
+                  Total Bookings
                 </span>
               </CardTitle>
             </CardHeader>
             <CardContent className="flex-grow pt-4">
               <div className="h-[120px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData}>
+                  <AreaChart data={bookingTrendData}>
                     <defs>
                       <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
                         <stop
@@ -955,7 +968,7 @@ export default function OwnerDashboard() {
                     </defs>
                     <Area
                       type="monotone"
-                      dataKey="revenue"
+                      dataKey="count"
                       stroke="#f97316"
                       fillOpacity={1}
                       fill="url(#colorRev)"
@@ -965,8 +978,8 @@ export default function OwnerDashboard() {
                 </ResponsiveContainer>
               </div>
               <div className="mt-4 flex items-center justify-between text-[9px] font-mono text-slate-500 uppercase tracking-widest">
-                <span>Jan_2026</span>
-                <span>Jun_2026</span>
+                <span>{bookingTrendData[0]?.name || "-"}</span>
+                <span>{bookingTrendData[bookingTrendData.length - 1]?.name || "-"}</span>
               </div>
             </CardContent>
           </Card>

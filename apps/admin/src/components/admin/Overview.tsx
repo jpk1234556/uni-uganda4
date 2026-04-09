@@ -17,6 +17,7 @@ export default function Overview() {
   const [recentHostels, setRecentHostels] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [lastFetchDurationMs, setLastFetchDurationMs] = useState<number | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -47,6 +48,7 @@ export default function Overview() {
   }, []);
 
   const fetchMetrics = async () => {
+    const startedAt = Date.now();
     try {
       setIsLoading(true);
       
@@ -74,6 +76,7 @@ export default function Overview() {
       console.error(error);
     } finally {
       setIsLoading(false);
+      setLastFetchDurationMs(Date.now() - startedAt);
     }
   };
 
@@ -272,7 +275,9 @@ export default function Overview() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-slate-500">Latency</span>
-                <span className="text-sm font-bold text-slate-900">24ms</span>
+                <span className="text-sm font-bold text-slate-900">
+                  {lastFetchDurationMs !== null ? `${lastFetchDurationMs}ms` : "N/A"}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-slate-500">Sync State</span>

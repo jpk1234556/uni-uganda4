@@ -416,20 +416,23 @@ export default function Search() {
                 <Link to={`/hostel/${hostel.id}`} key={hostel.id}>
                   <Card className="overflow-hidden bg-white border-slate-300 hover:border-primary/50 transition-all duration-300 group cursor-pointer shadow-sm hover:shadow-lg">
                     <div className="aspect-[4/3] relative overflow-hidden bg-muted">
-                      <img
-                        src={
-                          hostel.images?.[0] ||
-                          `https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&q=80&w=800`
-                        }
-                        alt={hostel.name}
-                        className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
-                      />
+                      {hostel.images?.[0] ? (
+                        <img
+                          src={hostel.images[0]}
+                          alt={hostel.name}
+                          className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-500 font-semibold bg-slate-100">
+                          No image uploaded
+                        </div>
+                      )}
                       <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold shadow-sm flex items-center gap-1 text-slate-900">
                         <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
-                        {(hostel.rating || 0) > 0 ? hostel.rating : "New"}
+                        {(hostel.rating || 0) > 0 ? hostel.rating : "-"}
                       </div>
                       <div className="absolute bottom-4 left-4 bg-primary/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm">
-                        {hostel.price_range || "Contact for price"}
+                        {hostel.price_range || "Price not set"}
                       </div>
                       <Button
                         variant="ghost"
@@ -472,7 +475,7 @@ export default function Search() {
                           </span>
                         )) || (
                           <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-md">
-                            Basic Amenities
+                            No amenities listed
                           </span>
                         )}
                       </div>

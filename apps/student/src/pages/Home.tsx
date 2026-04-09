@@ -41,8 +41,12 @@ const itemAnim = {
   transition: { duration: 0.5 },
 };
 
+interface HostelWithRooms extends Hostel {
+  room_types?: { available: number }[];
+}
+
 export default function Home() {
-  const [topHostels, setTopHostels] = useState<Hostel[]>([]);
+  const [topHostels, setTopHostels] = useState<HostelWithRooms[]>([]);
   const [universities, setUniversities] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -84,7 +88,7 @@ export default function Home() {
       setIsLoading(true);
       const { data, error } = await supabase
         .from("hostels")
-        .select("*")
+        .select("*, room_types(available)")
         .eq("status", "approved")
         .order("rating", { ascending: false, nullsFirst: false })
         .limit(3);
@@ -96,12 +100,12 @@ export default function Home() {
         );
         const fallback = await supabase
           .from("hostels")
-          .select("*")
+          .select("*, room_types(available)")
           .eq("status", "approved")
           .limit(3);
-        setTopHostels(fallback.data || []);
+        setTopHostels((fallback.data as HostelWithRooms[]) || []);
       } else {
-        setTopHostels(data || []);
+        setTopHostels((data as HostelWithRooms[]) || []);
       }
     } catch (error) {
       console.error("Error fetching top hostels:", error);
@@ -328,14 +332,17 @@ export default function Home() {
                   <Link to={`/hostel/${hostel.id}`} className="block h-full">
                     <div className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border border-slate-200 flex flex-col h-full">
                       <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
-                        <img
-                          src={
-                            hostel.images?.[0] ||
-                            "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&q=80&w=800"
-                          }
-                          alt={hostel.name}
-                          className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700 ease-in-out"
-                        />
+                        {hostel.images?.[0] ? (
+                          <img
+                            src={hostel.images[0]}
+                            alt={hostel.name}
+                            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700 ease-in-out"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-slate-500 font-semibold">
+                            No image uploaded
+                          </div>
+                        )}
                         <div className="absolute top-4 left-4 flex gap-2">
                           {index === 0 && (
                             <span className="bg-amber-400 text-slate-900 text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm">
@@ -373,7 +380,7 @@ export default function Home() {
                           <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-100 px-2 py-1 rounded-lg text-sm shrink-0">
                             <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
                             <span className="font-extrabold text-amber-700">
-                              {hostel.rating || "4.x"}
+                              {hostel.rating || "-"}
                             </span>
                             <span className="text-slate-400 text-xs font-semibold">
                               ({hostel.reviews_count || "0"})
@@ -397,12 +404,21 @@ export default function Home() {
                         </div>
 
                         <div className="mt-auto pt-5 border-t border-slate-100 flex items-center justify-between">
+                          {(() => {
+                            const availableRooms =
+                              hostel.room_types?.reduce(
+                                (total, room) => total + (room.available || 0),
+                                0,
+                              ) ?? 0;
+                            return (
                           <div className="text-sm font-extrabold text-emerald-600">
-                            {Math.floor(Math.random() * 20) + 5}{" "}
+                            {availableRooms}{" "}
                             <span className="text-slate-500 font-semibold">
                               rooms available
                             </span>
                           </div>
+                            );
+                          })()}
                           <Button className="bg-primary hover:bg-primary/90 text-white rounded-xl font-bold shadow-sm group-hover:shadow-md transition-all px-6">
                             View Details
                           </Button>

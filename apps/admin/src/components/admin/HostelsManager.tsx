@@ -1306,7 +1306,11 @@ export default function HostelsManager() {
                         <TableRow key={room.id} className="hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0">
                           <TableCell className="w-16">
                             <div className="h-10 w-10 rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
-                              <img src={room.images?.[0] || "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&q=80&w=200"} alt={room.name} className="h-full w-full object-cover" />
+                              {room.images?.[0] ? (
+                                <img src={room.images[0]} alt={room.name} className="h-full w-full object-cover" />
+                              ) : (
+                                <div className="h-full w-full flex items-center justify-center text-[9px] text-slate-500 font-semibold">No img</div>
+                              )}
                             </div>
                           </TableCell>
                           <TableCell className="text-sm font-bold text-slate-800">{room.name}</TableCell>
