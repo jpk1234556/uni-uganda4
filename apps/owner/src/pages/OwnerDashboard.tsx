@@ -307,7 +307,10 @@ export default function OwnerDashboard() {
   const handleAddRoom = async (e: React.FormEvent, targetHostelId?: string) => {
     e.preventDefault();
     const hId = targetHostelId || selectedHostel?.id;
-    if (!hId) return;
+    if (!hId) {
+      toast.error("Select a property first before adding rooms.");
+      return;
+    }
     try {
       const roomImagesArray = [...selectedRoomImageDataUrls];
       const { error } = await supabase.from("room_types").insert({
@@ -360,6 +363,25 @@ export default function OwnerDashboard() {
     } catch {
       toast.error("Failed to update booking status");
     }
+  };
+
+  const openPropertyWizard = () => {
+    setWizardStep(1);
+    setCreatedHostelId(null);
+    setNewHostel({
+      name: "",
+      university: "",
+      address: "",
+      description: "",
+      price_range: "",
+      images: "",
+    });
+    setIsWizardOpen(true);
+  };
+
+  const openManageRooms = (property: Hostel) => {
+    setSelectedHostel(property);
+    setIsRoomDialogOpen(true);
   };
 
   return (
@@ -430,20 +452,8 @@ export default function OwnerDashboard() {
             >
               <Button
                 type="button"
-                onClick={() => {
-                  setWizardStep(1);
-                  setCreatedHostelId(null);
-                  setNewHostel({
-                    name: "",
-                    university: "",
-                    address: "",
-                    description: "",
-                    price_range: "",
-                    images: "",
-                  });
-                  setIsWizardOpen(true);
-                }}
-                className="h-12 px-6 bg-primary hover:bg-primary/90 text-white rounded-xl shadow-md transition-all font-semibold text-sm flex items-center gap-2 pointer-events-auto"
+                onClick={openPropertyWizard}
+                className="relative z-10 h-12 px-6 bg-primary hover:bg-primary/90 text-white rounded-xl shadow-md transition-all font-semibold text-sm flex items-center gap-2 pointer-events-auto"
               >
                 <Plus className="h-5 w-5" /> Add New Property
               </Button>
@@ -1074,13 +1084,11 @@ export default function OwnerDashboard() {
                               </TableCell>
                               <TableCell className="text-right pr-8">
                                 <Button
+                                  type="button"
                                   variant="outline"
                                   size="sm"
                                   className="rounded-lg shadow-sm border-slate-200 text-sm font-semibold hover:bg-primary hover:text-white transition-colors text-slate-700"
-                                  onClick={() => {
-                                    setSelectedHostel(property);
-                                    setIsRoomDialogOpen(true);
-                                  }}
+                                  onClick={() => openManageRooms(property)}
                                 >
                                   Manage Rooms
                                 </Button>
