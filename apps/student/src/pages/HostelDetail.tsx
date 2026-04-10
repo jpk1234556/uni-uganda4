@@ -293,27 +293,8 @@ export default function HostelDetail() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto px-4 py-20 flex justify-center items-center min-h-[60vh]">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!hostel) {
-    return (
-      <div className="container mx-auto px-4 py-20 text-center min-h-[60vh]">
-        <h2 className="text-2xl font-bold">Hostel not found</h2>
-        <Link to="/search">
-          <Button className="mt-4">Back to Search</Button>
-        </Link>
-      </div>
-    );
-  }
-
   const images =
-    hostel.images && hostel.images.length > 0
+    hostel?.images && hostel.images.length > 0
       ? hostel.images
       : [];
 
@@ -338,6 +319,25 @@ export default function HostelDetail() {
       prev === validImages.length - 1 ? 0 : prev + 1,
     );
   };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-20 flex justify-center items-center min-h-[60vh]">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!hostel) {
+    return (
+      <div className="container mx-auto px-4 py-20 text-center min-h-[60vh]">
+        <h2 className="text-2xl font-bold">Hostel not found</h2>
+        <Link to="/search">
+          <Button className="mt-4">Back to Search</Button>
+        </Link>
+      </div>
+    );
+  }
 
   const mapQuery = encodeURIComponent(
     hostel.address || hostel.university || "Kampala, Uganda",
