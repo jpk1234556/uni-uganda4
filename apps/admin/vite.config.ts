@@ -7,6 +7,20 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (id.includes("recharts") || id.includes("motion") || id.includes("framer-motion")) return "charts-vendor";
+          if (id.includes("lucide-react") || id.includes("date-fns")) return "ui-vendor";
+          if (id.includes("react-router")) return "router-vendor";
+          if (id.includes("@supabase")) return "supabase-vendor";
+          if (id.includes("/node_modules/react/") || id.includes("/node_modules/react-dom/") || id.includes("scheduler")) return "react-vendor";
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       "@/components/ui": path.resolve(__dirname, "../../packages/ui/src/components/ui"),
