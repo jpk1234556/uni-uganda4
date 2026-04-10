@@ -210,15 +210,26 @@ export default function HostelDetail() {
   }, [id, fetchHostelData]);
 
   const handleBookClick = (room: RoomType) => {
+    if (!hostel || !id) return;
+
     if (!user) {
       toast.error("Please login to book a room");
-      navigate("/auth");
+      const redirect = encodeURIComponent(`/hostel/${id}?bookRoom=${room.id}`);
+      navigate(`/auth?redirect=${redirect}`);
       return;
     }
+
+    if (dbUser?.role !== "student") {
+      toast.error("Only student accounts can book rooms.");
+      navigate("/student/dashboard");
+      return;
+    }
+
     if (room.available <= 0) {
       toast.error("This room is currently full");
       return;
     }
+
     setSelectedRoom(room);
     setIsBookingOpen(true);
   };

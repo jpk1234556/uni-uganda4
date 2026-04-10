@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,8 +23,11 @@ export default function Auth({
   appType?: "student" | "owner" | "admin" | string;
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
+
+  const redirectTo = new URLSearchParams(location.search).get("redirect");
 
   const handleAuth = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -48,7 +51,7 @@ export default function Auth({
 
         if (error) throw error;
         toast.success("Logged in successfully!");
-        navigate("/");
+        navigate(redirectTo || "/");
       } else {
         const { error } = await supabase.auth.signUp({
           email,
