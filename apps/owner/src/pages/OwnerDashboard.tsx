@@ -105,7 +105,6 @@ export default function OwnerDashboard() {
   const roomFileInputRef = useRef<HTMLInputElement>(null);
   const [isRoomDragActive, setIsRoomDragActive] = useState(false);
   const [selectedRoomImageDataUrls, setSelectedRoomImageDataUrls] = useState<string[]>([]);
-  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const bookingTrendData = useMemo(() => {
     const formatter = new Intl.DateTimeFormat("en-UG", { month: "short" });

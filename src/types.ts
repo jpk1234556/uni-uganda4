@@ -20,6 +20,7 @@ export interface Hostel {
     images: string[] | null;
     owner_id: string;
     status: "pending" | "approved" | "rejected";
+    category?: string;
     rating?: number;
     reviews_count?: number;
     created_at: string;

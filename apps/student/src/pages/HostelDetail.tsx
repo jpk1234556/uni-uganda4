@@ -113,7 +113,7 @@ export default function HostelDetail() {
       // Fetch Hostel
       const { data: hostelData, error: hostelError } = await supabase
         .from("hostels")
-        .select("*, users!hostels_owner_id_fkey(first_name, last_name, email)")
+        .select("*, users(first_name, last_name, email)")
         .eq("id", id)
         .single();
 
@@ -121,20 +121,24 @@ export default function HostelDetail() {
       setHostel(hostelData as HostelWithOwner);
 
       // Fetch Rooms
-      const { data: roomsData } = await supabase
+      const { data: roomsData, error: roomsError } = await supabase
         .from("room_types")
         .select("*")
         .eq("hostel_id", id)
         .order("price", { ascending: true });
 
+      if (roomsError) throw roomsError;
+
       setRooms((roomsData as RoomType[]) || []);
 
       // Fetch Reviews
-      const { data: reviewsData } = await supabase
+      const { data: reviewsData, error: reviewsError } = await supabase
         .from("reviews")
         .select("*, users!reviews_student_id_fkey(first_name, last_name)")
         .eq("hostel_id", id)
         .order("created_at", { ascending: false });
+
+      if (reviewsError) throw reviewsError;
 
       setReviews((reviewsData as ReviewWithUser[]) || []);
     } catch (error) {

@@ -29,7 +29,6 @@ import {
   Building2,
   LayoutPanelLeft,
   Edit,
-  ExternalLink,
   Eye,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -74,6 +73,7 @@ export default function HostelsManager() {
     images: "",
     amenities: "",
     owner_id: "",
+    category: "Hostel",
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragActive, setIsDragActive] = useState(false);
@@ -289,6 +289,7 @@ export default function HostelsManager() {
       const payload = {
         name: newHostel.name,
         university: newHostel.university,
+        category: newHostel.category,
         address: newHostel.address,
         description: newHostel.description,
         price_range: newHostel.price_range,
@@ -393,6 +394,7 @@ export default function HostelsManager() {
       images: "",
       amenities: (hostel.amenities || []).join(", "),
       owner_id: hostel.owner_id || "",
+      category: hostel.category || "Hostel",
     });
     setSelectedImageDataUrls([...(hostel.images || [])]);
     setWizardStep(2);
@@ -574,6 +576,7 @@ export default function HostelsManager() {
                     images: "",
                     amenities: "",
                     owner_id: "",
+                    category: "Hostel",
                   });
                 }
               }}
@@ -594,6 +597,7 @@ export default function HostelsManager() {
                     images: "",
                     amenities: "",
                     owner_id: "",
+                    category: "Hostel",
                   });
                   setIsCreateDialogOpen(true);
                 }}
@@ -735,6 +739,29 @@ export default function HostelsManager() {
                           placeholder="e.g. City Gateway Hostel"
                           className="rounded-xl border-slate-200 text-sm h-11 bg-white shadow-sm"
                         />
+                      </div>
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="category"
+                          className="text-sm font-semibold text-slate-700"
+                        >
+                          Property Category
+                        </Label>
+                        <select
+                          id="category"
+                          required
+                          value={newHostel.category}
+                          onChange={(e) =>
+                            setNewHostel({ ...newHostel, category: e.target.value })
+                          }
+                          className="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 shadow-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                        >
+                          <option value="Hostel">Hostel (General)</option>
+                          <option value="Apartment">Apartment</option>
+                          <option value="Studio Room">Studio Room</option>
+                          <option value="Rental House">Rental House</option>
+                          <option value="Shared House">Shared House</option>
+                        </select>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">

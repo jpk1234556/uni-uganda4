@@ -3,8 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
-import { Building2, Search, User, ChevronDown, Menu, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Search, User, ChevronDown, Menu, X } from "lucide-react";
 
 export default function Navbar({ appType }: { appType?: "student" | "owner" | "admin" }) {
   const { user, dbUser, signOut } = useAuth();
