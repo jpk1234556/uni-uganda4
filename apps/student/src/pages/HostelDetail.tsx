@@ -105,10 +105,12 @@ export default function HostelDetail() {
     phone_number: "",
     course: "",
     move_in_date: "",
+    duration: "",
     next_of_kin: "",
     sponsor: "",
     origin: "",
     medical_history: "",
+    special_requests: "",
   });
 
   // Review State
@@ -254,10 +256,12 @@ export default function HostelDetail() {
         phone_number: bookingForm.phone_number,
         course: bookingForm.course,
         move_in_date: bookingForm.move_in_date,
+        duration: bookingForm.duration,
         next_of_kin: bookingForm.next_of_kin,
         sponsor: bookingForm.sponsor,
         origin: bookingForm.origin,
         medical_history: bookingForm.medical_history,
+        special_requests: bookingForm.special_requests,
         status: "pending",
       });
 
@@ -733,9 +737,79 @@ export default function HostelDetail() {
                 </div>
               </CardContent>
             </Card>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Card className="border-slate-200 bg-white shadow-none">
+                <CardContent className="space-y-3 p-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Hostel
+                    </p>
+                    <p className="mt-1 text-sm font-bold text-slate-900">
+                      {hostel.name}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-600">
+                      {hostel.university || "University area"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Location
+                    </p>
+                    <p className="mt-1 text-sm text-slate-700">
+                      {hostel.address || "Location not specified"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Owner
+                    </p>
+                    <p className="mt-1 text-sm text-slate-700">
+                      {hostel.users
+                        ? `${hostel.users.first_name} ${hostel.users.last_name}`
+                        : "Unknown owner"}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-slate-200 bg-white shadow-none">
+                <CardContent className="space-y-3 p-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Room Details
+                    </p>
+                    <p className="mt-1 text-sm font-bold text-slate-900">
+                      {selectedRoom?.name}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-600">
+                      {selectedRoom?.description || "Standard room option with essential amenities."}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Amenities
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {hostel.amenities && hostel.amenities.length > 0 ? (
+                        hostel.amenities.map((amenity: string) => (
+                          <Badge
+                            key={amenity}
+                            variant="secondary"
+                            className="bg-slate-100 hover:bg-slate-200 text-slate-700"
+                          >
+                            {amenity}
+                          </Badge>
+                        ))
+                      ) : (
+                        <span className="text-sm text-slate-400">
+                          Not specified
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-          <DialogHeader>
-          </DialogHeader>
           <div className="px-6 pb-6">
             {!user ? (
               <div className="space-y-4 text-center">
@@ -827,6 +901,28 @@ export default function HostelDetail() {
                     }
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="duration">Booking Duration (Optional)</Label>
+                  <Input
+                    id="duration"
+                    placeholder="e.g. 1 semester, 1 year"
+                    value={bookingForm.duration}
+                    onChange={(e) =>
+                      setBookingForm({ ...bookingForm, duration: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="origin">Where are you coming from? (Optional)</Label>
+                  <Input
+                    id="origin"
+                    placeholder="e.g. Mbarara, Uganda"
+                    value={bookingForm.origin}
+                    onChange={(e) =>
+                      setBookingForm({ ...bookingForm, origin: e.target.value })
+                    }
+                  />
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="kin">Next of Kin</Label>
@@ -867,6 +963,21 @@ export default function HostelDetail() {
                         medical_history: e.target.value,
                       })
                     }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="requests">Special Requests (Optional)</Label>
+                  <Textarea
+                    id="requests"
+                    placeholder="Anything the owner should know before approving your booking?"
+                    value={bookingForm.special_requests}
+                    onChange={(e) =>
+                      setBookingForm({
+                        ...bookingForm,
+                        special_requests: e.target.value,
+                      })
+                    }
+                    className="min-h-[96px]"
                   />
                 </div>
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
