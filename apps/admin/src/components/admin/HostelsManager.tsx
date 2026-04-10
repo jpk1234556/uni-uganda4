@@ -170,6 +170,39 @@ export default function HostelsManager() {
       reader.readAsDataURL(file);
     });
 
+  const optimizeImageFileToDataUrl = async (file: File): Promise<string> => {
+    const objectUrl = URL.createObjectURL(file);
+    try {
+      const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(`Failed to decode ${file.name}`));
+        img.src = objectUrl;
+      });
+
+      const maxDimension = 1280;
+      const scale = Math.min(
+        1,
+        maxDimension / Math.max(image.width || 1, image.height || 1),
+      );
+      const width = Math.max(1, Math.round(image.width * scale));
+      const height = Math.max(1, Math.round(image.height * scale));
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+
+      const context = canvas.getContext("2d");
+      if (!context) return readFileAsDataUrl(file);
+      context.drawImage(image, 0, 0, width, height);
+
+      // JPEG output keeps upload payloads small and speeds up read/render.
+      return canvas.toDataURL("image/jpeg", 0.82);
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+    }
+  };
+
   const handleIncomingFiles = async (incoming: FileList | null) => {
     if (!incoming || incoming.length === 0) return;
 
@@ -190,9 +223,11 @@ export default function HostelsManager() {
     }
 
     try {
-      const encoded = await Promise.all(imageFiles.map(readFileAsDataUrl));
+      const encoded = await Promise.all(
+        imageFiles.map((file) => optimizeImageFileToDataUrl(file)),
+      );
       setSelectedImageDataUrls((prev) => [...prev, ...encoded]);
-      toast.success(`${imageFiles.length} image(s) attached.`);
+      toast.success(`${imageFiles.length} image(s) attached and optimized.`);
     } catch (error) {
       toast.error("Failed to process selected image files.");
     }
@@ -218,9 +253,11 @@ export default function HostelsManager() {
     }
 
     try {
-      const encoded = await Promise.all(imageFiles.map(readFileAsDataUrl));
+      const encoded = await Promise.all(
+        imageFiles.map((file) => optimizeImageFileToDataUrl(file)),
+      );
       setSelectedRoomImageDataUrls((prev) => [...prev, ...encoded]);
-      toast.success(`${imageFiles.length} room image(s) attached.`);
+      toast.success(`${imageFiles.length} room image(s) attached and optimized.`);
     } catch (error) {
       toast.error("Failed to process selected room image files.");
     }
@@ -779,6 +816,8 @@ export default function HostelsManager() {
                                   <img
                                     src={img}
                                     alt={`upload-${idx + 1}`}
+                                    loading="lazy"
+                                    decoding="async"
                                     className="h-14 w-full object-cover"
                                   />
                                   <button
@@ -1291,7 +1330,7 @@ export default function HostelsManager() {
                           <TableCell className="w-16">
                             <div className="h-10 w-10 rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
                               {room.images?.[0] ? (
-                                <img src={room.images[0]} alt={room.name} className="h-full w-full object-cover" />
+                                <img src={room.images[0]} alt={room.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
                               ) : (
                                 <div className="h-full w-full flex items-center justify-center text-[9px] text-slate-500 font-semibold">No img</div>
                               )}
@@ -1348,7 +1387,7 @@ export default function HostelsManager() {
                       <div className="grid grid-cols-4 gap-2 mt-2">
                         {selectedRoomImageDataUrls.map((img, idx) => (
                           <div key={`${idx}-${img.slice(0, 20)}`} className="relative rounded-md overflow-hidden border border-slate-200">
-                            <img src={img} alt={`room-upload-${idx + 1}`} className="h-14 w-full object-cover" />
+                            <img src={img} alt={`room-upload-${idx + 1}`} loading="lazy" decoding="async" className="h-14 w-full object-cover" />
                             <button type="button" className="absolute top-0.5 right-0.5 h-5 w-5 rounded-full bg-black/60 text-white text-[10px]" onClick={() => setSelectedRoomImageDataUrls((prev) => prev.filter((_, i) => i !== idx))}>x</button>
                           </div>
                         ))}
