@@ -7,37 +7,52 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  MapPin,
-  Star,
-  Building,
-  CheckCircle,
-  Navigation,
-  Loader2,
-  ArrowLeft,
-  Users,
-  MessageSquare,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/context/AuthContext";
-import type { Hostel, RoomType } from "@/types";
-import { toast } from "sonner";
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-[112px_1fr] sm:items-center">
+                  <div className="h-28 w-full overflow-hidden rounded-2xl bg-slate-200">
+                    {selectedRoom?.images?.[0] ? (
+                      <img
+                        src={selectedRoom.images[0]}
+                        alt={selectedRoom.name}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-slate-400">
+                        <Building className="h-8 w-8" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Price
+                      </p>
+                      <p className="mt-1 text-lg font-black text-slate-900">
+                        {selectedRoom ? formatUGX(selectedRoom.price) : "--"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Capacity
+                      </p>
+                      <p className="mt-1 text-lg font-black text-slate-900">
+                        {selectedRoom?.capacity ?? "--"} students
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Slots left
+                      </p>
+                      <p className="mt-1 text-lg font-black text-slate-900">
+                        {selectedRoom?.available ?? "--"}
+                      </p>
+                    </div>
+                  </div>
 
 interface HostelWithOwner extends Hostel {
   users?: {
     first_name: string;
-    last_name: string;
-    email: string;
   } | null;
 }
 
@@ -211,19 +226,6 @@ export default function HostelDetail() {
 
   const handleBookClick = (room: RoomType) => {
     if (!hostel || !id) return;
-
-    if (!user) {
-      toast.error("Please login to book a room");
-      const redirect = encodeURIComponent(`/hostel/${id}?bookRoom=${room.id}`);
-      navigate(`/auth?redirect=${redirect}`);
-      return;
-    }
-
-    if (dbUser?.role !== "student") {
-      toast.error("Only student accounts can book rooms.");
-      navigate("/student/dashboard");
-      return;
-    }
 
     if (room.available <= 0) {
       toast.error("This room is currently full");
@@ -677,116 +679,239 @@ export default function HostelDetail() {
 
       {/* Booking Dialog */}
       <Dialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
-        <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl">Apply for Room</DialogTitle>
-            <DialogDescription>
-              Submit your details to reserve the{" "}
-              <span className="font-bold text-slate-900">
-                {selectedRoom?.name}
-              </span>{" "}
-              at {hostel.name}.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleBookingSubmit} className="space-y-4 pt-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  required
-                  placeholder="+256 700 000 000"
-                  value={bookingForm.phone_number}
-                  onChange={(e) =>
-                    setBookingForm({
-                      ...bookingForm,
-                      phone_number: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="date">Expected Move-in</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  required
-                  value={bookingForm.move_in_date}
-                  onChange={(e) =>
-                    setBookingForm({
-                      ...bookingForm,
-                      move_in_date: e.target.value,
-                    })
-                  }
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="course">University Course (Optional)</Label>
-              <Input
-                id="course"
-                placeholder="e.g. BSc Software Engineering"
-                value={bookingForm.course}
-                onChange={(e) =>
-                  setBookingForm({ ...bookingForm, course: e.target.value })
-                }
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="kin">Next of Kin</Label>
-                <Input
-                  id="kin"
-                  required
-                  placeholder="Name & Contact"
-                  value={bookingForm.next_of_kin}
-                  onChange={(e) =>
-                    setBookingForm({
-                      ...bookingForm,
-                      next_of_kin: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="sponsor">Sponsor</Label>
-                <Input
-                  id="sponsor"
-                  placeholder="Who pays rent?"
-                  value={bookingForm.sponsor}
-                  onChange={(e) =>
-                    setBookingForm({ ...bookingForm, sponsor: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="med">Any Medical Conditions? (Optional)</Label>
-              <Input
-                id="med"
-                placeholder="Leave blank if none"
-                value={bookingForm.medical_history}
-                onChange={(e) =>
-                  setBookingForm({
-                    ...bookingForm,
-                    medical_history: e.target.value,
-                  })
-                }
-              />
-            </div>
-            <DialogFooter className="mt-6">
-              <Button
-                type="submit"
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+        <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-y-auto rounded-3xl border-slate-200 bg-white p-0 shadow-2xl">
+          <div className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-900 px-6 py-5 text-white">
+            <DialogHeader className="space-y-3 text-left">
+              <div className="flex items-center gap-2">
+                <Badge className="bg-white/15 text-white hover:bg-white/20 border border-white/10">
+                  Room Booking
+                </Badge>
+                {selectedRoom?.available && selectedRoom.available > 0 ? (
+                  <Badge className="bg-emerald-500/20 text-emerald-50 hover:bg-emerald-500/20 border border-emerald-300/20">
+                    Available now
+                  </Badge>
                 ) : null}
-                Confirm Application
-              </Button>
-            </DialogFooter>
-          </form>
+              </div>
+              <div>
+                <DialogTitle className="text-2xl font-black tracking-tight text-white">
+                  Apply for {selectedRoom?.name || "this room"}
+                </DialogTitle>
+                <DialogDescription className="mt-1 text-sm text-slate-100/90">
+                  Submit your details to reserve a room at {hostel.name}.
+                </DialogDescription>
+              </div>
+            </DialogHeader>
+          </div>
+          <div className="space-y-5 px-6 py-6">
+            <Card className="border-slate-200 bg-slate-50/80 shadow-none">
+              <CardContent className="p-4">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Price
+                    </p>
+                    <p className="mt-1 text-lg font-black text-slate-900">
+                      {selectedRoom ? formatUGX(selectedRoom.price) : "--"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Capacity
+                    </p>
+                    <p className="mt-1 text-lg font-black text-slate-900">
+                      {selectedRoom?.capacity ?? "--"} students
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Slots left
+                    </p>
+                    <p className="mt-1 text-lg font-black text-slate-900">
+                      {selectedRoom?.available ?? "--"}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          <DialogHeader>
+          </DialogHeader>
+          <div className="px-6 pb-6">
+            {!user ? (
+              <div className="space-y-4 text-center">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-5 text-left">
+                  <p className="text-sm font-semibold text-slate-900">
+                    Log in to continue
+                  </p>
+                  <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                    You’ll return here after signing in, and the booking form will stay ready.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsBookingOpen(false)}
+                  >
+                    Not now
+                  </Button>
+                  <Button asChild className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                    <Link to={`/auth?redirect=${encodeURIComponent(`/hostel/${id}`)}`}>
+                      Log In to Book
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            ) : dbUser?.role !== "student" ? (
+              <div className="space-y-4 text-center">
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-5 text-left">
+                  <p className="text-sm font-semibold text-amber-900">
+                    Student access required
+                  </p>
+                  <p className="mt-1 text-sm leading-relaxed text-amber-800/90">
+                    Only student accounts can submit room bookings.
+                  </p>
+                </div>
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                    onClick={() => setIsBookingOpen(false)}
+                  >
+                    Close
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleBookingSubmit} className="space-y-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      required
+                      placeholder="+256 700 000 000"
+                      value={bookingForm.phone_number}
+                      onChange={(e) =>
+                        setBookingForm({
+                          ...bookingForm,
+                          phone_number: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="date">Expected Move-in</Label>
+                    <Input
+                      id="date"
+                      type="date"
+                      required
+                      value={bookingForm.move_in_date}
+                      onChange={(e) =>
+                        setBookingForm({
+                          ...bookingForm,
+                          move_in_date: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="course">University Course (Optional)</Label>
+                  <Input
+                    id="course"
+                    placeholder="e.g. BSc Software Engineering"
+                    value={bookingForm.course}
+                    onChange={(e) =>
+                      setBookingForm({ ...bookingForm, course: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="kin">Next of Kin</Label>
+                    <Input
+                      id="kin"
+                      required
+                      placeholder="Name & Contact"
+                      value={bookingForm.next_of_kin}
+                      onChange={(e) =>
+                        setBookingForm({
+                          ...bookingForm,
+                          next_of_kin: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="sponsor">Sponsor</Label>
+                    <Input
+                      id="sponsor"
+                      placeholder="Who pays rent?"
+                      value={bookingForm.sponsor}
+                      onChange={(e) =>
+                        setBookingForm({ ...bookingForm, sponsor: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="med">Any Medical Conditions? (Optional)</Label>
+                  <Input
+                    id="med"
+                    placeholder="Leave blank if none"
+                    value={bookingForm.medical_history}
+                    onChange={(e) =>
+                      setBookingForm({
+                        ...bookingForm,
+                        medical_history: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Step 1
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900">
+                        Review the room details
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Step 2
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900">
+                        Submit your booking request
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Step 3
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900">
+                        Wait for owner approval
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter className="pt-1">
+                  <Button
+                    type="submit"
+                    className="w-full rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : null}
+                    Confirm Application
+                  </Button>
+                </DialogFooter>
+              </form>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 
