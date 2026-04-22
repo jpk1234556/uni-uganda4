@@ -40,6 +40,53 @@ interface HostelWithRooms extends Hostel {
   room_types?: { price: number }[];
 }
 
+const parseListingPrice = (value: string | null | undefined) => {
+  if (!value) return Infinity;
+
+  const numbers = value
+    .toString()
+    .replace(/,/g, "")
+    .match(/\d+(?:\.\d+)?/g);
+
+  if (!numbers || numbers.length === 0) return Infinity;
+
+  return Number(numbers[0]);
+};
+
+const getListingMinPrice = (hostel: HostelWithRooms) => {
+  const roomPrices =
+    hostel.room_types
+      ?.map((room) => room.price || Infinity)
+      .filter((price) => price !== Infinity) || [];
+
+  if (roomPrices.length > 0) {
+    return Math.min(...roomPrices);
+  }
+
+  return parseListingPrice(hostel.price_range);
+};
+
+const matchesAmenities = (
+  hostel: HostelWithRooms,
+  selectedAmenities: string[],
+) => {
+  if (selectedAmenities.length === 0) return true;
+
+  const hAmenities = (hostel.amenities || [])
+    .map((amenity) => amenity.toLowerCase())
+    .filter(Boolean);
+
+  if (hAmenities.length === 0) {
+    return false;
+  }
+
+  return selectedAmenities.every((selectedAmenity) =>
+    hAmenities.some((hostelAmenity) =>
+      hostelAmenity.includes(selectedAmenity.toLowerCase()),
+    ),
+  );
+};
+
 export default function Search() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
@@ -152,16 +199,19 @@ export default function Search() {
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.warn("Primary fetch in Search failed, trying fallback...", error);
+        console.warn(
+          "Primary fetch in Search failed, trying fallback...",
+          error,
+        );
         const fallback = await supabase
           .from("hostels")
           .select("*")
           .eq("status", "approved");
-        
+
         if (fallback.error) {
-           console.error("Fallback fetch also failed:", fallback.error);
+          console.error("Fallback fetch also failed:", fallback.error);
         } else {
-           setHostels((fallback.data as HostelWithRooms[]) || []);
+          setHostels((fallback.data as HostelWithRooms[]) || []);
         }
       } else {
         setHostels((data as HostelWithRooms[]) || []);
@@ -178,7 +228,9 @@ export default function Search() {
     if (
       searchTerm &&
       !(hostel.name || "").toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !(hostel.university || "").toLowerCase().includes(searchTerm.toLowerCase()) &&
+      !(hostel.university || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) &&
       !(hostel.address || "").toLowerCase().includes(searchTerm.toLowerCase())
     ) {
       return false;
@@ -194,14 +246,8 @@ export default function Search() {
     }
 
     // Amenities Match
-    if (selectedAmenities.length > 0) {
-      const hAmenities = (hostel.amenities || []).map((a: string) =>
-        a.toLowerCase(),
-      );
-      const hasAllAmenities = selectedAmenities.every((a) =>
-        hAmenities.some((ha: string) => ha.includes(a.toLowerCase())),
-      );
-      if (!hasAllAmenities) return false;
+    if (!matchesAmenities(hostel, selectedAmenities)) {
+      return false;
     }
 
     // Rating Match
@@ -210,17 +256,11 @@ export default function Search() {
     }
 
     // Price Match
-    if (hostel.room_types && hostel.room_types.length > 0) {
-      const minHostelPrice = Math.min(...hostel.room_types.map((r) => r.price || Infinity));
-      if (minHostelPrice !== Infinity) {
-        if (minHostelPrice < priceRange[0] || minHostelPrice > priceRange[1]) {
-          return false;
-        }
+    const listingPrice = getListingMinPrice(hostel);
+    if (listingPrice !== Infinity) {
+      if (listingPrice < priceRange[0] || listingPrice > priceRange[1]) {
+        return false;
       }
-    } else if (priceRange[0] > 300000) {
-      // If no rooms listed, but user is looking for a specific range, hide it?
-      // Or just show it if it's within a default range.
-      // For now, let's just filter if we have room data.
     }
 
     return true;
@@ -228,25 +268,13 @@ export default function Search() {
 
   const sortedHostels = [...filteredHostels].sort((a, b) => {
     if (sortBy === "price-asc") {
-      const minA =
-        a.room_types && a.room_types.length > 0
-          ? Math.min(...a.room_types.map((r) => r.price || Infinity))
-          : Infinity;
-      const minB =
-        b.room_types && b.room_types.length > 0
-          ? Math.min(...b.room_types.map((r) => r.price || Infinity))
-          : Infinity;
+      const minA = getListingMinPrice(a);
+      const minB = getListingMinPrice(b);
       return minA - minB;
     }
     if (sortBy === "price-desc") {
-      const minA =
-        a.room_types && a.room_types.length > 0
-          ? Math.min(...a.room_types.map((r) => r.price || -Infinity))
-          : -Infinity;
-      const minB =
-        b.room_types && b.room_types.length > 0
-          ? Math.min(...b.room_types.map((r) => r.price || -Infinity))
-          : -Infinity;
+      const minA = getListingMinPrice(a);
+      const minB = getListingMinPrice(b);
       return minB - minA;
     }
     if (sortBy === "rating-desc") {
@@ -260,250 +288,267 @@ export default function Search() {
     <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in zoom-in-95 duration-500">
       <div className="rounded-[28px] border border-slate-300/80 bg-white/96 backdrop-blur-lg p-4 sm:p-6 lg:p-8 shadow-[0_20px_60px_rgba(15,23,42,0.10)]">
         <div className="flex flex-col lg:flex-row gap-8">
-        {/* Filters Sidebar */}
-        <div className="w-full lg:w-1/4 space-y-6">
-          <div className="bg-white p-6 rounded-2xl shadow-md border border-slate-300 sticky top-20">
-            <h3 className="font-black text-lg text-slate-950 mb-4 tracking-tight">Filters</h3>
+          {/* Filters Sidebar */}
+          <div className="w-full lg:w-1/4 space-y-6">
+            <div className="bg-white p-6 rounded-2xl shadow-md border border-slate-300 sticky top-20">
+              <h3 className="font-black text-lg text-slate-950 mb-4 tracking-tight">
+                Filters
+              </h3>
 
-            <div className="space-y-4">
-              <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-900">University / Area</label>
-                <Select
-                  value={selectedUniversity}
-                  onValueChange={setSelectedUniversity}
-                >
-                  <SelectTrigger className="w-full h-11 bg-white text-slate-900 border-slate-300">
-                    <SelectValue placeholder="Select University" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white shadow-xl z-50 border border-slate-200">
-                    <SelectItem value="all">All Universities</SelectItem>
-                    {universities.map((uni) => (
-                      <SelectItem key={uni} value={uni}>
-                        {uni}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-900">
+                    University / Area
+                  </label>
+                  <Select
+                    value={selectedUniversity}
+                    onValueChange={setSelectedUniversity}
+                  >
+                    <SelectTrigger className="w-full h-11 bg-white text-slate-900 border-slate-300">
+                      <SelectValue placeholder="Select University" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white shadow-xl z-50 border border-slate-200">
+                      <SelectItem value="all">All Universities</SelectItem>
+                      {universities.map((uni) => (
+                        <SelectItem key={uni} value={uni}>
+                          {uni}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-4 pt-4 border-t border-slate-200">
+                  <div className="flex justify-between items-center">
+                    <label className="text-sm font-semibold text-slate-800">
+                      Price Range (UGX)
+                    </label>
+                    <span className="text-xs font-semibold text-slate-600">
+                      {priceRange[0] / 1000}k - {priceRange[1] / 1000}k
+                    </span>
+                  </div>
+                  <Slider
+                    defaultValue={[300000, 3000000]}
+                    max={3000000}
+                    min={300000}
+                    step={50000}
+                    value={priceRange}
+                    onValueChange={setPriceRange}
+                    className="py-4"
+                  />
+                </div>
+
+                <div className="space-y-2 pt-4 border-t border-slate-200">
+                  <label className="text-sm font-bold text-slate-900">
+                    Minimum Rating
+                  </label>
+                  <Select
+                    value={minRating.toString()}
+                    onValueChange={(v) => setMinRating(Number(v))}
+                  >
+                    <SelectTrigger className="w-full h-11 bg-white text-slate-900 border-slate-300">
+                      <SelectValue placeholder="Any Rating" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white shadow-xl z-50 border border-slate-200">
+                      <SelectItem value="0">Any Rating</SelectItem>
+                      <SelectItem value="3">3+ Stars</SelectItem>
+                      <SelectItem value="4">4+ Stars</SelectItem>
+                      <SelectItem value="4.5">4.5+ Stars</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-3 pt-4 border-t border-slate-200">
+                  <label className="text-sm font-bold text-slate-900">
+                    Amenities
+                  </label>
+                  {AMENITIES.map((amenity) => (
+                    <div
+                      key={amenity.id}
+                      className="flex items-center space-x-2"
+                    >
+                      <Checkbox
+                        id={amenity.id}
+                        checked={selectedAmenities.includes(amenity.label)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedAmenities([
+                              ...selectedAmenities,
+                              amenity.label,
+                            ]);
+                          } else {
+                            setSelectedAmenities(
+                              selectedAmenities.filter(
+                                (a) => a !== amenity.label,
+                              ),
+                            );
+                          }
+                        }}
+                      />
+                      <label
+                        htmlFor={amenity.id}
+                        className="text-sm font-semibold text-slate-800 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
+                      >
+                        <amenity.icon className="h-4 w-4 text-slate-500" />
+                        {amenity.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div className="space-y-4 pt-4 border-t border-slate-200">
-                <div className="flex justify-between items-center">
-                  <label className="text-sm font-semibold text-slate-800">
-                    Price Range (UGX)
-                  </label>
-                  <span className="text-xs font-semibold text-slate-600">
-                    {priceRange[0] / 1000}k - {priceRange[1] / 1000}k
-                  </span>
-                </div>
-                <Slider
-                  defaultValue={[300000, 3000000]}
-                  max={3000000}
-                  min={300000}
-                  step={50000}
-                  value={priceRange}
-                  onValueChange={setPriceRange}
-                  className="py-4"
+              <Button
+                className="w-full mt-8 bg-gradient-primary text-white hover:opacity-90 shadow-md font-semibold"
+                onClick={() => {
+                  setSearchTerm("");
+                  setPriceRange([300000, 3000000]);
+                  setMinRating(0);
+                  setSelectedAmenities([]);
+                }}
+              >
+                Reset Filters
+              </Button>
+            </div>
+          </div>
+
+          {/* Results Area */}
+          <div className="w-full lg:w-3/4">
+            <div className="mb-6 flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                  placeholder="Search by hostel name or university..."
+                  className="pl-10 h-12 text-base rounded-xl shadow-sm bg-white border-slate-300 placeholder:text-slate-500 text-slate-900 focus-visible:ring-primary"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
+              <Button className="h-12 px-8 rounded-xl shadow-md bg-gradient-primary hover:opacity-90 text-white font-semibold sm:w-auto w-full">
+                Search
+              </Button>
+            </div>
 
-              <div className="space-y-2 pt-4 border-t border-slate-200">
-                <label className="text-sm font-bold text-slate-900">Minimum Rating</label>
-                <Select
-                  value={minRating.toString()}
-                  onValueChange={(v) => setMinRating(Number(v))}
-                >
-                  <SelectTrigger className="w-full h-11 bg-white text-slate-900 border-slate-300">
-                    <SelectValue placeholder="Any Rating" />
+            <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h2 className="text-3xl font-black tracking-tight text-slate-900">
+                  Available Hostels
+                </h2>
+                <p className="text-slate-700 font-semibold">
+                  Showing {filteredHostels.length} available properties
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-slate-700 whitespace-nowrap">
+                  Sort by:
+                </span>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-[180px] h-11 bg-white border-slate-300 text-slate-900">
+                    <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
                   <SelectContent className="bg-white shadow-xl z-50 border border-slate-200">
-                    <SelectItem value="0">Any Rating</SelectItem>
-                    <SelectItem value="3">3+ Stars</SelectItem>
-                    <SelectItem value="4">4+ Stars</SelectItem>
-                    <SelectItem value="4.5">4.5+ Stars</SelectItem>
+                    <SelectItem value="newest">Newest First</SelectItem>
+                    <SelectItem value="price-asc">
+                      Price: Low to High
+                    </SelectItem>
+                    <SelectItem value="price-desc">
+                      Price: High to Low
+                    </SelectItem>
+                    <SelectItem value="rating-desc">Highest Rated</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+            </div>
 
-              <div className="space-y-3 pt-4 border-t border-slate-200">
-                <label className="text-sm font-bold text-slate-900">Amenities</label>
-                {AMENITIES.map((amenity) => (
-                  <div key={amenity.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={amenity.id}
-                      checked={selectedAmenities.includes(amenity.label)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setSelectedAmenities([
-                            ...selectedAmenities,
-                            amenity.label,
-                          ]);
-                        } else {
-                          setSelectedAmenities(
-                            selectedAmenities.filter(
-                              (a) => a !== amenity.label,
-                            ),
-                          );
-                        }
-                      }}
-                    />
-                    <label
-                      htmlFor={amenity.id}
-                      className="text-sm font-semibold text-slate-800 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
-                    >
-                      <amenity.icon className="h-4 w-4 text-slate-500" />
-                      {amenity.label}
-                    </label>
-                  </div>
+            {isLoading ? (
+              <div className="py-20 flex justify-center items-center flex-col gap-4">
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                <p className="text-slate-700 font-semibold">
+                  Fetching live availability...
+                </p>
+              </div>
+            ) : filteredHostels.length === 0 ? (
+              <div className="text-center py-20 border border-dashed border-slate-300 rounded-xl bg-slate-50">
+                <p className="text-slate-700 text-lg font-semibold">
+                  No properties match your current filters.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {sortedHostels.map((hostel) => (
+                  <Link to={`/hostel/${hostel.id}`} key={hostel.id}>
+                    <Card className="overflow-hidden bg-white border-slate-300 hover:border-primary/50 transition-all duration-300 group cursor-pointer shadow-sm hover:shadow-lg">
+                      <div className="aspect-[4/3] relative overflow-hidden bg-muted">
+                        {hostel.images?.[0] ? (
+                          <img
+                            src={hostel.images[0]}
+                            alt={hostel.name}
+                            className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-slate-500 font-semibold bg-slate-100">
+                            No image uploaded
+                          </div>
+                        )}
+                        <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold shadow-sm flex items-center gap-1 text-slate-900">
+                          <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
+                          {(hostel.rating || 0) > 0 ? hostel.rating : "-"}
+                        </div>
+                        <div className="absolute bottom-4 left-4 bg-primary/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm">
+                          {hostel.price_range || "Price not set"}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className={cn(
+                            "absolute top-4 left-4 rounded-full backdrop-blur-md transition-all",
+                            favorites.includes(hostel.id)
+                              ? "bg-rose-500 text-white hover:bg-rose-600"
+                              : "bg-black/50 text-white hover:bg-black/70",
+                          )}
+                          onClick={(e) => toggleFavorite(e, hostel.id)}
+                        >
+                          <Heart
+                            className={cn(
+                              "h-5 w-5",
+                              favorites.includes(hostel.id) && "fill-current",
+                            )}
+                          />
+                        </Button>
+                      </div>
+                      <CardContent className="p-5">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-bold text-xl text-slate-900 group-hover:text-primary transition-colors line-clamp-1">
+                            {hostel.name}
+                          </h3>
+                        </div>
+                        <div className="flex items-center text-slate-700 mb-4 text-sm font-medium">
+                          <MapPin className="h-4 w-4 mr-1 shrink-0" />
+                          <span className="line-clamp-1">
+                            {hostel.address || hostel.university}
+                          </span>
+                        </div>
+                        <div className="flex gap-2 mb-1 flex-wrap">
+                          {hostel.amenities?.slice(0, 3).map((amenity, i) => (
+                            <span
+                              key={i}
+                              className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-md whitespace-nowrap"
+                            >
+                              {amenity}
+                            </span>
+                          )) || (
+                            <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-md">
+                              No amenities listed
+                            </span>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 ))}
               </div>
-            </div>
-
-            <Button
-              className="w-full mt-8 bg-gradient-primary text-white hover:opacity-90 shadow-md font-semibold"
-              onClick={() => {
-                setSearchTerm("");
-                setPriceRange([300000, 3000000]);
-                setMinRating(0);
-                setSelectedAmenities([]);
-              }}
-            >
-              Reset Filters
-            </Button>
+            )}
           </div>
         </div>
-
-        {/* Results Area */}
-        <div className="w-full lg:w-3/4">
-          <div className="mb-6 flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                placeholder="Search by hostel name or university..."
-                className="pl-10 h-12 text-base rounded-xl shadow-sm bg-white border-slate-300 placeholder:text-slate-500 text-slate-900 focus-visible:ring-primary"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <Button className="h-12 px-8 rounded-xl shadow-md bg-gradient-primary hover:opacity-90 text-white font-semibold sm:w-auto w-full">
-              Search
-            </Button>
-          </div>
-
-          <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h2 className="text-3xl font-black tracking-tight text-slate-900">Available Hostels</h2>
-              <p className="text-slate-700 font-semibold">
-                Showing {filteredHostels.length} available properties
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-slate-700 whitespace-nowrap">
-                Sort by:
-              </span>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[180px] h-11 bg-white border-slate-300 text-slate-900">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent className="bg-white shadow-xl z-50 border border-slate-200">
-                  <SelectItem value="newest">Newest First</SelectItem>
-                  <SelectItem value="price-asc">Price: Low to High</SelectItem>
-                  <SelectItem value="price-desc">Price: High to Low</SelectItem>
-                  <SelectItem value="rating-desc">Highest Rated</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {isLoading ? (
-            <div className="py-20 flex justify-center items-center flex-col gap-4">
-              <Loader2 className="h-10 w-10 animate-spin text-primary" />
-              <p className="text-slate-700 font-semibold">
-                Fetching live availability...
-              </p>
-            </div>
-          ) : filteredHostels.length === 0 ? (
-            <div className="text-center py-20 border border-dashed border-slate-300 rounded-xl bg-slate-50">
-              <p className="text-slate-700 text-lg font-semibold">
-                No properties match your current filters.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {sortedHostels.map((hostel) => (
-                <Link to={`/hostel/${hostel.id}`} key={hostel.id}>
-                  <Card className="overflow-hidden bg-white border-slate-300 hover:border-primary/50 transition-all duration-300 group cursor-pointer shadow-sm hover:shadow-lg">
-                    <div className="aspect-[4/3] relative overflow-hidden bg-muted">
-                      {hostel.images?.[0] ? (
-                        <img
-                          src={hostel.images[0]}
-                          alt={hostel.name}
-                          className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-500 font-semibold bg-slate-100">
-                          No image uploaded
-                        </div>
-                      )}
-                      <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold shadow-sm flex items-center gap-1 text-slate-900">
-                        <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
-                        {(hostel.rating || 0) > 0 ? hostel.rating : "-"}
-                      </div>
-                      <div className="absolute bottom-4 left-4 bg-primary/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm">
-                        {hostel.price_range || "Price not set"}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className={cn(
-                          "absolute top-4 left-4 rounded-full backdrop-blur-md transition-all",
-                          favorites.includes(hostel.id)
-                            ? "bg-rose-500 text-white hover:bg-rose-600"
-                            : "bg-black/50 text-white hover:bg-black/70",
-                        )}
-                        onClick={(e) => toggleFavorite(e, hostel.id)}
-                      >
-                        <Heart
-                          className={cn(
-                            "h-5 w-5",
-                            favorites.includes(hostel.id) && "fill-current",
-                          )}
-                        />
-                      </Button>
-                    </div>
-                    <CardContent className="p-5">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-bold text-xl text-slate-900 group-hover:text-primary transition-colors line-clamp-1">
-                          {hostel.name}
-                        </h3>
-                      </div>
-                      <div className="flex items-center text-slate-700 mb-4 text-sm font-medium">
-                        <MapPin className="h-4 w-4 mr-1 shrink-0" />
-                        <span className="line-clamp-1">
-                          {hostel.address || hostel.university}
-                        </span>
-                      </div>
-                      <div className="flex gap-2 mb-1 flex-wrap">
-                        {hostel.amenities?.slice(0, 3).map((amenity, i) => (
-                          <span
-                            key={i}
-                            className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-md whitespace-nowrap"
-                          >
-                            {amenity}
-                          </span>
-                        )) || (
-                          <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-md">
-                            No amenities listed
-                          </span>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
       </div>
     </div>
   );

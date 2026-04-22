@@ -128,9 +128,18 @@ export default function HostelDetail() {
         .from("hostels")
         .select("*, users(first_name, last_name, email)")
         .eq("id", id)
+        .eq("status", "approved")
         .single();
 
-      if (hostelError) throw hostelError;
+      if (hostelError) {
+        const code = (hostelError as { code?: string }).code;
+        if (code === "PGRST116") {
+          toast.error("This listing is not available to students.");
+          navigate("/search");
+          return;
+        }
+        throw hostelError;
+      }
       setHostel(hostelData as HostelWithOwner);
 
       // Fetch Rooms
@@ -160,7 +169,7 @@ export default function HostelDetail() {
     } finally {
       setIsLoading(false);
     }
-  }, [id]);
+  }, [id, navigate]);
 
   useEffect(() => {
     if (id) {

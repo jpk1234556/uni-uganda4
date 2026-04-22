@@ -100,7 +100,7 @@ export default function Home() {
         );
         const fallback = await supabase
           .from("hostels")
-          .select("*, room_types(available)")
+          .select("*")
           .eq("status", "approved")
           .limit(3);
         setTopHostels((fallback.data as HostelWithRooms[]) || []);
@@ -108,7 +108,23 @@ export default function Home() {
         setTopHostels((data as HostelWithRooms[]) || []);
       }
     } catch (error) {
-      console.error("Error fetching top hostels:", error);
+      console.warn(
+        "Top hostels fetch failed, using minimal approved-hostel fallback",
+        error,
+      );
+
+      try {
+        const fallback = await supabase
+          .from("hostels")
+          .select("*")
+          .eq("status", "approved")
+          .order("rating", { ascending: false, nullsFirst: false })
+          .limit(3);
+
+        setTopHostels((fallback.data as HostelWithRooms[]) || []);
+      } catch (fallbackError) {
+        console.error("Error fetching top hostels:", fallbackError);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -411,12 +427,12 @@ export default function Home() {
                                 0,
                               ) ?? 0;
                             return (
-                          <div className="text-sm font-extrabold text-emerald-600">
-                            {availableRooms}{" "}
-                            <span className="text-slate-500 font-semibold">
-                              rooms available
-                            </span>
-                          </div>
+                              <div className="text-sm font-extrabold text-emerald-600">
+                                {availableRooms}{" "}
+                                <span className="text-slate-500 font-semibold">
+                                  rooms available
+                                </span>
+                              </div>
                             );
                           })()}
                           <Button className="bg-primary hover:bg-primary/90 text-white rounded-xl font-bold shadow-sm group-hover:shadow-md transition-all px-6">
