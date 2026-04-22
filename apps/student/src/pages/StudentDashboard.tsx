@@ -46,7 +46,7 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { BookingCartItem, Hostel, RoomType, Notification, Message } from "@/types";
+import type { Notification, Message } from "@/types";
 
 interface ConversationParticipant {
   id: string;

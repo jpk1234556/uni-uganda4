@@ -14,7 +14,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -23,7 +22,6 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Building2,
   ClipboardList,
-  Users,
   CreditCard,
   Loader2,
   Search,
@@ -63,7 +61,7 @@ const formatUGX = (amount: number | string | null | undefined) =>
   }).format(Number(amount ?? 0));
 
 export default function AdminDashboard() {
-  const { user, dbUser } = useAuth();
+  const { user } = useAuth();
   const [hostels, setHostels] = useState<HostelWithOwner[]>([]);
   const [bookings, setBookings] = useState<BookingWithRelations[]>([]);
   const [payments, setPayments] = useState<any[]>([]);

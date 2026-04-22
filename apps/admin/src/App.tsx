@@ -6,7 +6,6 @@ import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
 
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
-const Overview = lazy(() => import("./components/admin/Overview"));
 const UsersManager = lazy(() => import("./components/admin/UsersManager"));
 const HostelsManager = lazy(() => import("./components/admin/HostelsManager"));
 const BookingsManager = lazy(() => import("./components/admin/BookingsManager"));
