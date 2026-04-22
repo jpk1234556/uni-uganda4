@@ -115,6 +115,25 @@ export interface Notification {
     created_at: string;
 }
 
+export interface Message {
+    id: string;
+    sender_id: string;
+    receiver_id: string;
+    content: string;
+    is_read: boolean;
+    created_at: string;
+    sender?: {
+        first_name: string;
+        last_name: string;
+        email?: string;
+    } | null;
+    receiver?: {
+        first_name: string;
+        last_name: string;
+        email?: string;
+    } | null;
+}
+
 export type InventoryHoldStatus = "active" | "released" | "consumed" | "expired";
 
 export interface InventoryHold {

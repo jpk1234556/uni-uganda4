@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -36,6 +36,8 @@ import {
   HeartPulse,
   Users,
   Bell,
+  MessageSquare,
+  Send,
 } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -44,7 +46,20 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { BookingCartItem, Hostel, RoomType, Notification } from "@/types";
+import type { BookingCartItem, Hostel, RoomType, Notification, Message } from "@/types";
+
+interface ConversationParticipant {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email?: string | null;
+}
+
+interface ConversationThread {
+  participant: ConversationParticipant;
+  messages: Message[];
+  unreadCount: number;
+}
 
 const formatUGX = (amount: number | string | null | undefined) =>
   new Intl.NumberFormat("en-UG", {
@@ -60,12 +75,16 @@ export default function StudentDashboard() {
   const [savedHostels, setSavedHostels] = useState<any[]>([]);
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingSaved, setIsLoadingSaved] = useState(false);
   const [isLoadingCart, setIsLoadingCart] = useState(false);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [activeConversation, setActiveConversation] = useState<ConversationParticipant | null>(null);
+  const [messageDraft, setMessageDraft] = useState("");
 
   // Profile Form State
   const [profileForm, setProfileForm] = useState({
@@ -97,6 +116,8 @@ export default function StudentDashboard() {
       ? "cart"
       : searchParams.get("tab") === "notifications"
         ? "notifications"
+        : searchParams.get("tab") === "messages"
+          ? "messages"
         : "applications",
   );
 
@@ -107,7 +128,8 @@ export default function StudentDashboard() {
       tab === "saved" ||
       tab === "profile" ||
       tab === "cart" ||
-      tab === "notifications"
+      tab === "notifications" ||
+      tab === "messages"
     ) {
       setActiveTab(tab);
     }
@@ -124,7 +146,7 @@ export default function StudentDashboard() {
           status,
           created_at,
           room_types ( name, price ),
-          hostels ( name, owner_id )
+          hostels ( name, owner_id, users!hostels_owner_id_fkey ( first_name, last_name, email ) )
         `,
         )
         .eq("student_id", user?.id)
@@ -240,12 +262,95 @@ export default function StudentDashboard() {
     }
   }, [user]);
 
+  const fetchMessages = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      setIsLoadingMessages(true);
+      const { data, error } = await supabase
+        .from("messages")
+        .select(
+          `
+          id,
+          sender_id,
+          receiver_id,
+          content,
+          is_read,
+          created_at,
+          sender:users!messages_sender_id_fkey(first_name, last_name, email),
+          receiver:users!messages_receiver_id_fkey(first_name, last_name, email)
+        `,
+        )
+        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+        .order("created_at", { ascending: true })
+        .limit(200);
+
+      if (error) throw error;
+      setMessages((data || []) as Message[]);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+    } finally {
+      setIsLoadingMessages(false);
+    }
+  }, [user]);
+
+  const conversationThreads = useMemo<ConversationThread[]>(() => {
+    if (!user) return [];
+
+    const threadsByParticipant = new Map<string, ConversationThread>();
+
+    messages.forEach((message) => {
+      const participantId = message.sender_id === user.id ? message.receiver_id : message.sender_id;
+      const participantProfile = message.sender_id === user.id ? message.receiver : message.sender;
+
+      if (!participantProfile) return;
+
+      const existing = threadsByParticipant.get(participantId);
+      const participant: ConversationParticipant = {
+        id: participantId,
+        first_name: participantProfile.first_name,
+        last_name: participantProfile.last_name,
+        email: participantProfile.email ?? null,
+      };
+
+      if (existing) {
+        existing.messages.push(message);
+        if (message.receiver_id === user.id && !message.is_read) {
+          existing.unreadCount += 1;
+        }
+      } else {
+        threadsByParticipant.set(participantId, {
+          participant,
+          messages: [message],
+          unreadCount: message.receiver_id === user.id && !message.is_read ? 1 : 0,
+        });
+      }
+    });
+
+    return Array.from(threadsByParticipant.values()).sort((a, b) => {
+      const lastA = a.messages[a.messages.length - 1]?.created_at || "";
+      const lastB = b.messages[b.messages.length - 1]?.created_at || "";
+      return lastB.localeCompare(lastA);
+    });
+  }, [messages, user]);
+
+  const currentConversationMessages = useMemo(() => {
+    if (!user || !activeConversation) return [];
+
+    return messages.filter(
+      (message) =>
+        (message.sender_id === user.id && message.receiver_id === activeConversation.id) ||
+        (message.sender_id === activeConversation.id && message.receiver_id === user.id),
+    );
+  }, [activeConversation, messages, user]);
+
   useEffect(() => {
     if (user) {
       fetchApplications();
       fetchSavedHostels();
       fetchCartItems();
       fetchNotifications();
+      fetchMessages();
     }
   }, [
     user,
@@ -253,7 +358,27 @@ export default function StudentDashboard() {
     fetchSavedHostels,
     fetchCartItems,
     fetchNotifications,
+    fetchMessages,
   ]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const messagesSub = supabase
+      .channel("public:messages")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "messages" },
+        () => {
+          fetchMessages();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(messagesSub);
+    };
+  }, [user, fetchMessages]);
 
   const removeFavorite = async (favoriteId: string) => {
     try {
@@ -325,6 +450,49 @@ export default function StudentDashboard() {
       toast.success("All notifications marked as read");
     } catch (error) {
       toast.error("Failed to update notifications");
+    }
+  };
+
+  const openConversation = async (participant: ConversationParticipant) => {
+    setActiveConversation(participant);
+    setMessageDraft("");
+
+    try {
+      const { error } = await supabase
+        .from("messages")
+        .update({ is_read: true })
+        .eq("sender_id", participant.id)
+        .eq("receiver_id", user?.id)
+        .eq("is_read", false);
+
+      if (error) throw error;
+      setMessages((prev) =>
+        prev.map((message) =>
+          message.sender_id === participant.id && message.receiver_id === user?.id
+            ? { ...message, is_read: true }
+            : message,
+        ),
+      );
+    } catch (error) {
+      console.error("Failed to mark conversation read:", error);
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!user || !activeConversation || !messageDraft.trim()) return;
+
+    try {
+      const { error } = await supabase.from("messages").insert({
+        sender_id: user.id,
+        receiver_id: activeConversation.id,
+        content: messageDraft.trim(),
+      });
+
+      if (error) throw error;
+      setMessageDraft("");
+      await fetchMessages();
+    } catch (error) {
+      toast.error("Failed to send message");
     }
   };
 
@@ -490,6 +658,12 @@ export default function StudentDashboard() {
               <Bell className="h-4 w-4" /> Notifications
             </TabsTrigger>
             <TabsTrigger
+              value="messages"
+              className="gap-2 px-4 py-2.5 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 rounded-lg transition-all text-xs sm:text-sm"
+            >
+              <MessageSquare className="h-4 w-4" /> Messages
+            </TabsTrigger>
+            <TabsTrigger
               value="saved"
               className="gap-2 px-4 py-2.5 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 rounded-lg transition-all text-xs sm:text-sm"
             >
@@ -590,6 +764,26 @@ export default function StudentDashboard() {
                               View
                             </Button>
                           )}
+                          {app.hostels?.owner_id ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="gap-2 w-full sm:w-auto"
+                              onClick={() => {
+                                setActiveConversation({
+                                  id: app.hostels.owner_id,
+                                  first_name:
+                                    app.hostels.users?.first_name || "Hostel",
+                                  last_name:
+                                    app.hostels.users?.last_name || "Owner",
+                                  email: app.hostels.users?.email || null,
+                                });
+                                setActiveTab("messages");
+                              }}
+                            >
+                              <MessageSquare className="h-4 w-4" /> Message Owner
+                            </Button>
+                          ) : null}
                         </div>
                       </div>
                     ))}
@@ -840,6 +1034,155 @@ export default function StudentDashboard() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="messages">
+            <Card className="border-blue-100/50 shadow-md bg-white">
+              <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-blue-600" />
+                    Messages
+                  </CardTitle>
+                  <CardDescription>
+                    Chat with hostel owners about applications, payments, and room details.
+                  </CardDescription>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={fetchMessages}
+                  disabled={isLoadingMessages}
+                >
+                  Refresh
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {isLoadingMessages ? (
+                  <div className="py-20 flex justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                ) : conversationThreads.length === 0 ? (
+                  <div className="text-center py-10 border border-dashed rounded-lg bg-muted/20">
+                    <MessageSquare className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-30" />
+                    <p className="text-muted-foreground font-medium mb-2">
+                      No messages yet.
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Start a conversation from one of your booking applications.
+                    </p>
+                    <Button variant="outline" onClick={() => setActiveTab("applications")}>Go to Bookings</Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)] gap-4">
+                    <div className="border rounded-xl overflow-hidden bg-slate-50/60">
+                      <div className="border-b px-4 py-3 bg-white">
+                        <p className="text-sm font-semibold text-slate-900">Conversations</p>
+                      </div>
+                      <div className="max-h-[520px] overflow-y-auto divide-y">
+                        {conversationThreads.map((thread) => {
+                          const isActive = activeConversation?.id === thread.participant.id;
+                          return (
+                            <button
+                              key={thread.participant.id}
+                              type="button"
+                              onClick={() => openConversation(thread.participant)}
+                              className={`w-full text-left px-4 py-3 transition-colors ${
+                                isActive ? "bg-blue-50" : "bg-transparent hover:bg-white"
+                              }`}
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <p className="font-semibold text-slate-900 truncate">
+                                    {thread.participant.first_name} {thread.participant.last_name}
+                                  </p>
+                                  <p className="text-xs text-slate-500 truncate">
+                                    {thread.participant.email || "Hostel owner"}
+                                  </p>
+                                  <p className="text-sm text-slate-600 truncate mt-1">
+                                    {thread.messages[thread.messages.length - 1]?.content}
+                                  </p>
+                                </div>
+                                {thread.unreadCount > 0 ? (
+                                  <Badge className="bg-blue-600 text-white">{thread.unreadCount}</Badge>
+                                ) : null}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="border rounded-xl bg-white flex flex-col min-h-[520px]">
+                      <div className="border-b px-4 py-3 bg-slate-50/70">
+                        {activeConversation ? (
+                          <div>
+                            <p className="font-semibold text-slate-900">
+                              {activeConversation.first_name} {activeConversation.last_name}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {activeConversation.email || "Conversation partner"}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="font-semibold text-slate-900">Select a conversation</p>
+                        )}
+                      </div>
+
+                      <div className="flex-1 p-4 space-y-3 max-h-[420px] overflow-y-auto">
+                        {currentConversationMessages.length === 0 ? (
+                          <div className="h-full flex items-center justify-center text-center text-sm text-slate-500 py-16">
+                            Choose a conversation or start a new one from your bookings.
+                          </div>
+                        ) : (
+                          currentConversationMessages.map((message) => {
+                            const isMine = message.sender_id === user?.id;
+                            return (
+                              <div
+                                key={message.id}
+                                className={`flex ${isMine ? "justify-end" : "justify-start"}`}
+                              >
+                                <div
+                                  className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
+                                    isMine
+                                      ? "bg-blue-600 text-white"
+                                      : "bg-slate-100 text-slate-900"
+                                  }`}
+                                >
+                                  <p>{message.content}</p>
+                                  <p className={`mt-2 text-[11px] ${isMine ? "text-blue-100" : "text-slate-500"}`}>
+                                    {new Date(message.created_at).toLocaleString()}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+
+                      <div className="border-t p-4">
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <Textarea
+                            placeholder={activeConversation ? "Write a message..." : "Select a conversation first"}
+                            value={messageDraft}
+                            onChange={(e) => setMessageDraft(e.target.value)}
+                            disabled={!activeConversation}
+                            className="min-h-[90px] resize-none"
+                          />
+                          <Button
+                            className="sm:self-end gap-2"
+                            onClick={sendMessage}
+                            disabled={!activeConversation || !messageDraft.trim()}
+                          >
+                            <Send className="h-4 w-4" /> Send
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </CardContent>
