@@ -23,16 +23,16 @@ export default function Footer() {
               Uganda's leading platform for student hostel discovery. Find verified hostels near your university with ease.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="h-10 w-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 hover:bg-primary hover:text-white hover:border-primary transition-all">
+              <a href="https://www.facebook.com/" target="_blank" rel="noreferrer" className="h-10 w-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 hover:bg-primary hover:text-white hover:border-primary transition-all">
                 <Facebook className="h-4 w-4" />
               </a>
-              <a href="#" className="h-10 w-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 hover:bg-primary hover:text-white hover:border-primary transition-all">
+              <a href="https://x.com/" target="_blank" rel="noreferrer" className="h-10 w-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 hover:bg-primary hover:text-white hover:border-primary transition-all">
                 <Twitter className="h-4 w-4" />
               </a>
-              <a href="#" className="h-10 w-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 hover:bg-primary hover:text-white hover:border-primary transition-all">
+              <a href="https://www.instagram.com/" target="_blank" rel="noreferrer" className="h-10 w-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 hover:bg-primary hover:text-white hover:border-primary transition-all">
                 <Instagram className="h-4 w-4" />
               </a>
-              <a href="#" className="h-10 w-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 hover:bg-primary hover:text-white hover:border-primary transition-all">
+              <a href="https://www.linkedin.com/" target="_blank" rel="noreferrer" className="h-10 w-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 hover:bg-primary hover:text-white hover:border-primary transition-all">
                 <Linkedin className="h-4 w-4" />
               </a>
             </div>
@@ -57,7 +57,7 @@ export default function Footer() {
             <ul className="space-y-4 text-sm">
               <li><Link to="/search" className="hover:text-primary transition-colors">Browse Hostels</Link></li>
               <li><Link to="/auth" className="hover:text-primary transition-colors">Student Registration</Link></li>
-              <li><Link to="#" className="hover:text-primary transition-colors">FAQs</Link></li>
+              <li><Link to="/faq" className="hover:text-primary transition-colors">FAQs</Link></li>
             </ul>
           </div>
 

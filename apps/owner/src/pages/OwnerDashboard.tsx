@@ -1,283 +1,115 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
-  const fetchData = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const { data: hostelsData, error: hostelsError } = await supabase
-        .from("hostels")
-        .select("*")
-        .eq("owner_id", user?.id)
-        .order("created_at", { ascending: false });
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Plus,
+  Home,
+  Users,
+  Settings,
+  Loader2,
+  Building,
+  Image as ImageIcon,
+  Trash2,
+  LayoutDashboard,
+  Wallet,
+  Clock,
+  ShieldAlert,
+  TrendingUp,
+} from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabase";
+import type { Hostel, RoomType } from "@/types";
+import { toast } from "sonner";
+import { motion, AnimatePresence } from "motion/react";
+import { ResponsiveContainer, AreaChart, Area } from "recharts";
 
-      if (hostelsError) throw hostelsError;
-      setProperties(hostelsData || []);
+interface BookingWithRelations {
+  id: string;
+  status: "pending" | "approved" | "rejected";
+  created_at: string;
+  hostels: { name: string } | null;
+  users: { first_name: string; last_name: string } | null;
+}
 
-      if (hostelsData && hostelsData.length > 0) {
-        const hostelIds = hostelsData.map((h) => h.id);
-        const { data: bookingsData, error: bookingsError } = await supabase
-          .from("bookings")
-          .select(
-            `
-            *,
-            hostels ( name ),
-            users!bookings_student_id_fkey ( id, first_name, last_name, email )
-          `,
-          )
-          .in("hostel_id", hostelIds)
-          .order("created_at", { ascending: false });
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
+};
 
-        if (bookingsError) throw bookingsError;
-        setBookings((bookingsData as BookingWithRelations[]) || []);
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      toast.error("Failed to load dashboard data");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user]);
+const formatUGX = (amount: number | string | null | undefined) =>
+  new Intl.NumberFormat("en-UG", {
+    style: "currency",
+    currency: "UGX",
+    currencyDisplay: "code",
+    maximumFractionDigits: 0,
+  }).format(Number(amount ?? 0));
 
-  const fetchNotifications = useCallback(async () => {
-    if (!user) return;
+export default function OwnerDashboard() {
+  const { user } = useAuth();
 
-    try {
-      setIsLoadingNotifications(true);
-      const { data, error } = await supabase
-        .from("notifications")
-        .select("id, user_id, title, message, type, is_read, link, created_at")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(20);
+  const [properties, setProperties] = useState<Hostel[]>([]);
+  const [bookings, setBookings] = useState<BookingWithRelations[]>([]);
 
-      if (error) throw error;
-      setNotifications((data || []) as Notification[]);
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-    } finally {
-      setIsLoadingNotifications(false);
-    }
-  }, [user]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
 
-  const fetchMessages = useCallback(async () => {
-    if (!user) return;
+  // Create Property State
+  const [newHostel, setNewHostel] = useState({
+    name: "",
+    university: "",
+    address: "",
+    description: "",
+    price_range: "",
+    images: "", // comma separated URLs
+  });
 
-    try {
-      setIsLoadingMessages(true);
-      const { data, error } = await supabase
-        .from("messages")
-        .select(
-          `
-          id,
-          sender_id,
-          receiver_id,
-          content,
-          is_read,
-          created_at,
-          sender:users!messages_sender_id_fkey(first_name, last_name, email),
-          receiver:users!messages_receiver_id_fkey(first_name, last_name, email)
-        `,
-        )
-        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-        .order("created_at", { ascending: true })
-        .limit(200);
+  // Wizard State
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [wizardStep, setWizardStep] = useState<1 | 2 | 3>(1);
+  const [createdHostelId, setCreatedHostelId] = useState<string | null>(null);
 
-      if (error) throw error;
-      setMessages((data || []) as Message[]);
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-    } finally {
-      setIsLoadingMessages(false);
-    }
-  }, [user]);
+  // Manage Rooms State
+  const [selectedHostel, setSelectedHostel] = useState<Hostel | null>(null);
+  const [rooms, setRooms] = useState<RoomType[]>([]);
+  const [isRoomDialogOpen, setIsRoomDialogOpen] = useState(false);
+  const [isLoadingRooms, setIsLoadingRooms] = useState(false);
+  const [newRoom, setNewRoom] = useState({ name: "", price: "", capacity: "" });
+  const roomFileInputRef = useRef<HTMLInputElement>(null);
+  const [isRoomDragActive, setIsRoomDragActive] = useState(false);
+  const [selectedRoomImageDataUrls, setSelectedRoomImageDataUrls] = useState<string[]>([]);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
-  const conversationThreads = useMemo<ConversationThread[]>(() => {
-    if (!user) return [];
-
-    const threadsByParticipant = new Map<string, ConversationThread>();
-
-    messages.forEach((message) => {
-      const participantId =
-        message.sender_id === user.id ? message.receiver_id : message.sender_id;
-      const participantProfile =
-        message.sender_id === user.id ? message.receiver : message.sender;
-
-      if (!participantProfile) return;
-
-      const participant: ConversationParticipant = {
-        id: participantId,
-        first_name: participantProfile.first_name,
-        last_name: participantProfile.last_name,
-        email: participantProfile.email ?? null,
-      };
-
-      const existing = threadsByParticipant.get(participantId);
-      if (existing) {
-        existing.messages.push(message);
-        if (message.receiver_id === user.id && !message.is_read) {
-          existing.unreadCount += 1;
-        }
-        return;
-      }
-
-      threadsByParticipant.set(participantId, {
-        participant,
-        messages: [message],
-        unreadCount:
-          message.receiver_id === user.id && !message.is_read ? 1 : 0,
-      });
-    });
-
-    return Array.from(threadsByParticipant.values()).sort((a, b) => {
-      const lastA = a.messages[a.messages.length - 1]?.created_at || "";
-      const lastB = b.messages[b.messages.length - 1]?.created_at || "";
-      return lastB.localeCompare(lastA);
-    });
-  }, [messages, user]);
-
-  const currentConversationMessages = useMemo(() => {
-    if (!user || !activeConversation) return [];
-
-    return messages.filter(
-      (message) =>
-        (message.sender_id === user.id && message.receiver_id === activeConversation.id) ||
-        (message.sender_id === activeConversation.id && message.receiver_id === user.id),
-    );
-  }, [activeConversation, messages, user]);
-
-  const markNotificationAsRead = async (notificationId: string) => {
-    try {
-      const { error } = await supabase
-        .from("notifications")
-        .update({ is_read: true })
-        .eq("id", notificationId);
-
-      if (error) throw error;
-      setNotifications((prev) =>
-        prev.map((notification) =>
-          notification.id === notificationId
-            ? { ...notification, is_read: true }
-            : notification,
-        ),
-      );
-    } catch (error) {
-      toast.error("Failed to update notification");
-    }
-  };
-
-  const markAllNotificationsAsRead = async () => {
-    const unreadNotificationIds = notifications
-      .filter((notification) => !notification.is_read)
-      .map((notification) => notification.id);
-
-    if (unreadNotificationIds.length === 0) return;
-
-    try {
-      const { error } = await supabase
-        .from("notifications")
-        .update({ is_read: true })
-        .in("id", unreadNotificationIds);
-
-      if (error) throw error;
-      setNotifications((prev) =>
-        prev.map((notification) => ({ ...notification, is_read: true })),
-      );
-      toast.success("All notifications marked as read");
-    } catch (error) {
-      toast.error("Failed to update notifications");
-    }
-  };
-
-  const openConversation = async (participant: ConversationParticipant) => {
-    setActiveConversation(participant);
-    setMessageDraft("");
-
-    if (!user) return;
-
-    try {
-      const { error } = await supabase
-        .from("messages")
-        .update({ is_read: true })
-        .eq("sender_id", participant.id)
-        .eq("receiver_id", user.id)
-        .eq("is_read", false);
-
-      if (error) throw error;
-      setMessages((prev) =>
-        prev.map((message) =>
-          message.sender_id === participant.id && message.receiver_id === user.id
-            ? { ...message, is_read: true }
-            : message,
-        ),
-      );
-    } catch (error) {
-      console.error("Failed to mark conversation read:", error);
-    }
-  };
-
-  const sendMessage = async () => {
-    if (!user || !activeConversation || !messageDraft.trim()) return;
-
-    try {
-      const { error } = await supabase.from("messages").insert({
-        sender_id: user.id,
-        receiver_id: activeConversation.id,
-        content: messageDraft.trim(),
-      });
-
-      if (error) throw error;
-      setMessageDraft("");
-      await fetchMessages();
-    } catch (error) {
-      toast.error("Failed to send message");
-    }
-  };
-
-  useEffect(() => {
-    if (user) {
-      fetchData();
-      fetchNotifications();
-      fetchMessages();
-
-      const bookingsSub = supabase
-        .channel("public:bookings")
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "bookings" },
-          () => {
-            fetchData();
-          },
-        )
-        .subscribe();
-
-      const hostelsSub = supabase
-        .channel("public:hostels")
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "hostels" },
-          () => {
-            fetchData();
-          },
-        )
-        .subscribe();
-
-      const messagesSub = supabase
-        .channel("public:messages")
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "messages" },
-          () => {
-            fetchMessages();
-          },
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(bookingsSub);
-        supabase.removeChannel(hostelsSub);
-        supabase.removeChannel(messagesSub);
-      };
-    }
-  }, [user, fetchData, fetchNotifications, fetchMessages]);
+  const bookingTrendData = useMemo(() => {
+    const formatter = new Intl.DateTimeFormat("en-UG", { month: "short" });
+    const now = new Date();
     const buckets = Array.from({ length: 6 }).map((_, index) => {
       const date = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
       return {
@@ -334,27 +166,6 @@ import { Button } from "@/components/ui/button";
     }
   }, [user]);
 
-  const fetchNotifications = useCallback(async () => {
-    if (!user) return;
-
-    try {
-      setIsLoadingNotifications(true);
-      const { data, error } = await supabase
-        .from("notifications")
-        .select("id, user_id, title, message, type, is_read, link, created_at")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(20);
-
-      if (error) throw error;
-      setNotifications((data || []) as Notification[]);
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-    } finally {
-      setIsLoadingNotifications(false);
-    }
-  }, [user]);
-
   useEffect(() => {
     if (user) {
       fetchData();
@@ -368,8 +179,7 @@ import { Button } from "@/components/ui/button";
           () => {
             fetchData();
           },
-              fetchData();
-              fetchNotifications();
+        )
         .subscribe();
 
       const hostelsSub = supabase
@@ -382,49 +192,6 @@ import { Button } from "@/components/ui/button";
           },
         )
         .subscribe();
-           const markNotificationAsRead = async (notificationId: string) => {
-             try {
-               const { error } = await supabase
-                 .from("notifications")
-                 .update({ is_read: true })
-                 .eq("id", notificationId);
-
-               if (error) throw error;
-               setNotifications((prev) =>
-                 prev.map((notification) =>
-                   notification.id === notificationId
-                     ? { ...notification, is_read: true }
-                     : notification,
-                 ),
-               );
-             } catch (error) {
-               toast.error("Failed to update notification");
-             }
-           };
-
-           const markAllNotificationsAsRead = async () => {
-             const unreadNotificationIds = notifications
-               .filter((notification) => !notification.is_read)
-               .map((notification) => notification.id);
-
-             if (unreadNotificationIds.length === 0) return;
-
-             try {
-               const { error } = await supabase
-                 .from("notifications")
-                 .update({ is_read: true })
-                 .in("id", unreadNotificationIds);
-
-               if (error) throw error;
-               setNotifications((prev) =>
-                 prev.map((notification) => ({ ...notification, is_read: true })),
-               );
-               toast.success("All notifications marked as read");
-             } catch (error) {
-               toast.error("Failed to update notifications");
-             }
-           };
-
 
       return () => {
         supabase.removeChannel(bookingsSub);
@@ -1219,7 +986,7 @@ import { Button } from "@/components/ui/button";
         </motion.div>
 
         {/* Main Dashboard Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+        <Tabs defaultValue="properties" className="space-y-8">
           <TabsList className="bg-white p-1 rounded-xl shadow-sm border border-slate-200 w-full overflow-x-auto flex-nowrap">
             <TabsTrigger
               value="properties"
@@ -1232,18 +999,6 @@ import { Button } from "@/components/ui/button";
               className="rounded-lg px-5 sm:px-8 py-3 text-sm font-semibold whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm transition-all text-slate-600"
             >
               <Users className="h-4 w-4 mr-2" /> Booking Logs
-            </TabsTrigger>
-            <TabsTrigger
-              value="messages"
-              className="rounded-lg px-5 sm:px-8 py-3 text-sm font-semibold whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm transition-all text-slate-600"
-            >
-              <MessageSquare className="h-4 w-4 mr-2" /> Messages
-            </TabsTrigger>
-            <TabsTrigger
-              value="notifications"
-              className="rounded-lg px-5 sm:px-8 py-3 text-sm font-semibold whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm transition-all text-slate-600"
-            >
-              <Bell className="h-4 w-4 mr-2" /> Notifications
             </TabsTrigger>
             <TabsTrigger
               value="settings"
@@ -1441,321 +1196,45 @@ import { Button } from "@/components/ui/button";
                                 </Badge>
                               </TableCell>
                               <TableCell className="text-right pr-8">
-                                <div className="flex justify-end gap-2">
-                                  <Button
-                                    onClick={() => {
-                                      if (!booking.users) return;
-                                      setActiveConversation({
-                                        id: booking.users.id,
-                                        first_name: booking.users.first_name,
-                                        last_name: booking.users.last_name,
-                                        email: booking.users.email || null,
-                                      });
-                                      setActiveTab("messages");
-                                    }}
-                                    variant="outline"
-                                    size="sm"
-                                    className="rounded-lg border-slate-200 text-slate-700 hover:bg-slate-900 hover:text-white transition-all text-xs font-semibold"
-                                    disabled={!booking.users}
-                                  >
-                                    <MessageSquare className="h-3.5 w-3.5 mr-1" /> Message Student
-                                  </Button>
-                                  {booking.status === "pending" ? (
-                                    <>
-                                      <Button
-                                        onClick={() =>
-                                          handleUpdateBookingStatus(
-                                            booking.id,
-                                            "approved",
-                                          )
-                                        }
-                                        variant="outline"
-                                        size="sm"
-                                        className="rounded-lg border-emerald-200 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all text-xs font-semibold"
-                                      >
-                                        Approve
-                                      </Button>
-                                      <Button
-                                        onClick={() =>
-                                          handleUpdateBookingStatus(
-                                            booking.id,
-                                            "rejected",
-                                          )
-                                        }
-                                        variant="outline"
-                                        size="sm"
-                                        className="rounded-lg border-rose-200 text-rose-600 hover:bg-rose-600 hover:text-white transition-all text-xs font-semibold"
-                                      >
-                                        Reject
-                                      </Button>
-                                    </>
-                                  ) : (
-                                    <span className="text-xs font-semibold text-slate-500 self-center">
-                                      Processed
-                                    </span>
-                                  )}
-                                </div>
+                                {booking.status === "pending" ? (
+                                  <div className="flex justify-end gap-2">
+                                    <Button
+                                      onClick={() =>
+                                        handleUpdateBookingStatus(
+                                          booking.id,
+                                          "approved",
+                                        )
+                                      }
+                                      variant="outline"
+                                      size="sm"
+                                      className="rounded-lg border-emerald-200 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all text-xs font-semibold"
+                                    >
+                                      Approve
+                                    </Button>
+                                    <Button
+                                      onClick={() =>
+                                        handleUpdateBookingStatus(
+                                          booking.id,
+                                          "rejected",
+                                        )
+                                      }
+                                      variant="outline"
+                                      size="sm"
+                                      className="rounded-lg border-rose-200 text-rose-600 hover:bg-rose-600 hover:text-white transition-all text-xs font-semibold"
+                                    >
+                                      Reject
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <span className="text-xs font-semibold text-slate-500">
+                                    Processed
+                                  </span>
+                                )}
                               </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
                       </Table>
-                    )}
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </TabsContent>
-
-            <TabsContent value="messages" className="mt-0">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Card className="rounded-2xl border border-slate-200/60 bg-white shadow-md">
-                  <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        <MessageSquare className="h-5 w-5 text-blue-600" />
-                        Messages
-                      </CardTitle>
-                      <CardDescription>
-                        Talk to students about applications, approvals, and room details.
-                      </CardDescription>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={fetchMessages}
-                      disabled={isLoadingMessages}
-                    >
-                      Refresh
-                    </Button>
-                  </CardHeader>
-                  <CardContent>
-                    {isLoadingMessages ? (
-                      <div className="py-20 flex justify-center">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                      </div>
-                    ) : conversationThreads.length === 0 ? (
-                      <div className="text-center py-10 border border-dashed rounded-lg bg-muted/20">
-                        <MessageSquare className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-30" />
-                        <p className="text-muted-foreground font-medium mb-2">
-                          You have no messages yet.
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Open a booking and message a student to start the conversation.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)] gap-4">
-                        <div className="border rounded-xl overflow-hidden bg-slate-50/60">
-                          <div className="border-b px-4 py-3 bg-white">
-                            <p className="text-sm font-semibold text-slate-900">Conversations</p>
-                          </div>
-                          <div className="max-h-[520px] overflow-y-auto divide-y">
-                            {conversationThreads.map((thread) => {
-                              const isActive = activeConversation?.id === thread.participant.id;
-                              return (
-                                <button
-                                  key={thread.participant.id}
-                                  type="button"
-                                  onClick={() => openConversation(thread.participant)}
-                                  className={`w-full text-left px-4 py-3 transition-colors ${
-                                    isActive ? "bg-blue-50" : "bg-transparent hover:bg-white"
-                                  }`}
-                                >
-                                  <div className="flex items-start justify-between gap-3">
-                                    <div className="min-w-0">
-                                      <p className="font-semibold text-slate-900 truncate">
-                                        {thread.participant.first_name} {thread.participant.last_name}
-                                      </p>
-                                      <p className="text-xs text-slate-500 truncate">
-                                        {thread.participant.email || "Student"}
-                                      </p>
-                                      <p className="text-sm text-slate-600 truncate mt-1">
-                                        {thread.messages[thread.messages.length - 1]?.content}
-                                      </p>
-                                    </div>
-                                    {thread.unreadCount > 0 ? (
-                                      <Badge className="bg-blue-600 text-white">{thread.unreadCount}</Badge>
-                                    ) : null}
-                                  </div>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-
-                        <div className="border rounded-xl bg-white flex flex-col min-h-[520px]">
-                          <div className="border-b px-4 py-3 bg-slate-50/70">
-                            {activeConversation ? (
-                              <div>
-                                <p className="font-semibold text-slate-900">
-                                  {activeConversation.first_name} {activeConversation.last_name}
-                                </p>
-                                <p className="text-xs text-slate-500">
-                                  {activeConversation.email || "Conversation partner"}
-                                </p>
-                              </div>
-                            ) : (
-                              <p className="font-semibold text-slate-900">Select a conversation</p>
-                            )}
-                          </div>
-
-                          <div className="flex-1 p-4 space-y-3 max-h-[420px] overflow-y-auto">
-                            {currentConversationMessages.length === 0 ? (
-                              <div className="h-full flex items-center justify-center text-center text-sm text-slate-500 py-16">
-                                Choose a conversation or start one from a booking.
-                              </div>
-                            ) : (
-                              currentConversationMessages.map((message) => {
-                                const isMine = message.sender_id === user?.id;
-                                return (
-                                  <div
-                                    key={message.id}
-                                    className={`flex ${isMine ? "justify-end" : "justify-start"}`}
-                                  >
-                                    <div
-                                      className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
-                                        isMine
-                                          ? "bg-blue-600 text-white"
-                                          : "bg-slate-100 text-slate-900"
-                                      }`}
-                                    >
-                                      <p>{message.content}</p>
-                                      <p className={`mt-2 text-[11px] ${isMine ? "text-blue-100" : "text-slate-500"}`}>
-                                        {new Date(message.created_at).toLocaleString()}
-                                      </p>
-                                    </div>
-                                  </div>
-                                );
-                              })
-                            )}
-                          </div>
-
-                          <div className="border-t p-4">
-                            <div className="flex flex-col sm:flex-row gap-3">
-                              <Textarea
-                                placeholder={activeConversation ? "Write a message..." : "Select a conversation first"}
-                                value={messageDraft}
-                                onChange={(e) => setMessageDraft(e.target.value)}
-                                disabled={!activeConversation}
-                                className="min-h-[90px] resize-none"
-                              />
-                              <Button
-                                className="sm:self-end gap-2"
-                                onClick={sendMessage}
-                                disabled={!activeConversation || !messageDraft.trim()}
-                              >
-                                <Send className="h-4 w-4" /> Send
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </TabsContent>
-
-            <TabsContent value="notifications" className="mt-0">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Card className="rounded-2xl border border-slate-200/60 bg-white shadow-md">
-                  <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        <Bell className="h-5 w-5 text-blue-600" />
-                        Notifications
-                      </CardTitle>
-                      <CardDescription>
-                        Booking updates, payment alerts, and system messages.
-                      </CardDescription>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={markAllNotificationsAsRead}
-                      disabled={notifications.every((notification) => notification.is_read)}
-                    >
-                      Mark all as read
-                    </Button>
-                  </CardHeader>
-                  <CardContent>
-                    {isLoadingNotifications ? (
-                      <div className="py-20 flex justify-center">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                      </div>
-                    ) : notifications.length === 0 ? (
-                      <div className="text-center py-10 border border-dashed rounded-lg bg-muted/20">
-                        <Bell className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-30" />
-                        <p className="text-muted-foreground font-medium mb-2">
-                          You have no notifications yet.
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Booking updates and payment alerts will appear here.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {notifications.map((notification) => (
-                          <div
-                            key={notification.id}
-                            className={`rounded-xl border p-4 transition-all ${
-                              notification.is_read
-                                ? "border-slate-200 bg-white"
-                                : "border-blue-200 bg-blue-50/60"
-                            }`}
-                          >
-                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                              <div className="min-w-0 space-y-2">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <Badge variant="outline" className="capitalize text-xs">
-                                    {notification.type}
-                                  </Badge>
-                                  {!notification.is_read ? (
-                                    <Badge className="bg-blue-600 text-white text-xs">
-                                      New
-                                    </Badge>
-                                  ) : null}
-                                  <span className="text-xs text-slate-500">
-                                    {new Date(notification.created_at).toLocaleString()}
-                                  </span>
-                                </div>
-                                <h4 className="font-semibold text-slate-900">
-                                  {notification.title}
-                                </h4>
-                                <p className="text-sm text-slate-600 leading-relaxed">
-                                  {notification.message}
-                                </p>
-                              </div>
-                              <div className="flex flex-col gap-2 sm:items-end shrink-0">
-                                {notification.link ? (
-                                  <Button asChild variant="outline" size="sm">
-                                    <a href={notification.link}>Open</a>
-                                  </Button>
-                                ) : null}
-                                {!notification.is_read ? (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => markNotificationAsRead(notification.id)}
-                                  >
-                                    Mark as read
-                                  </Button>
-                                ) : null}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
                     )}
                   </CardContent>
                 </Card>
@@ -1897,43 +1376,43 @@ import { Button } from "@/components/ui/button";
                 </h4>
                 <form
                   onSubmit={handleAddRoom}
-                  className="space-y-4"
+                  className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end"
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
-                    <div className="space-y-2 sm:col-span-2">
-                      <Label className="text-xs font-semibold text-slate-600">
-                        Room Label
-                      </Label>
-                      <Input
-                        required
-                        value={newRoom.name}
-                        onChange={(e) =>
-                          setNewRoom({ ...newRoom, name: e.target.value })
-                        }
-                        placeholder="e.g. Single Self-Contained"
-                        className="rounded-lg border-slate-200 text-sm h-10 bg-white shadow-sm"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs font-semibold text-slate-600">
-                        Price (UGX)
-                      </Label>
-                      <Input
-                        required
-                        type="number"
-                        min="0"
-                        value={newRoom.price}
-                        onChange={(e) =>
-                          setNewRoom({ ...newRoom, price: e.target.value })
-                        }
-                        placeholder="1500000"
-                        className="rounded-lg border-slate-200 text-sm h-10 bg-white shadow-sm"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs font-semibold text-slate-600">
-                        Capacity
-                      </Label>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label className="text-xs font-semibold text-slate-600">
+                      Room Label
+                    </Label>
+                    <Input
+                      required
+                      value={newRoom.name}
+                      onChange={(e) =>
+                        setNewRoom({ ...newRoom, name: e.target.value })
+                      }
+                      placeholder="e.g. Single Self-Contained"
+                      className="rounded-lg border-slate-200 text-sm h-10 bg-white shadow-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-slate-600">
+                      Price (UGX)
+                    </Label>
+                    <Input
+                      required
+                      type="number"
+                      min="0"
+                      value={newRoom.price}
+                      onChange={(e) =>
+                        setNewRoom({ ...newRoom, price: e.target.value })
+                      }
+                      placeholder="1500000"
+                      className="rounded-lg border-slate-200 text-sm h-10 bg-white shadow-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-slate-600">
+                      Capacity
+                    </Label>
+                    <div className="flex gap-2">
                       <Input
                         required
                         type="number"
@@ -1945,85 +1424,13 @@ import { Button } from "@/components/ui/button";
                         placeholder="1"
                         className="rounded-lg border-slate-200 text-sm h-10 bg-white shadow-sm"
                       />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                      <ImageIcon className="h-3.5 w-3.5 text-primary" /> Room Images
-                    </Label>
-                    <input
-                      ref={roomFileInputRef}
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      onChange={(e) => handleIncomingRoomFiles(e.target.files)}
-                    />
-                    <div
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        setIsRoomDragActive(true);
-                      }}
-                      onDragLeave={() => setIsRoomDragActive(false)}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        setIsRoomDragActive(false);
-                        handleIncomingRoomFiles(e.dataTransfer.files);
-                      }}
-                      className={cn(
-                        "rounded-xl border border-dashed p-3 text-center transition-colors",
-                        isRoomDragActive
-                          ? "border-primary bg-primary/5"
-                          : "border-slate-300 bg-white",
-                      )}
-                    >
-                      <p className="text-xs text-slate-600 mb-2">Drag and drop room images here</p>
                       <Button
-                        type="button"
-                        variant="outline"
-                        className="h-8 text-xs"
-                        onClick={() => roomFileInputRef.current?.click()}
+                        type="submit"
+                        className="shrink-0 bg-primary hover:bg-primary/90 text-white rounded-lg h-10 w-10 p-0 shadow-sm transition-transform hover:scale-105"
                       >
-                        Choose From Files
+                        <Plus className="h-4 w-4" />
                       </Button>
                     </div>
-                    {selectedRoomImageDataUrls.length > 0 && (
-                      <div className="grid grid-cols-4 gap-2 mt-2">
-                        {selectedRoomImageDataUrls.map((img, idx) => (
-                          <div
-                            key={`${idx}-${img.slice(0, 20)}`}
-                            className="relative rounded-md overflow-hidden border border-slate-200"
-                          >
-                            <img
-                              src={img}
-                              alt={`room-upload-${idx + 1}`}
-                              className="h-14 w-full object-cover"
-                            />
-                            <button
-                              type="button"
-                              className="absolute top-0.5 right-0.5 h-5 w-5 rounded-full bg-black/60 text-white text-[10px]"
-                              onClick={() =>
-                                setSelectedRoomImageDataUrls((prev) =>
-                                  prev.filter((_, i) => i !== idx),
-                                )
-                              }
-                            >
-                              x
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex justify-end">
-                    <Button
-                      type="submit"
-                      className="bg-primary hover:bg-primary/90 text-white rounded-lg h-10 px-4 shadow-sm transition-transform hover:scale-105"
-                    >
-                      <Plus className="h-4 w-4 mr-1" /> Add Room Type
-                    </Button>
                   </div>
                 </form>
               </div>

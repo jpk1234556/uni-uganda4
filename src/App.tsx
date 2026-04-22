@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import Home from "@/pages/Home";
 import Search from "@/pages/Search";
+import Faq from "@/pages/Faq";
 import Roommates from "@/pages/Roommates";
 import HostelDetail from "@/pages/HostelDetail";
 import Auth from "@/pages/Auth";
@@ -26,6 +27,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/search" element={<Search />} />
+              <Route path="/faq" element={<Faq />} />
               <Route path="/roommates" element={<Roommates />} />
               <Route path="/hostel/:id" element={<HostelDetail />} />
               <Route path="/auth" element={<Auth />} />
