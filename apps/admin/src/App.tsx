@@ -1,5 +1,11 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+} from "react-router-dom";
 import Auth from "@/pages/Auth";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
 import { AuthProvider } from "@/context/AuthContext";
@@ -8,13 +14,21 @@ import { Toaster } from "@/components/ui/sonner";
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const UsersManager = lazy(() => import("./components/admin/UsersManager"));
 const HostelsManager = lazy(() => import("./components/admin/HostelsManager"));
-const BookingsManager = lazy(() => import("./components/admin/BookingsManager"));
-const PaymentsManager = lazy(() => import("./components/admin/PaymentsManager"));
+const BookingsManager = lazy(
+  () => import("./components/admin/BookingsManager"),
+);
+const PaymentsManager = lazy(
+  () => import("./components/admin/PaymentsManager"),
+);
 const ReviewsManager = lazy(() => import("./components/admin/ReviewsManager"));
 const ReportsManager = lazy(() => import("./components/admin/ReportsManager"));
-const HostelVerification = lazy(() => import("./components/admin/HostelVerification"));
+const HostelVerification = lazy(
+  () => import("./components/admin/HostelVerification"),
+);
 const Settings = lazy(() => import("./components/admin/Settings"));
-const UniversityManager = lazy(() => import("./components/admin/UniversityManager"));
+const UniversityManager = lazy(
+  () => import("./components/admin/UniversityManager"),
+);
 const AdminSidebar = lazy(() => import("./components/admin/AdminSidebar"));
 const AdminLayout = lazy(() => import("./components/admin/AdminLayout"));
 
@@ -38,38 +52,30 @@ export default function App() {
 
             {/* Admin Dashboard with Sidebar Layout */}
             <Route
-              path="/admin/*"
+              path="/admin"
               element={
                 <ProtectedRoute allowedRoles={["super_admin"]}>
                   <AdminLayout sidebar={<AdminSidebar />}>
                     <div className="p-4 md:p-8">
-                      <Routes>
-                        <Route path="dashboard" element={<AdminDashboard />} />
-                        <Route path="users" element={<UsersManager />} />
-                        <Route path="hostels" element={<HostelsManager />} />
-                        <Route path="bookings" element={<BookingsManager />} />
-                        <Route path="payments" element={<PaymentsManager />} />
-                        <Route path="reviews" element={<ReviewsManager />} />
-                        <Route path="reports" element={<ReportsManager />} />
-                        <Route
-                          path="verification"
-                          element={<HostelVerification />}
-                        />
-                        <Route
-                          path="universities"
-                          element={<UniversityManager />}
-                        />
-                        <Route path="settings" element={<Settings />} />
-                        <Route
-                          path="*"
-                          element={<Navigate to="dashboard" replace />}
-                        />
-                      </Routes>
+                      <Outlet />
                     </div>
                   </AdminLayout>
                 </ProtectedRoute>
               }
-            />
+            >
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="users" element={<UsersManager />} />
+              <Route path="hostels" element={<HostelsManager />} />
+              <Route path="bookings" element={<BookingsManager />} />
+              <Route path="payments" element={<PaymentsManager />} />
+              <Route path="reviews" element={<ReviewsManager />} />
+              <Route path="reports" element={<ReportsManager />} />
+              <Route path="verification" element={<HostelVerification />} />
+              <Route path="universities" element={<UniversityManager />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="*" element={<Navigate to="dashboard" replace />} />
+            </Route>
 
             <Route
               path="*"

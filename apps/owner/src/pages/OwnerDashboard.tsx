@@ -59,6 +59,11 @@ interface BookingWithRelations {
   users: { first_name: string; last_name: string } | null;
 }
 
+interface SelectedRoomImage {
+  file: File;
+  previewUrl: string;
+}
+
 const getErrorMessage = (error: unknown, fallback: string): string => {
   if (error instanceof Error && error.message) return error.message;
   return fallback;
@@ -71,6 +76,19 @@ const formatUGX = (amount: number | string | null | undefined) =>
     currencyDisplay: "code",
     maximumFractionDigits: 0,
   }).format(Number(amount ?? 0));
+
+const MAX_ROOM_IMAGES = 8;
+const ROOM_IMAGE_BUCKET = "room-images";
+
+const buildStoragePath = (hostelId: string, fileName: string) => {
+  const extension = fileName.split(".").pop()?.toLowerCase() || "jpg";
+  const id =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
+  return `${hostelId}/${id}.${extension}`;
+};
 
 export default function OwnerDashboard() {
   const { user } = useAuth();
@@ -104,7 +122,12 @@ export default function OwnerDashboard() {
   const [newRoom, setNewRoom] = useState({ name: "", price: "", capacity: "" });
   const roomFileInputRef = useRef<HTMLInputElement>(null);
   const [isRoomDragActive, setIsRoomDragActive] = useState(false);
-  const [selectedRoomImageDataUrls, setSelectedRoomImageDataUrls] = useState<string[]>([]);
+  const [selectedRoomImages, setSelectedRoomImages] = useState<
+    SelectedRoomImage[]
+  >([]);
+  const selectedRoomImagesRef = useRef<SelectedRoomImage[]>([]);
+  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const ownedHostelIdsRef = useRef<Set<string>>(new Set());
 
   const bookingTrendData = useMemo(() => {
     const formatter = new Intl.DateTimeFormat("en-UG", { month: "short" });
@@ -139,6 +162,9 @@ export default function OwnerDashboard() {
 
       if (hostelsError) throw hostelsError;
       setProperties(hostelsData || []);
+      ownedHostelIdsRef.current = new Set(
+        (hostelsData || []).map((hostel) => hostel.id),
+      );
 
       if (hostelsData && hostelsData.length > 0) {
         const hostelIds = hostelsData.map((h) => h.id);
@@ -156,6 +182,8 @@ export default function OwnerDashboard() {
 
         if (bookingsError) throw bookingsError;
         setBookings((bookingsData as BookingWithRelations[]) || []);
+      } else {
+        setBookings([]);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -165,48 +193,156 @@ export default function OwnerDashboard() {
     }
   }, [user]);
 
+  const scheduleDataRefresh = useCallback(() => {
+    if (
+      refreshTimeoutRef.current &&
+      typeof refreshTimeoutRef.current === "number"
+    ) {
+      clearTimeout(refreshTimeoutRef.current);
+    }
+
+    refreshTimeoutRef.current = setTimeout(() => {
+      fetchData();
+    }, 250);
+  }, [fetchData]);
+
+  // Debounce room updates with longer delay to avoid rapid refetches on bulk changes
+  const scheduleRoomRefresh = useCallback((hostelId: string) => {
+    // Use object-based timeout storage to handle multiple room refresh timers
+    if (
+      refreshTimeoutRef.current &&
+      typeof refreshTimeoutRef.current === "object"
+    ) {
+      const timeoutKey = `room-${hostelId}`;
+      clearTimeout(
+        (refreshTimeoutRef.current as Record<string, number>)[timeoutKey],
+      );
+      (refreshTimeoutRef.current as Record<string, number>)[timeoutKey] =
+        window.setTimeout(() => {
+          fetchRooms(hostelId);
+          delete (refreshTimeoutRef.current as Record<string, number>)[
+            timeoutKey
+          ];
+        }, 500);
+    } else {
+      // Initialize object-based storage on first use
+      refreshTimeoutRef.current = {
+        [`room-${hostelId}`]: window.setTimeout(() => {
+          fetchRooms(hostelId);
+        }, 500),
+      } as any;
+    }
+  }, []);
+
+  const clearSelectedRoomImages = useCallback(() => {
+    setSelectedRoomImages((prev) => {
+      prev.forEach((image) => URL.revokeObjectURL(image.previewUrl));
+      return [];
+    });
+  }, []);
+
+  const removeSelectedRoomImage = useCallback((index: number) => {
+    setSelectedRoomImages((prev) => {
+      const image = prev[index];
+      if (image) {
+        URL.revokeObjectURL(image.previewUrl);
+      }
+      return prev.filter((_, currentIndex) => currentIndex !== index);
+    });
+  }, []);
+
+  useEffect(() => {
+    selectedRoomImagesRef.current = selectedRoomImages;
+  }, [selectedRoomImages]);
+
+  useEffect(() => {
+    return () => {
+      selectedRoomImagesRef.current.forEach((image) => {
+        URL.revokeObjectURL(image.previewUrl);
+      });
+
+      if (refreshTimeoutRef.current) {
+        if (typeof refreshTimeoutRef.current === "number") {
+          clearTimeout(refreshTimeoutRef.current);
+        } else {
+          // Clear all debounce timers stored in object
+          Object.values(refreshTimeoutRef.current).forEach((timeout) => {
+            if (typeof timeout === "number") {
+              clearTimeout(timeout);
+            }
+          });
+        }
+      }
+    };
+  }, []);
+
   useEffect(() => {
     if (user) {
       fetchData();
 
-      // Subscribe to real-time changes
-      const bookingsSub = supabase
-        .channel("public:bookings")
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "bookings" },
-          () => {
-            fetchData();
-          },
-        )
-        .subscribe();
+      // Subscribe to real-time changes for owned hostels only
+      // Construct channel name with specific hostel IDs to reduce payload scope
+      const ownedHostelIds = Array.from(ownedHostelIdsRef.current);
+      const bookingChannels = ownedHostelIds
+        .map((id) => ({
+          event: "*" as const,
+          schema: "public",
+          table: "bookings",
+          filter: `hostel_id=eq.${id}`,
+        }))
+        .slice(0, 10); // Limit to 10 channels to avoid too many subscriptions
+
+      const bookingsSub = supabase.channel(
+        `owner-bookings-${user.id}:${ownedHostelIds.slice(0, 3).join("-")}`,
+      );
+      bookingChannels.forEach((channelConfig) => {
+        bookingsSub.on("postgres_changes", channelConfig, () => {
+          scheduleDataRefresh();
+        });
+      });
+      bookingsSub.subscribe();
 
       const hostelsSub = supabase
-        .channel("public:hostels")
+        .channel(`public:hostels:owner_id=eq.${user.id}`)
         .on(
           "postgres_changes",
-          { event: "*", schema: "public", table: "hostels" },
+          {
+            event: "*",
+            schema: "public",
+            table: "hostels",
+            filter: `owner_id=eq.${user.id}`,
+          },
           () => {
-            fetchData();
+            scheduleDataRefresh();
           },
         )
         .subscribe();
 
       return () => {
-        supabase.removeChannel(bookingsSub);
-        supabase.removeChannel(hostelsSub);
+        if (refreshTimeoutRef.current) {
+          if (typeof refreshTimeoutRef.current === "number") {
+            clearTimeout(refreshTimeoutRef.current);
+          } else {
+            // Clear all debounce timers
+            Object.values(refreshTimeoutRef.current).forEach((timeout) => {
+              clearTimeout(timeout as any);
+            });
+          }
+        }
+        bookingsSub.unsubscribe();
+        hostelsSub.unsubscribe();
       };
     }
-  }, [user, fetchData]);
+  }, [user, fetchData, scheduleDataRefresh]);
 
   // Handle Room Fetching when a hostel is selected
   useEffect(() => {
     if (selectedHostel && isRoomDialogOpen) {
       fetchRooms(selectedHostel.id);
 
-      // Real-time updates for rooms
+      // Real-time updates for rooms with debouncing to avoid rapid refetches
       const roomsSub = supabase
-        .channel(`public:room_types:hostel_id=eq.${selectedHostel.id}`)
+        .channel(`room-types:hostel_id=eq.${selectedHostel.id}`)
         .on(
           "postgres_changes",
           {
@@ -216,7 +352,7 @@ export default function OwnerDashboard() {
             filter: `hostel_id=eq.${selectedHostel.id}`,
           },
           () => {
-            fetchRooms(selectedHostel.id);
+            scheduleRoomRefresh(selectedHostel.id);
           },
         )
         .subscribe();
@@ -225,7 +361,7 @@ export default function OwnerDashboard() {
         supabase.removeChannel(roomsSub);
       };
     }
-  }, [selectedHostel, isRoomDialogOpen]);
+  }, [selectedHostel, isRoomDialogOpen, scheduleRoomRefresh]);
 
   const fetchRooms = async (hostelId: string) => {
     try {
@@ -272,7 +408,9 @@ export default function OwnerDashboard() {
         .single();
 
       if (error) throw error;
-      toast.success("Property submitted for super admin approval. Now, let's configure your rooms.");
+      toast.success(
+        "Property submitted for super admin approval. Now, let's configure your rooms.",
+      );
       setCreatedHostelId(data.id);
       setWizardStep(3);
       fetchData();
@@ -283,15 +421,7 @@ export default function OwnerDashboard() {
     }
   };
 
-  const readFileAsDataUrl = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result || ""));
-      reader.onerror = () => reject(new Error(`Failed to read ${file.name}`));
-      reader.readAsDataURL(file);
-    });
-
-  const handleIncomingRoomFiles = async (incoming: FileList | null) => {
+  const handleIncomingRoomFiles = (incoming: FileList | null) => {
     if (!incoming || incoming.length === 0) return;
 
     const files = Array.from(incoming);
@@ -303,18 +433,48 @@ export default function OwnerDashboard() {
 
     if (imageFiles.length === 0) return;
 
-    if (selectedRoomImageDataUrls.length + imageFiles.length > 8) {
-      toast.error("You can attach up to 8 images per room.");
+    if (selectedRoomImages.length + imageFiles.length > MAX_ROOM_IMAGES) {
+      toast.error(`You can attach up to ${MAX_ROOM_IMAGES} images per room.`);
       return;
     }
 
-    try {
-      const encoded = await Promise.all(imageFiles.map(readFileAsDataUrl));
-      setSelectedRoomImageDataUrls((prev) => [...prev, ...encoded]);
-      toast.success(`${imageFiles.length} room image(s) attached.`);
-    } catch (error) {
-      toast.error("Failed to process selected room image files.");
+    const nextImages = imageFiles.map((file) => ({
+      file,
+      previewUrl: URL.createObjectURL(file),
+    }));
+
+    setSelectedRoomImages((prev) => [...prev, ...nextImages]);
+    toast.success(`${imageFiles.length} room image(s) attached.`);
+  };
+
+  const uploadRoomImages = async (hostelId: string) => {
+    if (selectedRoomImages.length === 0) {
+      return [] as string[];
     }
+
+    const uploadResults = await Promise.all(
+      selectedRoomImages.map(async (image) => {
+        const objectPath = buildStoragePath(hostelId, image.file.name);
+        const { error: uploadError } = await supabase.storage
+          .from(ROOM_IMAGE_BUCKET)
+          .upload(objectPath, image.file, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        const { data } = supabase.storage
+          .from(ROOM_IMAGE_BUCKET)
+          .getPublicUrl(objectPath);
+
+        return data.publicUrl;
+      }),
+    );
+
+    return uploadResults;
   };
 
   const handleAddRoom = async (e: React.FormEvent, targetHostelId?: string) => {
@@ -325,19 +485,19 @@ export default function OwnerDashboard() {
       return;
     }
     try {
-      const roomImagesArray = [...selectedRoomImageDataUrls];
+      const roomImagesArray = await uploadRoomImages(hId);
       const { error } = await supabase.from("room_types").insert({
         hostel_id: hId,
         name: newRoom.name,
         price: parseFloat(newRoom.price),
-        capacity: parseInt(newRoom.capacity),
-        available: parseInt(newRoom.capacity), // Initial available is capacity
+        capacity: parseInt(newRoom.capacity, 10),
+        available: parseInt(newRoom.capacity, 10), // Initial available is capacity
         images: roomImagesArray.length > 0 ? roomImagesArray : null,
       });
       if (error) throw error;
       toast.success("Room type added");
       setNewRoom({ name: "", price: "", capacity: "" });
-      setSelectedRoomImageDataUrls([]);
+      clearSelectedRoomImages();
       fetchRooms(hId);
     } catch (error: unknown) {
       toast.error(
@@ -381,6 +541,7 @@ export default function OwnerDashboard() {
   const openPropertyWizard = () => {
     setWizardStep(1);
     setCreatedHostelId(null);
+    clearSelectedRoomImages();
     setNewHostel({
       name: "",
       university: "",
@@ -451,6 +612,7 @@ export default function OwnerDashboard() {
                 if (!open) {
                   setWizardStep(1);
                   setCreatedHostelId(null);
+                  clearSelectedRoomImages();
                   setNewHostel({
                     name: "",
                     university: "",
@@ -791,61 +953,79 @@ export default function OwnerDashboard() {
                                 />
                               </div>
                             </div>
-                              <div className="space-y-1.5 sm:col-span-2">
-                                <Label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                                  <ImageIcon className="h-3.5 w-3.5 text-primary" /> Room Images
-                                </Label>
-                                <input
-                                  ref={roomFileInputRef}
-                                  type="file"
-                                  accept="image/*"
-                                  multiple
-                                  className="hidden"
-                                  onChange={(e) => handleIncomingRoomFiles(e.target.files)}
-                                />
-                                <div
-                                  onDragOver={(e) => {
-                                    e.preventDefault();
-                                    setIsRoomDragActive(true);
-                                  }}
-                                  onDragLeave={() => setIsRoomDragActive(false)}
-                                  onDrop={(e) => {
-                                    e.preventDefault();
-                                    setIsRoomDragActive(false);
-                                    handleIncomingRoomFiles(e.dataTransfer.files);
-                                  }}
-                                  className={cn(
-                                    "rounded-xl border border-dashed p-3 text-center transition-colors",
-                                    isRoomDragActive ? "border-primary bg-primary/5" : "border-slate-300 bg-white",
-                                  )}
-                                >
-                                  <p className="text-xs text-slate-600 mb-2">Drag and drop room images here</p>
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    className="h-8 text-xs"
-                                    onClick={() => roomFileInputRef.current?.click()}
-                                  >
-                                    Choose From Files
-                                  </Button>
-                                </div>
-                                {selectedRoomImageDataUrls.length > 0 && (
-                                  <div className="grid grid-cols-4 gap-2 mt-2">
-                                    {selectedRoomImageDataUrls.map((img, idx) => (
-                                      <div key={`${idx}-${img.slice(0, 20)}`} className="relative rounded-md overflow-hidden border border-slate-200">
-                                        <img src={img} alt={`room-upload-${idx + 1}`} className="h-14 w-full object-cover" />
-                                        <button
-                                          type="button"
-                                          className="absolute top-0.5 right-0.5 h-5 w-5 rounded-full bg-black/60 text-white text-[10px]"
-                                          onClick={() => setSelectedRoomImageDataUrls((prev) => prev.filter((_, i) => i !== idx))}
-                                        >
-                                          x
-                                        </button>
-                                      </div>
-                                    ))}
-                                  </div>
+                            <div className="space-y-1.5 sm:col-span-2">
+                              <Label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                                <ImageIcon className="h-3.5 w-3.5 text-primary" />{" "}
+                                Room Images
+                              </Label>
+                              <input
+                                ref={roomFileInputRef}
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                                onChange={(e) =>
+                                  handleIncomingRoomFiles(e.target.files)
+                                }
+                              />
+                              <div
+                                onDragOver={(e) => {
+                                  e.preventDefault();
+                                  setIsRoomDragActive(true);
+                                }}
+                                onDragLeave={() => setIsRoomDragActive(false)}
+                                onDrop={(e) => {
+                                  e.preventDefault();
+                                  setIsRoomDragActive(false);
+                                  handleIncomingRoomFiles(e.dataTransfer.files);
+                                }}
+                                className={cn(
+                                  "rounded-xl border border-dashed p-3 text-center transition-colors",
+                                  isRoomDragActive
+                                    ? "border-primary bg-primary/5"
+                                    : "border-slate-300 bg-white",
                                 )}
+                              >
+                                <p className="text-xs text-slate-600 mb-2">
+                                  Drag and drop room images here
+                                </p>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="h-8 text-xs"
+                                  onClick={() =>
+                                    roomFileInputRef.current?.click()
+                                  }
+                                >
+                                  Choose From Files
+                                </Button>
                               </div>
+                              {selectedRoomImages.length > 0 && (
+                                <div className="grid grid-cols-4 gap-2 mt-2">
+                                  {selectedRoomImages.map((image, idx) => (
+                                    <div
+                                      key={`${idx}-${image.previewUrl.slice(0, 30)}`}
+                                      className="relative rounded-md overflow-hidden border border-slate-200"
+                                    >
+                                      <img
+                                        src={image.previewUrl}
+                                        alt={`room-upload-${idx + 1}`}
+                                        className="h-14 w-full object-cover"
+                                      />
+                                      <button
+                                        type="button"
+                                        className="absolute top-0.5 right-0.5 h-5 w-5 rounded-full bg-black/60 text-white text-[10px]"
+                                        onClick={() =>
+                                          removeSelectedRoomImage(idx)
+                                        }
+                                      >
+                                        x
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           </div>
                           <div className="flex justify-end">
                             <Button
@@ -860,7 +1040,10 @@ export default function OwnerDashboard() {
 
                       <DialogFooter className="mt-8 border-t border-slate-100 pt-6">
                         <Button
-                          onClick={() => setIsWizardOpen(false)}
+                          onClick={() => {
+                            clearSelectedRoomImages();
+                            setIsWizardOpen(false);
+                          }}
                           className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-base shadow-md"
                         >
                           Finish Setup
@@ -978,7 +1161,9 @@ export default function OwnerDashboard() {
               </div>
               <div className="mt-4 flex items-center justify-between text-[9px] font-mono text-slate-500 uppercase tracking-widest">
                 <span>{bookingTrendData[0]?.name || "-"}</span>
-                <span>{bookingTrendData[bookingTrendData.length - 1]?.name || "-"}</span>
+                <span>
+                  {bookingTrendData[bookingTrendData.length - 1]?.name || "-"}
+                </span>
               </div>
             </CardContent>
           </Card>
@@ -1276,14 +1461,17 @@ export default function OwnerDashboard() {
       </div>
 
       {/* Manage Rooms Dialog */}
-      <Dialog open={isRoomDialogOpen} onOpenChange={(open) => {
-        setIsRoomDialogOpen(open);
-        if (!open) {
-          setIsRoomDragActive(false);
-          setSelectedRoomImageDataUrls([]);
-          setNewRoom({ name: "", price: "", capacity: "" });
-        }
-      }}>
+      <Dialog
+        open={isRoomDialogOpen}
+        onOpenChange={(open) => {
+          setIsRoomDialogOpen(open);
+          if (!open) {
+            setIsRoomDragActive(false);
+            clearSelectedRoomImages();
+            setNewRoom({ name: "", price: "", capacity: "" });
+          }
+        }}
+      >
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden p-0 rounded-2xl border-0 shadow-2xl bg-white">
           <div className="bg-slate-50 border-b border-slate-100 text-slate-900 p-6 relative">
             <DialogHeader>

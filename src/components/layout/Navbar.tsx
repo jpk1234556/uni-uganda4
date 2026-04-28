@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Menu, LogOut, LayoutDashboard } from "lucide-react";
+import BrandMark from "@/components/layout/BrandMark";
 
 export default function Navbar() {
   const { user, dbUser, signOut } = useAuth();
@@ -25,34 +26,30 @@ export default function Navbar() {
         : "/admin/dashboard";
 
   return (
-    <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+    <nav className="sticky top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+      <div className="container mx-auto flex h-18 items-center justify-between px-4 py-3">
         <div className="flex items-center gap-8">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-primary italic">
-              Uni-Nest
-            </span>
-          </Link>
-          <div className="hidden md:flex items-center gap-6">
+          <BrandMark />
+          <div className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
             <Link
               to="/search"
-              className="text-sm font-medium hover:text-primary"
+              className="transition-colors hover:text-foreground"
             >
               Search
             </Link>
             <Link
               to="/roommates"
-              className="text-sm font-medium hover:text-primary"
+              className="transition-colors hover:text-foreground"
             >
               Roommates
             </Link>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-4">
           {user ? (
             <DropdownMenu>
-              <DropdownMenuTrigger className="relative h-10 w-10 rounded-full">
+              <DropdownMenuTrigger className="relative h-10 w-10 rounded-full ring-2 ring-transparent transition hover:ring-primary/20">
                 <Avatar className="h-10 w-10">
                   <AvatarImage
                     src={user.user_metadata?.avatar_url}
@@ -87,7 +84,7 @@ export default function Navbar() {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className="md:hidden shrink-0"
             onClick={() => setIsMobileMenuOpen((prev) => !prev)}
             aria-label="Toggle menu"
           >
@@ -97,18 +94,18 @@ export default function Navbar() {
       </div>
 
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t bg-background/95 backdrop-blur px-4 py-4">
-          <div className="flex flex-col gap-2">
+        <div className="md:hidden border-t border-border/70 bg-background/95 px-4 py-4 backdrop-blur">
+          <div className="flex flex-col gap-2 text-sm font-medium text-foreground">
             <Link
               to="/search"
-              className="text-sm font-medium px-3 py-2 rounded-lg hover:bg-slate-100"
+              className="rounded-lg px-3 py-2 transition-colors hover:bg-muted"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Search
             </Link>
             <Link
               to="/roommates"
-              className="text-sm font-medium px-3 py-2 rounded-lg hover:bg-slate-100"
+              className="rounded-lg px-3 py-2 transition-colors hover:bg-muted"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Roommates

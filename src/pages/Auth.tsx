@@ -5,9 +5,17 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import BrandMark from "@/components/layout/BrandMark";
 
 export default function Auth() {
   const [searchParams] = useSearchParams();
@@ -29,7 +37,10 @@ export default function Auth() {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
     if (error) {
       toast.error(error.message);
@@ -65,37 +76,63 @@ export default function Auth() {
     if (error) {
       toast.error(error.message);
     } else if (data.user) {
-      toast.success("Registration successful! Please check your email for verification.");
+      toast.success(
+        "Registration successful! Please check your email for verification.",
+      );
     }
     setIsLoading(false);
   };
 
   return (
-    <div className="container mx-auto px-4 py-16 flex items-center justify-center min-h-[calc(100vh-16rem)]">
-      <Card className="w-full max-w-md">
-        <Tabs defaultValue={mode}>
-          <TabsList className="grid w-full grid-cols-2">
+    <div className="container mx-auto flex min-h-[calc(100vh-16rem)] items-center justify-center px-4 py-16">
+      <Card className="w-full max-w-lg overflow-hidden border-border/60 shadow-xl shadow-slate-950/5">
+        <div className="border-b bg-gradient-to-r from-slate-950 to-slate-800 px-6 py-5 text-white">
+          <BrandMark compact />
+          <p className="mt-3 max-w-md text-sm leading-6 text-slate-300">
+            Access your dashboard, manage listings, or discover a hostel with a
+            cleaner sign-in experience.
+          </p>
+        </div>
+        <Tabs defaultValue={mode} className="p-6">
+          <TabsList className="grid w-full grid-cols-2 bg-muted/70 p-1">
             <TabsTrigger value="login">Login</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
           <TabsContent value="login">
             <form onSubmit={handleLogin}>
-              <CardHeader>
-                <CardTitle>Welcome Back</CardTitle>
-                <CardDescription>Login to your Uni-Nest account</CardDescription>
+              <CardHeader className="px-0 pt-6">
+                <CardTitle className="text-2xl">Welcome back</CardTitle>
+                <CardDescription className="text-sm leading-6">
+                  Log in to continue to your Uni-Nest account.
+                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 px-0">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" name="email" type="email" required placeholder="m@example.com" />
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    placeholder="m@example.com"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
-                  <Input id="password" name="password" type="password" required />
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                  />
                 </div>
               </CardContent>
-              <CardFooter>
-                <Button className="w-full" type="submit" disabled={isLoading}>
+              <CardFooter className="px-0 pb-0 pt-2">
+                <Button
+                  className="h-11 w-full"
+                  type="submit"
+                  disabled={isLoading}
+                >
                   {isLoading ? "Logging in..." : "Login"}
                 </Button>
               </CardFooter>
@@ -103,12 +140,14 @@ export default function Auth() {
           </TabsContent>
           <TabsContent value="signup">
             <form onSubmit={handleSignUp}>
-              <CardHeader>
-                <CardTitle>Create Account</CardTitle>
-                <CardDescription>Join the Uni-Nest community</CardDescription>
+              <CardHeader className="px-0 pt-6">
+                <CardTitle className="text-2xl">Create account</CardTitle>
+                <CardDescription className="text-sm leading-6">
+                  Join the Uni-Nest community and start with a clear profile.
+                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <CardContent className="space-y-4 px-0">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="firstName">First Name</Label>
                     <Input id="firstName" name="firstName" required />
@@ -120,11 +159,22 @@ export default function Auth() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" name="email" type="email" required placeholder="m@example.com" />
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    placeholder="m@example.com"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
-                  <Input id="password" name="password" type="password" required />
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="role">I am a...</Label>
@@ -139,8 +189,12 @@ export default function Auth() {
                   </select>
                 </div>
               </CardContent>
-              <CardFooter>
-                <Button className="w-full" type="submit" disabled={isLoading}>
+              <CardFooter className="px-0 pb-0 pt-2">
+                <Button
+                  className="h-11 w-full"
+                  type="submit"
+                  disabled={isLoading}
+                >
                   {isLoading ? "Creating account..." : "Sign Up"}
                 </Button>
               </CardFooter>
