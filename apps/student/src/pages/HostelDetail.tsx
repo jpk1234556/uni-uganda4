@@ -261,14 +261,6 @@ export default function HostelDetail() {
       return;
     }
 
-    // Allow the flow while profile metadata is still loading.
-    // Only block when we explicitly know the account role is not student.
-    if (dbUser && dbUser.role !== "student") {
-      toast.error("Only student accounts can book rooms.");
-      navigate("/student/dashboard");
-      return;
-    }
-
     if (room.available <= 0) {
       toast.error("This room is currently full");
       return;
@@ -281,6 +273,11 @@ export default function HostelDetail() {
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !selectedRoom || !hostel) return;
+
+    if (dbUser && dbUser.role !== "student") {
+      toast.error("Only student accounts can submit booking requests.");
+      return;
+    }
 
     if (selectedRoom.available <= 0) {
       toast.error("Sorry, this room is currently full.");
