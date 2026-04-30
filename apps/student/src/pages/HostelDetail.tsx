@@ -33,6 +33,7 @@ import {
   MessageSquare,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Hostel, RoomType } from "@/types";
@@ -828,27 +829,33 @@ export default function HostelDetail() {
         </div>
       </div>
 
-      {/* Booking Dialog State Debugger */}
+      {/* Custom Booking Modal */}
       {isBookingOpen && (
-        <div className="fixed inset-0 z-[99999] bg-red-500/50 flex items-center justify-center pointer-events-none">
-          <div className="bg-white p-6 rounded-xl shadow-2xl text-center border-4 border-red-500">
-            <h1 className="text-red-600 text-3xl font-black mb-2">DIALOG STATE IS ACTIVE</h1>
-            <p className="text-slate-800 font-bold">If you see this but no booking form, the Radix Dialog component is completely failing to render.</p>
-          </div>
-        </div>
-      )}
-
-      {/* Booking Dialog */}
-      <Dialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
-        <DialogContent className="sm:max-w-[640px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl">Request a Booking</DialogTitle>
-            <DialogDescription>
-              Select a room, share your details, and send a booking request for{" "}
-              <span className="font-bold text-slate-900">{hostel.name}</span>.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleBookingSubmit} className="space-y-4 pt-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+          <div 
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            onClick={() => setIsBookingOpen(false)}
+          />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-[640px] max-h-[90vh] overflow-y-auto z-10 animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 flex items-start justify-between sticky top-0 bg-white/95 backdrop-blur z-20">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">Request a Booking</h2>
+                <p className="text-sm text-slate-500 mt-1">
+                  Select a room, share your details, and send a booking request for{" "}
+                  <span className="font-bold text-slate-900">{hostel.name}</span>.
+                </p>
+              </div>
+              <button 
+                onClick={() => setIsBookingOpen(false)}
+                className="p-2 -mr-2 -mt-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500 hover:text-slate-900"
+                type="button"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <form onSubmit={handleBookingSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="room">Room Type</Label>
               <Select
@@ -995,21 +1002,23 @@ export default function HostelDetail() {
                 />
               </div>
             </div>
-            <DialogFooter className="mt-6">
+            <div className="mt-8 pt-4 border-t border-slate-100">
               <Button
                 type="submit"
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                className="w-full h-12 text-base font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
                 ) : null}
                 Submit Booking Request
               </Button>
-            </DialogFooter>
+            </div>
           </form>
-        </DialogContent>
-      </Dialog>
+          </div>
+          </div>
+        </div>
+      )}
 
       {/* Write a Review Dialog */}
       <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
