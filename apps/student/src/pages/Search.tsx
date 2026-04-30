@@ -108,7 +108,7 @@ const matchesAmenities = (
 export default function Search() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
-  const [priceRange, setPriceRange] = useState([300000, 3000000]);
+  const [priceRange, setPriceRange] = useState([0, 10000000]);
   const [minRating, setMinRating] = useState(0);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [selectedRoomType, setSelectedRoomType] = useState<string>("all");
@@ -299,7 +299,7 @@ export default function Search() {
     // Price Match
     const listingPrice = getListingMinPrice(hostel);
     if (listingPrice !== Infinity) {
-      if (listingPrice < priceRange[0] || listingPrice > priceRange[1]) {
+      if (listingPrice < priceRange[0] || (priceRange[1] < 10000000 && listingPrice > priceRange[1])) {
         return false;
       }
     }
@@ -343,7 +343,7 @@ export default function Search() {
 
   const resetFilters = () => {
     setSearchTerm("");
-    setPriceRange([300000, 3000000]);
+    setPriceRange([0, 10000000]);
     setMinRating(0);
     setSelectedAmenities([]);
     setSelectedRoomType("all");
@@ -392,13 +392,13 @@ export default function Search() {
                       Price Range (UGX)
                     </label>
                     <span className="text-xs font-semibold text-slate-600">
-                      {priceRange[0] / 1000}k - {priceRange[1] / 1000}k
+                      {priceRange[0] === 0 ? "0" : `${priceRange[0] / 1000}k`} - {priceRange[1] >= 10000000 ? "10M+" : `${priceRange[1] / 1000}k`}
                     </span>
                   </div>
                   <Slider
-                    defaultValue={[300000, 3000000]}
-                    max={3000000}
-                    min={300000}
+                    defaultValue={[0, 10000000]}
+                    max={10000000}
+                    min={0}
                     step={50000}
                     value={priceRange}
                     onValueChange={setPriceRange}
