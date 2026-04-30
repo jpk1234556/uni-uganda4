@@ -260,9 +260,14 @@ export default function HostelDetail() {
   }, [location.search, rooms, selectedRoom]);
 
   const handleBookClick = (room: RoomType) => {
-    if (!hostel || !id) return;
+    console.log("handleBookClick fired for room:", room.id);
+    if (!hostel || !id) {
+      console.error("Missing hostel or id state");
+      return;
+    }
 
     if (!user) {
+      console.log("User not logged in, redirecting");
       toast.error("Please login to book a room");
       const redirect = encodeURIComponent(`/hostel/${id}?bookRoom=${room.id}`);
       navigate(`/auth?redirect=${redirect}`);
@@ -270,10 +275,12 @@ export default function HostelDetail() {
     }
 
     if (Number(room.available) <= 0) {
+      console.log("Room is full");
       toast.error("This room is currently full");
       return;
     }
 
+    console.log("Opening booking dialog");
     setSelectedRoom(room);
     setIsBookingOpen(true);
   };
@@ -685,7 +692,11 @@ export default function HostelDetail() {
                               {formatUGX(room.price)}
                             </div>
                             <Button
-                              onClick={() => handleBookClick(room)}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleBookClick(room);
+                              }}
                               disabled={Number(room.available) <= 0}
                               variant={
                                 Number(room.available) > 0

@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
 const env = (import.meta as { env?: Record<string, string | undefined> }).env ?? {}
-const supabaseUrl = env.VITE_SUPABASE_URL
-const supabaseAnonKey = env.VITE_SUPABASE_ANON_KEY
+const supabaseUrl = env.VITE_SUPABASE_URL?.trim()
+const supabaseAnonKey = env.VITE_SUPABASE_ANON_KEY?.trim()
 
 let supabase: any
 
