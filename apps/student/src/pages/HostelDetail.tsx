@@ -269,7 +269,7 @@ export default function HostelDetail() {
       return;
     }
 
-    if (room.available <= 0) {
+    if (Number(room.available) <= 0) {
       toast.error("This room is currently full");
       return;
     }
@@ -287,7 +287,7 @@ export default function HostelDetail() {
       return;
     }
 
-    if (selectedRoom.available <= 0) {
+    if (Number(selectedRoom.available) <= 0) {
       toast.error("Sorry, this room is currently full.");
       return;
     }
