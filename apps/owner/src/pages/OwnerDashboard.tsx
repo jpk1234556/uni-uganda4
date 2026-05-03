@@ -126,7 +126,7 @@ export default function OwnerDashboard() {
     SelectedRoomImage[]
   >([]);
   const selectedRoomImagesRef = useRef<SelectedRoomImage[]>([]);
-  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const refreshTimeoutRef = useRef<any>(null);
   const ownedHostelIdsRef = useRef<Set<string>>(new Set());
 
   // Image editor / reorder state
@@ -221,12 +221,12 @@ export default function OwnerDashboard() {
     ) {
       const timeoutKey = `room-${hostelId}`;
       clearTimeout(
-        (refreshTimeoutRef.current as Record<string, number>)[timeoutKey],
+        (refreshTimeoutRef.current as unknown as Record<string, ReturnType<typeof setTimeout>>)[timeoutKey],
       );
-      (refreshTimeoutRef.current as Record<string, number>)[timeoutKey] =
+      (refreshTimeoutRef.current as unknown as Record<string, ReturnType<typeof setTimeout>>)[timeoutKey] =
         window.setTimeout(() => {
           fetchRooms(hostelId);
-          delete (refreshTimeoutRef.current as Record<string, number>)[
+          delete (refreshTimeoutRef.current as unknown as Record<string, ReturnType<typeof setTimeout>>)[
             timeoutKey
           ];
         }, 500);
@@ -238,7 +238,7 @@ export default function OwnerDashboard() {
         }, 500),
       } as any;
     }
-  }, []);
+  }, [fetchRooms]);
 
   const clearSelectedRoomImages = useCallback(() => {
     setSelectedRoomImages((prev) => {
