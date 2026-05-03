@@ -69,6 +69,11 @@ interface RoomRealtimePayload {
   old: { id: string };
 }
 
+interface RoomImageGalleryProps {
+  images: string[];
+  roomName: string;
+}
+
 const getErrorMessage = (error: unknown, fallback: string): string => {
   if (error instanceof Error && error.message) return error.message;
   return fallback;
@@ -91,6 +96,118 @@ const formatUGX = (amount: number | string | null | undefined) =>
     currencyDisplay: "code",
     maximumFractionDigits: 0,
   }).format(Number(amount ?? 0));
+
+function RoomImageGallery({ images, roomName }: RoomImageGalleryProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [images.length]);
+
+  if (!images.length) {
+    return (
+      <div className="flex h-full min-h-36 items-center justify-center bg-slate-100 text-slate-400">
+        <Building className="h-8 w-8" />
+      </div>
+    );
+  }
+
+  const activeImage = images[currentIndex];
+  const showPrev = () => {
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+  const showNext = () => {
+    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  return (
+    <div className="relative overflow-hidden bg-slate-100 md:min-h-full">
+      <img
+        src={activeImage}
+        alt={`${roomName} photo ${currentIndex + 1}`}
+        className="h-44 w-full object-cover md:h-full"
+        loading="lazy"
+        decoding="async"
+      />
+
+      {images.length > 1 && (
+        <>
+          <Button
+            type="button"
+            variant="secondary"
+            size="icon"
+            onClick={showPrev}
+            className="absolute left-3 top-1/2 h-9 w-9 -translate-y-1/2 rounded-full border border-white/20 bg-white/90 shadow-md hover:bg-white"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            size="icon"
+            onClick={showNext}
+            className="absolute right-3 top-1/2 h-9 w-9 -translate-y-1/2 rounded-full border border-white/20 bg-white/90 shadow-md hover:bg-white"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 bg-gradient-to-t from-slate-950/70 to-transparent px-3 py-3 text-white">
+            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/80">
+              Room gallery
+            </div>
+            <div className="text-xs text-white/80">
+              {currentIndex + 1}/{images.length}
+            </div>
+          </div>
+
+          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+            {images.map((image, index) => (
+              <button
+                key={`${roomName}-${image}-${index}`}
+                type="button"
+                onClick={() => setCurrentIndex(index)}
+                className={cn(
+                  "h-1.5 rounded-full transition-all",
+                  index === currentIndex
+                    ? "w-6 bg-white"
+                    : "w-1.5 bg-white/60 hover:bg-white/80",
+                )}
+                aria-label={`View ${roomName} image ${index + 1}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      {images.length > 1 && (
+        <div className="flex gap-2 overflow-x-auto border-t border-slate-200 bg-white/90 p-2">
+          {images.map((image, index) => (
+            <button
+              key={`${roomName}-thumb-${image}-${index}`}
+              type="button"
+              onClick={() => setCurrentIndex(index)}
+              className={cn(
+                "h-14 w-20 shrink-0 overflow-hidden rounded-md border transition",
+                index === currentIndex
+                  ? "border-primary ring-2 ring-primary/20"
+                  : "border-slate-200 hover:border-slate-300",
+              )}
+              aria-label={`Select ${roomName} image ${index + 1}`}
+            >
+              <img
+                src={image}
+                alt={`${roomName} thumbnail ${index + 1}`}
+                className="h-full w-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function HostelDetail() {
   const { id } = useParams();
@@ -635,18 +752,11 @@ export default function HostelDetail() {
                     >
                       <CardContent className="p-0">
                         <div className="grid grid-cols-1 md:grid-cols-[180px_1fr_auto]">
-                          <div className="h-36 md:h-full bg-slate-100 border-b md:border-b-0 md:border-r border-slate-200">
-                            {room.images && room.images.length > 0 ? (
-                              <img
-                                src={room.images[0]}
-                                alt={room.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-slate-400">
-                                <Building className="h-8 w-8" />
-                              </div>
-                            )}
+                          <div className="border-b md:border-b-0 md:border-r border-slate-200">
+                            <RoomImageGallery
+                              images={room.images || []}
+                              roomName={room.name}
+                            />
                           </div>
 
                           <div className="p-5">
