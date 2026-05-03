@@ -708,12 +708,12 @@ export default function OwnerDashboard() {
                 <Button
                   type="button"
                   onClick={openPropertyWizard}
-                  className="relative z-10 h-12 px-6 bg-primary hover:bg-primary/90 text-white rounded-xl shadow-md transition-all font-semibold text-sm flex items-center gap-2 pointer-events-auto"
+                  className="relative z-[100] h-12 px-6 bg-primary hover:bg-primary/90 text-white rounded-xl shadow-lg transition-transform font-bold text-base flex items-center gap-2 pointer-events-auto hover:scale-105 active:scale-95"
                 >
                   <Plus className="h-5 w-5" /> Add New Property
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px] rounded-2xl border-0 shadow-2xl p-0 overflow-hidden bg-white">
+              <DialogContent className="w-screen h-screen sm:w-full sm:h-auto sm:max-w-4xl rounded-none sm:rounded-2xl border-0 shadow-2xl p-0 overflow-auto bg-white fixed left-0 top-0 sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 z-[200]">
                 <div className="bg-slate-50 border-b border-slate-100 text-slate-900 p-6 relative">
                   <DialogHeader>
                     <DialogTitle className="text-2xl font-bold tracking-tight">
@@ -735,7 +735,7 @@ export default function OwnerDashboard() {
                   </div>
                 </div>
 
-                <div className="p-6">
+                <div className="p-6 sm:p-6 p-0 overflow-y-auto max-h-[calc(100vh-120px)] sm:max-h-none">
                   {wizardStep === 1 && (
                     <form
                       onSubmit={(e) => {
