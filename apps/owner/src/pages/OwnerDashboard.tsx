@@ -25,6 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -703,13 +704,15 @@ export default function OwnerDashboard() {
                 }
               }}
             >
-              <Button
-                type="button"
-                onClick={openPropertyWizard}
-                className="relative z-10 h-12 px-6 bg-primary hover:bg-primary/90 text-white rounded-xl shadow-md transition-all font-semibold text-sm flex items-center gap-2 pointer-events-auto"
-              >
-                <Plus className="h-5 w-5" /> Add New Property
-              </Button>
+              <DialogTrigger asChild>
+                <Button
+                  type="button"
+                  onClick={openPropertyWizard}
+                  className="relative z-10 h-12 px-6 bg-primary hover:bg-primary/90 text-white rounded-xl shadow-md transition-all font-semibold text-sm flex items-center gap-2 pointer-events-auto"
+                >
+                  <Plus className="h-5 w-5" /> Add New Property
+                </Button>
+              </DialogTrigger>
               <DialogContent className="sm:max-w-[600px] rounded-2xl border-0 shadow-2xl p-0 overflow-hidden bg-white">
                 <div className="bg-slate-50 border-b border-slate-100 text-slate-900 p-6 relative">
                   <DialogHeader>
