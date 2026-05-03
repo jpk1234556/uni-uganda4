@@ -834,9 +834,26 @@ export default function OwnerDashboard() {
                                     key={room.id}
                                     className="hover:bg-slate-50/50"
                                   >
-                                    <TableCell className="text-xs py-2 font-bold text-slate-900">
-                                      {room.name}
-                                    </TableCell>
+                                      <TableCell className="py-2">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                          <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+                                            {room.images?.[0] ? (
+                                              <img
+                                                src={room.images[0]}
+                                                alt={room.name}
+                                                className="h-full w-full object-cover"
+                                              />
+                                            ) : (
+                                              <div className="flex h-full w-full items-center justify-center text-slate-400">
+                                                <ImageIcon className="h-4 w-4" />
+                                              </div>
+                                            )}
+                                          </div>
+                                          <span className="min-w-0 truncate text-xs font-bold text-slate-900">
+                                            {room.name}
+                                          </span>
+                                        </div>
+                                      </TableCell>
                                     <TableCell className="text-xs py-2 text-slate-500">
                                       {formatUGX(room.price)}
                                     </TableCell>

@@ -29,6 +29,7 @@ import {
   X,
   BarChart3,
   Home,
+  Image as ImageIcon,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
@@ -37,7 +38,13 @@ import type { Hostel } from "@/types";
 
 interface HostelWithOwner extends Hostel {
   users?: { first_name: string; last_name: string; email: string };
-  room_types?: { id: string; name: string; price: number; available: number }[];
+  room_types?: {
+    id: string;
+    name: string;
+    price: number;
+    available: number;
+    images?: string[] | null;
+  }[];
 }
 
 interface BookingWithRelations {
@@ -49,7 +56,7 @@ interface BookingWithRelations {
   created_at: string;
   users?: { id: string; first_name: string; last_name: string; email: string };
   hostels?: { id: string; name: string };
-  room_types?: { id: string; name: string; price: number };
+  room_types?: { id: string; name: string; price: number; images?: string[] | null };
 }
 
 const formatUGX = (amount: number | string | null | undefined) =>
@@ -81,7 +88,7 @@ export default function AdminDashboard() {
           `
           *,
           users!hostels_owner_id_fkey ( first_name, last_name, email ),
-          room_types ( id, name, price, available )
+          room_types ( id, name, price, available, images )
         `,
         )
         .order("created_at", { ascending: false });
@@ -125,7 +132,7 @@ export default function AdminDashboard() {
         ...b,
         users: Array.isArray(b.users) ? b.users[0] : b.users,
         hostels: Array.isArray(b.hostels) ? b.hostels[0] : b.hostels,
-        room_types: Array.isArray(b.room_types) ? b.room_types[0] : b.room_types,
+          room_types: Array.isArray(b.room_types) ? b.room_types[0] : b.room_types,
       }));
 
       setBookings(normalized as BookingWithRelations[]);
@@ -637,12 +644,32 @@ export default function AdminDashboard() {
                     {selectedHostel.room_types.map((room) => (
                       <div
                         key={room.id}
-                        className="flex justify-between items-center p-2 bg-slate-50 rounded"
+                        className="flex items-center justify-between gap-3 p-2 bg-slate-50 rounded"
                       >
-                        <span className="text-sm text-slate-900">
-                          {room.name}
-                        </span>
-                        <span className="text-sm font-medium text-slate-700">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white">
+                            {room.images?.[0] ? (
+                              <img
+                                src={room.images[0]}
+                                alt={room.name}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-slate-400">
+                                <ImageIcon className="h-4 w-4" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <span className="block truncate text-sm text-slate-900">
+                              {room.name}
+                            </span>
+                            <span className="text-xs text-slate-500">
+                              {room.images?.length ? `${room.images.length} photo(s)` : "No photos yet"}
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-sm font-medium text-slate-700 whitespace-nowrap">
                           {formatUGX(room.price)}{" "}
                           <span className="text-slate-500">
                             ({room.available} available)
