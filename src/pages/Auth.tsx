@@ -60,6 +60,7 @@ export default function Auth() {
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    const form = e.currentTarget;
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
@@ -67,10 +68,16 @@ export default function Auth() {
     const lastName = formData.get("lastName") as string;
     const role = formData.get("role") as string;
 
+    const emailRedirectTo = new URL(
+      `${appRoutes.auth}?mode=login`,
+      window.location.origin,
+    ).toString();
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo,
         data: {
           first_name: firstName,
           last_name: lastName,
@@ -85,20 +92,27 @@ export default function Auth() {
       toast.success(
         "Registration successful! Please check your email for verification.",
       );
+      form.reset();
+      navigate(`${appRoutes.auth}?mode=login`);
     }
     setIsLoading(false);
   };
 
   return (
     <div className="container mx-auto px-4 py-12 md:py-16">
-      <div className="mx-auto grid min-h-[calc(100vh-16rem)] max-w-6xl items-center gap-8 lg:grid-cols-[1fr_0.75fr]">
-        <Card className="overflow-hidden border-border/60 shadow-xl shadow-slate-950/5">
-          <div className="border-b bg-gradient-to-r from-slate-950 to-slate-800 px-6 py-5 text-white">
+      <div className="mx-auto grid min-h-[calc(100vh-16rem)] max-w-6xl items-center gap-8 lg:grid-cols-[1.05fr_0.85fr]">
+        <Card className="overflow-hidden border-border/60 bg-white/90 shadow-xl shadow-slate-950/10 backdrop-blur">
+          <div className="border-b bg-gradient-to-r from-slate-950 to-slate-800 px-6 py-6 text-white">
             <BrandMark compact />
             <p className="mt-3 max-w-md text-sm leading-6 text-slate-300">
               Log in or sign up to continue your search, manage bookings, and
               keep your shortlist in one place.
             </p>
+            <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-300">
+              <span className="rounded-full border border-white/15 px-3 py-1">Secure checkout</span>
+              <span className="rounded-full border border-white/15 px-3 py-1">Verified listings</span>
+              <span className="rounded-full border border-white/15 px-3 py-1">Faster approvals</span>
+            </div>
           </div>
           <Tabs defaultValue={mode} className="p-6">
             <TabsList className="grid w-full grid-cols-2 bg-muted/70 p-1">
@@ -106,7 +120,7 @@ export default function Auth() {
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
             <TabsContent value="login">
-              <form onSubmit={handleLogin}>
+              <form onSubmit={handleLogin} className="space-y-6">
                 <CardHeader className="px-0 pt-6">
                   <CardTitle className="text-2xl">Welcome back</CardTitle>
                   <CardDescription className="text-sm leading-6">
@@ -123,6 +137,7 @@ export default function Auth() {
                       required
                       autoComplete="email"
                       placeholder="m@example.com"
+                      className="h-11"
                     />
                   </div>
                   <div className="space-y-2">
@@ -141,18 +156,22 @@ export default function Auth() {
                       type="password"
                       required
                       autoComplete="current-password"
+                      className="h-11"
                     />
                   </div>
                 </CardContent>
-                <CardFooter className="px-0 pb-0 pt-2">
+                <CardFooter className="flex flex-col gap-3 px-0 pb-0 pt-2">
                   <Button className="h-11 w-full" type="submit" disabled={isLoading}>
                     {isLoading ? "Logging in..." : "Login"}
                   </Button>
+                  <p className="text-xs text-muted-foreground">
+                    New here? Switch to Sign Up to create your account.
+                  </p>
                 </CardFooter>
               </form>
             </TabsContent>
             <TabsContent value="signup">
-              <form onSubmit={handleSignUp}>
+              <form onSubmit={handleSignUp} className="space-y-6">
                 <CardHeader className="px-0 pt-6">
                   <CardTitle className="text-2xl">Create account</CardTitle>
                   <CardDescription className="text-sm leading-6">
@@ -163,11 +182,11 @@ export default function Auth() {
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" name="firstName" required autoComplete="given-name" />
+                      <Input id="firstName" name="firstName" required autoComplete="given-name" className="h-11" />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" name="lastName" required autoComplete="family-name" />
+                      <Input id="lastName" name="lastName" required autoComplete="family-name" className="h-11" />
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -179,6 +198,7 @@ export default function Auth() {
                       required
                       autoComplete="email"
                       placeholder="m@example.com"
+                      className="h-11"
                     />
                   </div>
                   <div className="space-y-2">
@@ -189,6 +209,7 @@ export default function Auth() {
                       type="password"
                       required
                       autoComplete="new-password"
+                      className="h-11"
                     />
                     <p className="text-xs leading-5 text-muted-foreground">
                       Use a password you can keep private. We’ll only use it to secure your account.
@@ -199,7 +220,7 @@ export default function Auth() {
                     <select
                       id="role"
                       name="role"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                       required
                     >
                       <option value="student">Student</option>

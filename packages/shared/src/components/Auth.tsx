@@ -53,10 +53,15 @@ export default function Auth({
         toast.success("Logged in successfully!");
         navigate(redirectTo || "/");
       } else {
+        const emailRedirectTo = new URL(
+          "/auth?mode=login",
+          window.location.origin,
+        ).toString();
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
+            emailRedirectTo,
             data: {
               first_name: firstName,
               last_name: lastName,

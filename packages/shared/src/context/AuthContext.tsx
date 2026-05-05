@@ -85,6 +85,89 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, [fetchDbUser]);
 
+  useEffect(() => {
+    let hasSignedOut = false;
+
+    const signOutOnLeave = () => {
+      if (hasSignedOut) return;
+      hasSignedOut = true;
+      void supabase.auth.signOut();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        signOutOnLeave();
+      }
+    };
+
+    window.addEventListener("pagehide", signOutOnLeave);
+    window.addEventListener("beforeunload", signOutOnLeave);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("pagehide", signOutOnLeave);
+      window.removeEventListener("beforeunload", signOutOnLeave);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    const idleTimeoutMs = 15 * 60 * 1000;
+    const warningOffsetMs = 2 * 60 * 1000;
+    const idleTimerRef = { current: null as number | null };
+    const warningTimerRef = { current: null as number | null };
+
+    const clearIdleTimer = () => {
+      if (idleTimerRef.current !== null) {
+        window.clearTimeout(idleTimerRef.current);
+        idleTimerRef.current = null;
+      }
+      if (warningTimerRef.current !== null) {
+        window.clearTimeout(warningTimerRef.current);
+        warningTimerRef.current = null;
+      }
+    };
+
+    const startIdleTimer = () => {
+      clearIdleTimer();
+      warningTimerRef.current = window.setTimeout(() => {
+        toast.message("Session expiring", {
+          description: "You will be signed out in 1 minute due to inactivity.",
+          action: {
+            label: "Stay signed in",
+            onClick: () => startIdleTimer(),
+          },
+        });
+      }, Math.max(0, idleTimeoutMs - warningOffsetMs));
+      idleTimerRef.current = window.setTimeout(() => {
+        if (user) {
+          void supabase.auth.signOut();
+        }
+      }, idleTimeoutMs);
+    };
+
+    if (!user) {
+      clearIdleTimer();
+      return;
+    }
+
+    startIdleTimer();
+
+    const resetIdleTimer = () => startIdleTimer();
+    const events = ["mousemove", "mousedown", "keydown", "scroll", "touchstart"] as const;
+
+    events.forEach((eventName) => {
+      window.addEventListener(eventName, resetIdleTimer, { passive: true });
+    });
+
+    return () => {
+      events.forEach((eventName) => {
+        window.removeEventListener(eventName, resetIdleTimer);
+      });
+      clearIdleTimer();
+    };
+  }, [user]);
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
