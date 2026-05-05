@@ -177,7 +177,7 @@ export default function Footer() {
       <div className="border-t border-slate-800 bg-[#0B1120]">
         <div className="container mx-auto px-4 lg:px-8 py-6 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium">
           <p>
-            &copy; {new Date().getFullYear()} KAJU HOUSING. All rights reserved.
+            &copy; {new Date().getFullYear()} Kab-J Housing & Rentals. All rights reserved.
           </p>
           <div className="flex gap-6">
             <Link to="#" className="hover:text-white transition-colors">

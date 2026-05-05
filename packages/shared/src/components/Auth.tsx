@@ -96,10 +96,10 @@ export default function Auth({
           </div>
           <span className="text-3xl font-black tracking-tight text-white drop-shadow-sm">
             {isOwner
-              ? "KAJU_HOUSING Partners"
+              ? "Kab-J Housing & Rentals Partners"
               : appType === "admin"
-                ? "KAJU_HOUSING Admin"
-                : "KAJU_HOUSING"}
+                ? "Kab-J Housing & Rentals Admin"
+                : "Kab-J Housing & Rentals"}
           </span>
         </div>
         
@@ -114,7 +114,7 @@ export default function Auth({
                 ? "Join the network of elite property owners providing premium student accommodation across Uganda. Scale your operations with our modern management suite."
                 : appType === "admin"
                   ? "Secure portal for platform administration and system oversight."
-                  : '"KAJU HOUSING completely changed how I found my accommodation for the semester. No more getting scammed or walking around under the sun for hours looking for hostels."'}
+                  : '"Kab-J Housing & Rentals completely changed how I found my accommodation for the semester. No more getting scammed or walking around under the sun for hours looking for hostels."'}
             </p>
             {appType === "student" && (
               <footer className="text-primary-foreground/80 font-medium">
@@ -208,7 +208,7 @@ export default function Auth({
                   </CardTitle>
                   <CardDescription className="text-slate-500">
                     {isOwner
-                      ? "Join the KAJU HOUSING partner network."
+                      ? "Join the Kab-J Housing & Rentals partner network."
                       : "Enter your details below to create your account."}
                   </CardDescription>
                 </CardHeader>

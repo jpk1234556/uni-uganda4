@@ -1552,7 +1552,7 @@ export default function StudentDashboard() {
                   Select <strong>Send Money</strong>
                 </li>
                 <li>
-                  Enter KAJU HOUSING Merchant Number:{" "}
+                  Enter Kab-J Housing & Rentals Merchant Number:{" "}
                   <strong className="text-slate-900 font-mono text-base">
                     0700 123 456
                   </strong>

@@ -102,7 +102,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 border-t border-slate-800 pt-8 text-center text-xs text-slate-500">
-          <p>© {new Date().getFullYear()} Uni-Nest. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Kab-J Housing & Rentals. All rights reserved.</p>
         </div>
       </div>
     </footer>

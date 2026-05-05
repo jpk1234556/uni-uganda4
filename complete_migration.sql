@@ -1,4 +1,4 @@
--- Complete Migration Script for Uni-Nest Uganda
+-- Complete Migration Script for Kab-J Housing & Rentals
 -- Run this all at once in Supabase SQL Editor
 
 -- ============================================

@@ -1,4 +1,4 @@
-# 🏠 Uni-Nest - University Hostel Booking Platform
+# 🏠 Kab-J Housing & Rentals - University Hostel Booking Platform
 
 A comprehensive monorepo-based platform for university student hostel booking in Uganda.
 

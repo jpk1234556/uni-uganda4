@@ -225,7 +225,7 @@ export default function Home() {
             </h2>
             <p className="text-slate-400 font-medium">
               Join the growing community of students and hostel owners using
-              KAJU HOUSING
+              Kab-J Housing & Rentals
             </p>
           </motion.div>
 
@@ -550,7 +550,7 @@ export default function Home() {
             </h2>
             <p className="text-slate-600 max-w-2xl mx-auto mb-20 font-medium text-lg">
               Join thousands of satisfied students who found their perfect home
-              through KAJU HOUSING
+              through Kab-J Housing & Rentals
             </p>
           </motion.div>
 
@@ -563,7 +563,7 @@ export default function Home() {
                 name: "Nakamya Sarah",
                 role: "Medical Student, Makerere",
                 review:
-                  "KAJU HOUSING made my hostel search incredibly easy. I found a perfect room near Mulago Hospital within my budget. The verification system gave me confidence.",
+                  "Kab-J Housing & Rentals made my hostel search incredibly easy. I found a perfect room near Mulago Hospital within my budget. The verification system gave me confidence.",
                 img: "1",
               },
               {

@@ -1,6 +1,6 @@
 # 🎉 Production Ready Summary
 
-Your Uni-Nest platform is now **PRODUCTION READY**!
+Your Kab-J Housing & Rentals platform is now **PRODUCTION READY**!
 
 ---
 

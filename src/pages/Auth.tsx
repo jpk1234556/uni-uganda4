@@ -101,30 +101,30 @@ export default function Auth() {
   return (
     <div className="container mx-auto px-4 py-12 md:py-16">
       <div className="mx-auto grid min-h-[calc(100vh-16rem)] max-w-6xl items-center gap-8 lg:grid-cols-[1.05fr_0.85fr]">
-        <Card className="overflow-hidden border-border/60 bg-white/90 shadow-xl shadow-slate-950/10 backdrop-blur">
-          <div className="border-b bg-gradient-to-r from-slate-950 to-slate-800 px-6 py-6 text-white">
+        <Card className="overflow-hidden rounded-3xl border-border/60 bg-white/95 shadow-2xl shadow-slate-950/10 backdrop-blur">
+          <div className="border-b bg-gradient-to-r from-slate-950 to-slate-800 px-6 py-6 text-white md:px-8">
             <BrandMark compact />
             <p className="mt-3 max-w-md text-sm leading-6 text-slate-300">
               Log in or sign up to continue your search, manage bookings, and
               keep your shortlist in one place.
             </p>
-            <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-300">
+            <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-slate-300">
               <span className="rounded-full border border-white/15 px-3 py-1">Secure checkout</span>
               <span className="rounded-full border border-white/15 px-3 py-1">Verified listings</span>
               <span className="rounded-full border border-white/15 px-3 py-1">Faster approvals</span>
             </div>
           </div>
-          <Tabs defaultValue={mode} className="p-6">
-            <TabsList className="grid w-full grid-cols-2 bg-muted/70 p-1">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+          <Tabs defaultValue={mode} className="p-6 md:p-8">
+            <TabsList className="grid w-full grid-cols-2 rounded-full bg-muted/70 p-1">
+              <TabsTrigger value="login" className="rounded-full">Login</TabsTrigger>
+              <TabsTrigger value="signup" className="rounded-full">Sign Up</TabsTrigger>
             </TabsList>
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-6">
                 <CardHeader className="px-0 pt-6">
                   <CardTitle className="text-2xl">Welcome back</CardTitle>
                   <CardDescription className="text-sm leading-6">
-                    Log in to continue to your Uni-Nest account.
+                    Log in to continue to your Kab-J Housing & Rentals account.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 px-0">
@@ -137,7 +137,7 @@ export default function Auth() {
                       required
                       autoComplete="email"
                       placeholder="m@example.com"
-                      className="h-11"
+                      className="h-11 bg-white/80"
                     />
                   </div>
                   <div className="space-y-2">
@@ -156,12 +156,12 @@ export default function Auth() {
                       type="password"
                       required
                       autoComplete="current-password"
-                      className="h-11"
+                      className="h-11 bg-white/80"
                     />
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-3 px-0 pb-0 pt-2">
-                  <Button className="h-11 w-full" type="submit" disabled={isLoading}>
+                  <Button className="h-11 w-full shadow-lg shadow-primary/15" type="submit" disabled={isLoading}>
                     {isLoading ? "Logging in..." : "Login"}
                   </Button>
                   <p className="text-xs text-muted-foreground">
@@ -175,18 +175,18 @@ export default function Auth() {
                 <CardHeader className="px-0 pt-6">
                   <CardTitle className="text-2xl">Create account</CardTitle>
                   <CardDescription className="text-sm leading-6">
-                    Join the Uni-Nest community and start with a profile that feels complete from day one.
+                    Join the Kab-J Housing & Rentals community and start with a profile that feels complete from day one.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 px-0">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" name="firstName" required autoComplete="given-name" className="h-11" />
+                      <Input id="firstName" name="firstName" required autoComplete="given-name" className="h-11 bg-white/80" />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" name="lastName" required autoComplete="family-name" className="h-11" />
+                      <Input id="lastName" name="lastName" required autoComplete="family-name" className="h-11 bg-white/80" />
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -198,7 +198,7 @@ export default function Auth() {
                       required
                       autoComplete="email"
                       placeholder="m@example.com"
-                      className="h-11"
+                      className="h-11 bg-white/80"
                     />
                   </div>
                   <div className="space-y-2">
@@ -209,7 +209,7 @@ export default function Auth() {
                       type="password"
                       required
                       autoComplete="new-password"
-                      className="h-11"
+                      className="h-11 bg-white/80"
                     />
                     <p className="text-xs leading-5 text-muted-foreground">
                       Use a password you can keep private. We’ll only use it to secure your account.
@@ -220,7 +220,7 @@ export default function Auth() {
                     <select
                       id="role"
                       name="role"
-                      className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex h-11 w-full rounded-md border border-input bg-white/80 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                       required
                     >
                       <option value="student">Student</option>
@@ -229,7 +229,7 @@ export default function Auth() {
                   </div>
                 </CardContent>
                 <CardFooter className="px-0 pb-0 pt-2">
-                  <Button className="h-11 w-full" type="submit" disabled={isLoading}>
+                  <Button className="h-11 w-full shadow-lg shadow-primary/15" type="submit" disabled={isLoading}>
                     {isLoading ? "Creating account..." : "Sign Up"}
                   </Button>
                 </CardFooter>

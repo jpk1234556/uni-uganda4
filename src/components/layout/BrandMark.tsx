@@ -17,7 +17,7 @@ export default function BrandMark({
       </span>
       <span className="flex flex-col leading-tight">
         <span className="text-lg font-semibold tracking-tight text-foreground">
-          Uni-Nest
+          Kab-J Housing & Rentals
         </span>
         {!compact && (
           <span className="text-xs font-medium text-muted-foreground">

@@ -74,7 +74,7 @@ export default function Home() {
       <section className="container mx-auto px-4">
         <div className="mx-auto mb-10 max-w-2xl text-center">
           <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
-            Why choose Uni-Nest?
+            Why choose Kab-J Housing & Rentals?
           </h2>
           <p className="mt-3 text-muted-foreground leading-7">
             We make finding a hostel simple, secure, and much easier to scan on

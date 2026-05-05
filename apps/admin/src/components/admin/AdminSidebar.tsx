@@ -99,12 +99,12 @@ export default function AdminSidebar() {
         <div className="flex items-center gap-3">
           <img
             src="/logo.png"
-            alt="Kaju Housing Logo"
+            alt="Kab-J Housing & Rentals Logo"
             className="h-10 w-10 object-contain rounded-xl shadow-sm"
           />
           <div className="flex flex-col">
             <span className="font-bold text-base text-slate-900 leading-tight tracking-tight">
-              Kaju Housing
+              Kab-J Housing & Rentals
             </span>
             <span className="text-xs text-slate-500 font-medium tracking-tight">
               System Admin

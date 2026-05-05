@@ -1,6 +1,6 @@
 -- ============================================
 -- FINAL COMPLETE MIGRATION SCRIPT
--- Uni-Nest Uganda - All Phases Combined
+-- Kab-J Housing & Rentals - All Phases Combined
 -- Run this all at once in Supabase SQL Editor
 -- ============================================
 

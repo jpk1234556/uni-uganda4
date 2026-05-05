@@ -1,4 +1,4 @@
-# 🚀 Quick Deploy Script for Uni-Nest
+# 🚀 Quick Deploy Script for Kab-J Housing & Rentals
 
 This script helps you deploy all three apps to Vercel.
 
@@ -37,7 +37,7 @@ Create a `deploy.sh` script (Linux/Mac):
 ```bash
 #!/bin/bash
 
-echo "🚀 Deploying Uni-Nest Platform..."
+echo "🚀 Deploying Kab-J Housing & Rentals Platform..."
 
 # Deploy Student App
 echo "📚 Deploying Student App..."
@@ -71,7 +71,7 @@ chmod +x deploy.sh
 Create `deploy.ps1`:
 
 ```powershell
-Write-Host "🚀 Deploying Uni-Nest Platform..." -ForegroundColor Cyan
+Write-Host "🚀 Deploying Kab-J Housing & Rentals Platform..." -ForegroundColor Cyan
 
 # Deploy Student App
 Write-Host "`n📚 Deploying Student App..." -ForegroundColor Green

@@ -2,7 +2,7 @@
 
 Last updated: March 24, 2026
 
-Uni-Nest Uganda ("Uni-Nest", "we", "our", "us") respects your privacy. This Privacy Policy explains how we collect, use, disclose, and protect your information when you use our websites and applications, including student, owner, and admin portals (collectively, the "Services").
+Kab-J Housing & Rentals ("Kab-J Housing & Rentals", "we", "our", "us") respects your privacy. This Privacy Policy explains how we collect, use, disclose, and protect your information when you use our websites and applications, including student, owner, and admin portals (collectively, the "Services").
 
 By using the Services, you agree to the practices described in this Privacy Policy.
 
@@ -116,7 +116,7 @@ We may update this Privacy Policy from time to time. We will post the updated ve
 For privacy questions, requests, or complaints, contact:
 
 - Email: privacy@uninest.ug
-- Data Controller: Uni-Nest Uganda
+- Data Controller: Kab-J Housing & Rentals
 
 If this contact information is not yet active, replace it before publishing this policy.
 

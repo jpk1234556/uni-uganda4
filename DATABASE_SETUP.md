@@ -1,4 +1,4 @@
-# 🗄️ Database Setup Checklist for Uni-Nest
+# 🗄️ Database Setup Checklist for Kab-J Housing & Rentals
 
 Complete this checklist to properly configure your Supabase database for production.
 

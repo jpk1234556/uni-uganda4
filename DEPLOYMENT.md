@@ -1,6 +1,6 @@
-# 🚀 Uni-Nest Production Deployment Guide
+# 🚀 Kab-J Housing & Rentals Production Deployment Guide
 
-Complete guide for deploying the Uni-Nest hostel booking platform to production.
+Complete guide for deploying the Kab-J Housing & Rentals hostel booking platform to production.
 
 ---
 

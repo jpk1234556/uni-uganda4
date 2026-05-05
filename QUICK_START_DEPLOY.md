@@ -1,6 +1,6 @@
 # 🚀 Quick Start Guide - Deploy in 30 Minutes
 
-Get Uni-Nest deployed to production in under 30 minutes!
+Get Kab-J Housing & Rentals deployed to production in under 30 minutes!
 
 ---
 
@@ -32,7 +32,7 @@ Get Uni-Nest deployed to production in under 30 minutes!
    → Go to https://app.supabase.com
    → Click "New Project"
    → Choose organization
-   → Name: "Uni-Nest"
+   → Name: "Kab-J Housing & Rentals"
    → Database password: (save this!)
    → Region: Choose closest to you
    → Create project (takes ~2 minutes)
