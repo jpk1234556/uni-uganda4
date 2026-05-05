@@ -26,11 +26,12 @@ export default function Home() {
                 Trusted hostel discovery
               </span>
               <h1 className="mt-5 text-4xl font-semibold tracking-tight md:text-6xl lg:text-7xl">
-                Find your perfect student home in Uganda.
+                Find your perfect hostel stay in Uganda.
               </h1>
               <p className="mt-6 max-w-2xl text-base leading-8 text-slate-200 md:text-lg">
-                Discover verified hostels near your university with clearer
-                listings, better filters, and a cleaner path to booking.
+                Discover verified hostels and rentals near campuses, workplaces,
+                and city hubs. Compare prices, amenities, and book with
+                confidence.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link to={appRoutes.search}>
